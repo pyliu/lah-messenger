@@ -7,7 +7,7 @@
         p(v-if="item.type === 'mine'") {{ item.text }}
     b-input-group
       b-input(v-model="text" @keyup.enter="send")
-      b-button(@click="send") 傳送
+      b-button(@click="send" variant="primary") 傳送
 </template>
 
 <script>
@@ -54,6 +54,7 @@ export default {
       }
     },
     send () {
+
       /**
        * readyState attr
        * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
@@ -96,24 +97,26 @@ export default {
     },
   },
   created () {
-    this.isBusy = true
-    this.$axios.post(this.$consts.API.JSON.QUERY, {
-      type: "ping",
-      ip: this.$config.websocketHost,
-      port: this.$config.websocketPort,
-    }).then(({ data }) => {
-      this.pingLatency = data.latency
-      this.pingMessage = data.message
-      if (this.$utils.statusCheck(data.status)) {
-        this.connect()
-      } else {
-        this.notify(data.message, { type: "warning" })
-      }
-    }).catch((err) => {
-      this.error = err
-    }).finally(() => {
-      this.isBusy = false
-    })
+    // this.isBusy = true
+    // this.$axios.post(this.$consts.API.JSON.QUERY, {
+    //   type: "ping",
+    //   ip: this.$config.wsHost,
+    //   port: this.$config.wsPort,
+    // }).then(({ data }) => {
+    //   this.pingLatency = data.latency
+    //   this.pingMessage = data.message
+    //   if (this.$utils.statusCheck(data.status)) {
+    //     this.connect()
+    //   } else {
+    //     this.notify(data.message, { type: "warning" })
+    //   }
+    // }).catch((err) => {
+    //   this.error = err
+    // }).finally(() => {
+    //   this.isBusy = false
+    // })
+    this.connect()
+    console.log(this.$config)
   },
 }
 </script>
