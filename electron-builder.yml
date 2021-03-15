@@ -1,0 +1,12 @@
+appId: tw.gov.tyland.messenger
+productName: LAH-Messenger
+copyright: Copyright © 2021 pyliu
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null
