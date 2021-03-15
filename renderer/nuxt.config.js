@@ -41,14 +41,22 @@ export default {
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: [
     // https://animate.style/
-    'animate.css/animate.css'
+    'animate.css/animate.css',
+    // https://github.com/loadingio/loading.css
+    '~/assets/css/loading.min.css',
+    '~/assets/css/loading-btn.css',
+    // https://github.com/loadingio/transition.css/
+    '~/assets/css/transition.min.css',
+    '~/assets/scss/main.scss'
   ],
   purgeCSS: {
     whitelistPatterns: [/svg.*/, /fa.*/]
   },
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
-    { src: '~/plugins/axios'}
+    { src: '~/plugins/axios'},
+    { src: '~/plugins/global-init'},
+    { src: '~/plugins/global-vue-mixin'},
   ],
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -95,6 +103,8 @@ export default {
   // should hold all env variables that are public as these will be exposed on the frontend.
   // available using $config in both server and client.
   publicRuntimeConfig: {
+    wsHost: process.env.WS_HOST,
+    wsPort: process.env.WS_PORT,
     axios: {
       // Default: baseURL; when the proxy option is true, it will become PREFIX instead of baseURL
       browserBaseURL: process.env.BROWSER_BASE_URL

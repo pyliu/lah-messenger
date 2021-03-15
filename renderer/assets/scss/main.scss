@@ -1,0 +1,83 @@
+// Bootstrap and BootstrapVue SCSS files
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~bootstrap-vue/src/index.scss';
+
+@import 'anim.scss';
+@import 'size.scss';
+@import 'shadow.scss';
+
+// General style overrides and custom classes
+@import 'theme';
+
+@mixin center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[v-cloak] {
+  display: none;
+}
+
+html, body { 
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-width: 1012px;
+  scroll-behavior: smooth;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+a {
+  color: var(--dark);
+}
+
+.title {
+  font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  display: block;
+  font-weight: bold;
+  font-size: 4rem;
+  color: #35495e;
+  letter-spacing: 1px;
+}
+
+.center {
+  @include center();
+}
+
+.full-vh {
+  @include center();
+  height: 100vh;
+  color: #fff;
+  font-size: 5em;
+  text-shadow:
+    0px 2px 0px #b2a98f,
+    0px 4px 3px rgba(0,0,0,0.15),
+    0px 8px 1px rgba(0,0,0,0.1);
+}
+
+blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+  quotes: "\201C""\201D""\2018""\2019";
+  box-shadow: 2px 2px 15px #ccc;
+}
+
+blockquote:before {
+  color: #ccc;
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
+}
+blockquote p {
+  display: inline;
+}
