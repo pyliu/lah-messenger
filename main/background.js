@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import serve from 'electron-serve';
+
 import {
   createWindow,
   exitOnChange,
@@ -19,8 +20,21 @@ if (isProd) {
 
   const mainWindow = createWindow('main', {
     width: isProd ? 480 : 960,
-    height: 600,
+    height: 640,
+    show: false,  // use 'ready-to-show' event to show the window
+    useContentSize: false,
+    menuBarVisible: false,
+    center: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: true,
+    alwaysOnTop: true,
+    kiosk: false
   });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+  })
 
   if (isProd) {
     await mainWindow.loadURL('app://./home');
