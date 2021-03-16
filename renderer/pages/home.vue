@@ -6,7 +6,7 @@
         .time.s-50.mx-1.text-muted {{ item.time }}
         p(v-if="item.type === 'mine'") {{ item.text }}
     b-input-group
-      b-input(v-model="text" @keyup.enter="send")
+      b-input.mr-1(v-model="text" @keyup.enter="send")
       b-button(@click="send" variant="primary") 傳送
 </template>
 
@@ -127,7 +127,8 @@ export default {
 
 <style lang="scss" scoped>
 .msg-container {
-  max-width: 480px;
+  max-width: 470px;
+  margin: 5px;
 }
 
 .msg {
@@ -137,7 +138,6 @@ export default {
   padding: 5px;
   border: 1px solid gray;
   display: inline-block;
-  margin-bottom: 5px;
 
   .msg-item {
     position: relative;
