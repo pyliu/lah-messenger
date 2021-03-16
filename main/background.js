@@ -24,7 +24,7 @@ if (isProd) {
     show: false,  // use 'ready-to-show' event to show the window
     useContentSize: false,
     center: true,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: true,
     alwaysOnTop: true,

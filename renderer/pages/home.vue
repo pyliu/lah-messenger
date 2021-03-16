@@ -20,7 +20,7 @@ export default {
     return {
       name: process.static ? 'static' : (process.server ? 'server' : 'client'),
       list: [
-        { type: 'remote', text: '... 準備中 ...', time: time }
+        // { type: 'remote', text: '... 準備中 ...', time: time }
       ]
     }
   },
@@ -101,24 +101,6 @@ export default {
     },
   },
   mounted () {
-    // this.isBusy = true
-    // this.$axios.post(this.$consts.API.JSON.QUERY, {
-    //   type: "ping",
-    //   ip: this.$config.wsHost,
-    //   port: this.$config.wsPort,
-    // }).then(({ data }) => {
-    //   this.pingLatency = data.latency
-    //   this.pingMessage = data.message
-    //   if (this.$utils.statusCheck(data.status)) {
-    //     this.connect()
-    //   } else {
-    //     this.notify(data.message, { type: "warning" })
-    //   }
-    // }).catch((err) => {
-    //   this.error = err
-    // }).finally(() => {
-    //   this.isBusy = false
-    // })
     this.connect()
     console.log(this.$config)
   },
@@ -132,8 +114,10 @@ export default {
 }
 
 .msg {
-  width: 100%;
-  height: 90vh;
+  width: 470px;
+  margin-left: 5px;
+  margin-right: 5px;
+  height: 560px;
   overflow: auto;
   padding: 5px;
   border: 1px solid gray;
