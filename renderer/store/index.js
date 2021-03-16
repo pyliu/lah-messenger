@@ -53,7 +53,7 @@ const actions = {
   // Nuxt provided hook feature for Vuex, calling at server side when store initializing
   async nuxtServerInit ({ commit, dispatch }, nuxt) {
     try {
-      commit('ip', nuxt.req.connection.remoteAddress || nuxt.req.socket.remoteAddress)
+      // commit('ip', nuxt.req.connection.remoteAddress || nuxt.req.socket.remoteAddress)
       // query login require info by ip to use middleware to control authority
       // dispatch('login')
     } catch (e) {
