@@ -23,17 +23,18 @@ if (isProd) {
     height: 640,
     show: false,  // use 'ready-to-show' event to show the window
     useContentSize: false,
-    menuBarVisible: false,
     center: true,
     resizable: false,
     maximizable: false,
     minimizable: true,
     alwaysOnTop: true,
-    kiosk: false
+    kiosk: false,
+    menuBarVisible: false,  // not working
   });
-
+  // disable the menu bar since menuBarVisible flag does not work properly
+  mainWindow.setMenuBarVisibility(false);
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow.show();
   })
 
   if (isProd) {
