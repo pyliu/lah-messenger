@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import * as Electron from 'electron';
 export default {
   asyncData ({ req, store, redirect, error }) {
     const now = new Date()
@@ -102,7 +103,7 @@ export default {
   },
   mounted () {
     this.connect()
-    console.log(this.$config)
+    console.log(this.$config, Electron)
   },
 }
 </script>
