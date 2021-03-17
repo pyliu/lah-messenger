@@ -2,7 +2,7 @@
   .msg-container
     .msg(ref="box")
       .msg-item.d-flex.my-2(v-for="item in list", :class="msgClass(item)")
-        p(v-if="item.type === 'remote'") {{ item.text }}
+        p(v-if="item.type === 'remote'" v-html="item.text")
         .time.s-50.mx-1.text-muted {{ item.time }}
         p(v-if="item.type === 'mine'") {{ item.text }}
     b-input-group
@@ -11,7 +11,8 @@
 </template>
 
 <script>
-import * as Electron from 'electron';
+import Electron from 'electron';
+import * as EStore from 'electron-store';
 export default {
   asyncData ({ req, store, redirect, error }) {
     const now = new Date()
@@ -21,14 +22,18 @@ export default {
     return {
       name: process.static ? 'static' : (process.server ? 'server' : 'client'),
       list: [
-        // { type: 'remote', text: '... 準備中 ...', time: time }
+        // { type: 'remote', text: '<strong class="s-90">... 準備中 ...</strong>', time: time }
       ]
     }
   },
   data: () => ({
     text: '',
-    websocket: undefined
+    websocket: undefined,
+    store: new EStore()
   }),
+  computed: {
+    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
+  },
   methods: {
     msgClass (item) {
       return [item.type === 'mine' ? 'justify-content-end' : 'justify-content-start', item.type]
@@ -55,7 +60,6 @@ export default {
       }
     },
     send () {
-
       /**
        * readyState attr
        * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
@@ -76,19 +80,32 @@ export default {
       if (window && window.WebSocket) {
         this.websocket = new WebSocket(`ws://${this.$config.websocketHost}:${this.$config.websocketPort}`)
         this.websocket.onopen = (e) => {
-          this.list = [...this.list, { type: "remote", text: `連結 WebSocket 伺服器成功(ws://${this.$config.websocketHost}:${this.$config.websocketPort})`, time: this.time() }]
+          this.notify(`連結 WebSocket 伺服器成功`, {
+            subtitle: this.ws,
+            type: 'success',
+            pos: 'tf'
+          })
         }
         this.websocket.onclose = (e) => {
-          this.list = [...this.list, { type: "remote", text: `WebSocket 伺服器連線已關閉，無法進行通訊`, time: this.time() }]
+          this.notify(`WebSocket 伺服器連線已關閉，無法進行通訊`, {
+            subtitle: this.ws,
+            type: 'warning',
+            pos: 'bf'
+          })
         }
         this.websocket.onerror = () => {
-          this.list = [...this.list, { type: "remote", text: `WebSocket 伺服器連線出錯`, time: this.time() }]
+          this.notify(`WebSocket 伺服器連線出錯`, {
+            subtitle: this.ws,
+            type: 'danger',
+            pos: 'bf'
+          })
         }
         this.websocket.onmessage = (e) => {
           this.list = [...this.list, { type: "remote", ...JSON.parse(e.data) }]
         }
       } else {
         console.warn('WebSocket is not available.')
+        this.list = [...this.list, { type: "remote", text: '不支援 WebSocket 無法進行通訊', time: this.time() }]
       }
     }
   },
@@ -103,7 +120,10 @@ export default {
   },
   mounted () {
     this.connect()
-    console.log(this.$config, Electron)
+    console.log(this.$config, Electron, this.store)
+    this.store.set({
+      pyliu: 'awesome'
+    })
   },
 }
 </script>
