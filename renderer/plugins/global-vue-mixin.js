@@ -27,15 +27,8 @@ Vue.mixin({
   },
   computed: {
     ...mapGetters([
-      'loggedIn',
       'ip',
-      'apiSvrIps',
-      'lastMessage',
-      'systemConfigs',
-      'user',
-      'authority',
-      'server',
-      'xapMap'
+      'address'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     site () {
@@ -90,7 +83,7 @@ Vue.mixin({
   },
   methods: {
     ...mapActions([
-      'login'
+      
     ]),
     $,  // jQuery '$',
     parseHTML (string) {
