@@ -1,10 +1,11 @@
 <template lang="pug">
   .msg-container
     .msg(ref="box")
-      .msg-item.d-flex.my-2(v-for="item in list", :class="msgClass(item)")
-        p(v-if="item.type === 'remote'" v-html="item.text")
-        .time.s-50.mx-1.text-muted {{ item.time }}
-        p(v-if="item.type === 'mine'") {{ item.text }}
+      //- .msg-item.d-flex.my-2(v-for="item in list", :class="msgClass(item)")
+      //-   p(v-if="item.type === 'remote'" v-html="item.text")
+      //-   .time.s-50.mx-1.text-muted {{ item.time }}
+      //-   p(v-if="item.type === 'mine'") {{ item.text }}
+      message(v-for="item in list" :raw="")
     b-input-group
       b-input.mr-1(v-model="text" @keyup.enter="send")
       b-button(@click="send" variant="primary") 傳送
@@ -38,12 +39,27 @@ export default {
     msgClass (item) {
       return [item.type === 'mine' ? 'justify-content-end' : 'justify-content-start', item.type]
     },
+    date () {
+      const now = new Date()
+      return now.getFullYear() + '-' +
+        ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+        ('0' + now.getDate()).slice(-2)
+    },
     time () {
       const now = new Date()
       const time = ('0' + now.getHours()).slice(-2) + ':' +
                    ('0' + now.getMinutes()).slice(-2) + ':' +
                    ('0' + now.getSeconds()).slice(-2)
       return time
+    },
+    packMessage = (text, who = 'me') => {
+      return JSON.stringify({
+        type: 'mine',
+        who: who,
+        date: this.date(),
+        time: this.time(),
+        message: text
+      })
     },
     status (code) {
       switch (code) {
@@ -101,7 +117,7 @@ export default {
           })
         }
         this.websocket.onmessage = (e) => {
-          this.list = [...this.list, { type: "remote", ...JSON.parse(e.data) }]
+          this.list = [...this.list, { ...JSON.parse(e.data) }]
         }
       } else {
         console.warn('WebSocket is not available.')
