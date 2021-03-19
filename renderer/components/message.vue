@@ -1,9 +1,9 @@
 <template lang="pug">
   div
-    div(v-html="who" :class="mine ? 'text-right s-60' : 's-60'")
+    div.s-60(v-if="!mine") {{ who }} ( {{ ip }} )
     .msg-item.d-flex.my-2(:class="classes")
-      p(v-if="type === 'remote'" v-html="message")
-      .time.s-50.mx-1.text-muted {{ time }}
+      p(v-if="!mine" v-html="message")
+      .time.s-60.mx-1.text-muted {{ time }}
       p(v-if="mine" v-html="message")
 </template>
 <script>
@@ -27,6 +27,9 @@ export default {
     },
     who() {
       return this.raw ? this.raw["who"] : "";
+    },
+    ip() {
+      return this.raw ? this.raw["ip"] : "";
     },
     time() {
       return this.raw ? this.raw["time"] : "";

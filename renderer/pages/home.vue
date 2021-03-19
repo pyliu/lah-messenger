@@ -50,6 +50,7 @@ export default {
       return JSON.stringify({
         type: 'mine',
         who: who,
+        ip: this.ip,
         date: this.date(),
         time: this.time(),
         message: text
@@ -131,7 +132,7 @@ export default {
   },
   mounted () {
     this.connect()
-    console.log(this.$config, Electron, this.store)
+    console.log(this.$config, Electron, this.store, this.address, this.ip)
     this.store.set({
       pyliu: 'awesome'
     })
