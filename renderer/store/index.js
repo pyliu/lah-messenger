@@ -34,17 +34,22 @@ const logtimestamp = (message) => {
 }
 
 const state = () => ({
+  address: [],
   ip: '0.0.0.0'
 })
 
 const getters = {
-  ip: state => state.ip
+  ip: state => state.ip,
+  address: state => state.address
 }
 
 // only sync operation
 const mutations = {
   ip (state, ip) {
     state.ip = ip
+  },
+  address (state, address) {
+    state.address = [ ...address ]
   }
 }
 
@@ -53,9 +58,21 @@ const actions = {
   // Nuxt provided hook feature for Vuex, calling at server side when store initializing
   async nuxtServerInit ({ commit, dispatch }, nuxt) {
     try {
-      // commit('ip', nuxt.req.connection.remoteAddress || nuxt.req.socket.remoteAddress)
-      // query login require info by ip to use middleware to control authority
-      // dispatch('login')
+      // get all ip addresses by node.js os module 
+      const nets = require('os').networkInterfaces()
+      const results = []
+      for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+          // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+          if (net.family === 'IPv4' && !net.internal) {
+            results.push(net.address)
+          }
+        }
+      }
+      commit('address', results)
+      if (results.length > 0) {
+        commit('ip', results[results.length - 1])
+      }
     } catch (e) {
       console.error(e)
     }
