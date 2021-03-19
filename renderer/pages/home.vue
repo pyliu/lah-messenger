@@ -1,11 +1,7 @@
 <template lang="pug">
   .msg-container
     .msg(ref="box")
-      //- .msg-item.d-flex.my-2(v-for="item in list", :class="msgClass(item)")
-      //-   p(v-if="item.type === 'remote'" v-html="item.text")
-      //-   .time.s-50.mx-1.text-muted {{ item.time }}
-      //-   p(v-if="item.type === 'mine'") {{ item.text }}
-      message(v-for="item in list" :raw="")
+      message(v-for="(item, idx) in list" :raw="item" :key="idx")
     b-input-group
       b-input.mr-1(v-model="text" @keyup.enter="send")
       b-button(@click="send" variant="primary") 傳送
@@ -14,20 +10,21 @@
 <script>
 import Electron from 'electron';
 import * as EStore from 'electron-store';
+import message from '~/components/message.vue';
+
 export default {
+  components: { message },
   asyncData ({ req, store, redirect, error }) {
     const now = new Date()
     const time = ('0' + now.getHours()).slice(-2) + ':' +
                  ('0' + now.getMinutes()).slice(-2) + ':' +
                  ('0' + now.getSeconds()).slice(-2)
     return {
-      name: process.static ? 'static' : (process.server ? 'server' : 'client'),
-      list: [
-        // { type: 'remote', text: '<strong class="s-90">... 準備中 ...</strong>', time: time }
-      ]
+      name: process.static ? 'static' : (process.server ? 'server' : 'client')
     }
   },
   data: () => ({
+    list: [],
     text: '',
     websocket: undefined,
     store: new EStore()
@@ -36,9 +33,6 @@ export default {
     ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
   },
   methods: {
-    msgClass (item) {
-      return [item.type === 'mine' ? 'justify-content-end' : 'justify-content-start', item.type]
-    },
     date () {
       const now = new Date()
       return now.getFullYear() + '-' +
@@ -52,7 +46,7 @@ export default {
                    ('0' + now.getSeconds()).slice(-2)
       return time
     },
-    packMessage = (text, who = 'me') => {
+    packMessage (text, who = 'me') {
       return JSON.stringify({
         type: 'mine',
         who: who,
@@ -81,12 +75,12 @@ export default {
        * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
        */
       if (this.websocket && this.websocket.readyState !== 1) {
-        this.list = [...this.list, { type: "remote", text: `伺服器連線${this.status(this.websocket.readyState)} ...`, time: this.time() }]
+        this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
         this.websocket.readyState === 3 && this.connect()
       }
       
       if (this.websocket && this.websocket.readyState === 1) {
-        this.list = [...this.list, { type: "mine", text: this.text, time: this.time() }]
+        this.list = [...this.list, JSON.parse(this.packMessage(this.text)) ]
         this.websocket.send(this.text)
         // received remote text clear mine
         this.text = ''
@@ -159,32 +153,5 @@ export default {
   padding: 5px;
   border: 1px solid gray;
   display: inline-block;
-
-  .msg-item {
-    position: relative;
-    overflow: hidden;
-    p {
-      display: inline-block;
-      border-radius: 10px;
-      background: #3c3d5a;
-      color: white;
-      padding: 2px 12px;
-      margin: 0 0 2px 0;
-      max-width: 75%;
-      text-align: left;
-      box-sizing: border-box;
-    }
-
-    &.mine {
-      p {
-        background: rgb(2, 182, 32);
-        color: white;
-      }
-    }
-    .time {
-      display: inline-block;
-      align-self: flex-end;
-    }
-  }
 }
 </style>

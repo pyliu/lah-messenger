@@ -1,8 +1,8 @@
 <template lang="pug">
-.msg-item.d-flex.my-2(:class="msgClass(item)")
-  p(v-if="type === 'remote'", v-html="message")
-  .time.s-50.mx-1.text-muted {{ time }}
-  p(v-if="mine") {{ message }}
+  .msg-item.d-flex.my-2(:class="classes")
+    p(v-if="type === 'remote'", v-html="message")
+    .time.s-50.mx-1.text-muted {{ time }}
+    p(v-if="mine") {{ message }}
 </template>
 <script>
 export default {
@@ -32,14 +32,12 @@ export default {
     date() {
       return this.raw ? this.raw["date"] : "";
     },
-  },
-  methods: {
-    msgClass(item) {
+    classes() {
       return [
         this.mine ? "justify-content-end" : "justify-content-start",
         this.type,
       ];
-    },
+    }
   },
 };
 </script>
