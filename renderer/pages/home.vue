@@ -154,7 +154,7 @@ export default {
       color: white;
       padding: 2px 12px;
       margin: 0 0 2px 0;
-      max-width: 60%;
+      max-width: 75%;
       text-align: left;
       box-sizing: border-box;
     }
