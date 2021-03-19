@@ -1,8 +1,10 @@
 <template lang="pug">
-  .msg-item.d-flex.my-2(:class="classes")
-    p(v-if="type === 'remote'", v-html="message")
-    .time.s-50.mx-1.text-muted {{ time }}
-    p(v-if="mine") {{ message }}
+  div
+    div(v-html="who" :class="mine ? 'text-right s-60' : 's-60'")
+    .msg-item.d-flex.my-2(:class="classes")
+      p(v-if="type === 'remote'" v-html="message")
+      .time.s-50.mx-1.text-muted {{ time }}
+      p(v-if="mine" v-html="message")
 </template>
 <script>
 export default {

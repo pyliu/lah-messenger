@@ -80,8 +80,9 @@ export default {
       }
       
       if (this.websocket && this.websocket.readyState === 1) {
-        this.list = [...this.list, JSON.parse(this.packMessage(this.text)) ]
-        this.websocket.send(this.text)
+        const jsonString = this.packMessage(this.text)
+        this.list = [...this.list, JSON.parse(jsonString) ]
+        this.websocket.send(jsonString)
         // received remote text clear mine
         this.text = ''
       }
