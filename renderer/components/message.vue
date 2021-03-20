@@ -58,7 +58,7 @@ export default {
     color: white;
     padding: 2px 12px;
     margin: 0 0 2px 0;
-    max-width: 75%;
+    max-width: 90%;
     text-align: left;
     box-sizing: border-box;
   }

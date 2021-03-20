@@ -27,7 +27,7 @@ if (isProd) {
     resizable: true,
     maximizable: false,
     minimizable: true,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
     kiosk: false,
     menuBarVisible: false,  // not working
   });

@@ -90,27 +90,15 @@ export default {
     },
     connect () {
       if (window && window.WebSocket) {
-        this.websocket = new WebSocket(`ws://${this.$config.websocketHost}:${this.$config.websocketPort}`)
+        this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
-          this.notify(`連結 WebSocket 伺服器成功`, {
-            subtitle: this.ws,
-            type: 'success',
-            pos: 'tf'
-          })
+          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
         }
         this.websocket.onclose = (e) => {
-          this.notify(`WebSocket 伺服器連線已關閉，無法進行通訊`, {
-            subtitle: this.ws,
-            type: 'warning',
-            pos: 'bf'
-          })
+          this.list = [...this.list, JSON.parse(this.packMessage(`WebSocket 伺服器連線已關閉，無法進行通訊`)) ]
         }
         this.websocket.onerror = () => {
-          this.notify(`WebSocket 伺服器連線出錯`, {
-            subtitle: this.ws,
-            type: 'danger',
-            pos: 'bf'
-          })
+          this.list = [...this.list, JSON.parse(this.packMessage(`WebSocket 伺服器連線出錯【${this.ws}】`)) ]
         }
         this.websocket.onmessage = (e) => {
           this.list = [...this.list, { ...JSON.parse(e.data) }]
