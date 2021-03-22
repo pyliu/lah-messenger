@@ -87,16 +87,13 @@ export default {
       if (this.websocket && this.websocket.readyState === 1) {
         const jsonString = JSON.stringify({
           type: 'ip',
-          who: '',
+          who: '信差客戶端',
           ip: this.ip,
           date: this.date(),
           time: this.time(),
-          message: ''
+          message: `client ip is ${this.ip}`
         })
-        this.list = [...this.list, JSON.parse(jsonString) ]
         this.websocket.send(jsonString)
-        // received remote text clear mine
-        this.text = ''
       }
     },
     send () {
@@ -123,21 +120,21 @@ export default {
       if (window && window.WebSocket) {
         this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
+          // this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
           this.sendIp()
         }
         this.websocket.onclose = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WebSocket 伺服器連線已關閉，無法進行通訊`)) ]
+          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
         }
         this.websocket.onerror = () => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WebSocket 伺服器連線出錯【${this.ws}】`)) ]
+          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
         }
         this.websocket.onmessage = (e) => {
           this.list = [...this.list, { ...JSON.parse(e.data) }]
         }
       } else {
         console.warn('WebSocket is not available.')
-        this.list = [...this.list, { type: "remote", text: '不支援 WebSocket 無法進行通訊', time: this.time() }]
+        this.list = [...this.list, JSON.parse(this.packMessage(`不支援 WebSocket 無法進行通訊`))]
       }
     }
   },
