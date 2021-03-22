@@ -23,7 +23,7 @@ import isEmpty from 'lodash/isEmpty'
 import message from '~/components/message.vue'
 
 export default {
-  components: { message, messageAnnouncement },
+  components: { message },
   asyncData ({ req, store, redirect, error }) {
     const now = new Date()
     const time = ('0' + now.getHours()).slice(-2) + ':' +
