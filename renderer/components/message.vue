@@ -2,12 +2,19 @@
   div
     div.s-60(v-if="!mine") {{ who }} ( {{ ip }} )
     .msg-item.d-flex.my-2(:class="classes")
-      p(v-if="!mine" v-html="message")
+      announcement-card(
+        v-if="type === 'announcement'"
+        :data-json="raw['message']"
+      )
+      p(v-else-if="!mine" v-html="message")
       .time.s-60.mx-1.text-muted {{ time }}
       p(v-if="mine" v-html="message")
 </template>
+
 <script>
+import announcementCard from '~/components/announcement-card.vue'
 export default {
+  components: { announcementCard },
   props: {
     raw: { type: Object, required: true },
   },
