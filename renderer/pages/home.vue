@@ -2,14 +2,24 @@
   .msg-container
     .msg(ref="box")
       message(v-for="(item, idx) in list" :raw="item" :key="idx")
-    b-input-group
-      b-input.mr-1(v-model="text" @keyup.enter="send")
+    b-input-group(size="sm")
+      b-textarea.mr-1(
+        v-model="text"
+        debounce="200"
+        placeholder="... Ctrl + Enter 直接送出 ..."
+        @keyup.ctrl.enter="send"
+        no-resize
+        no-auto-shrink
+        autofocus
+        trim
+      )
       b-button(@click="send" variant="primary") 傳送
 </template>
 
 <script>
 import Electron from 'electron';
 import * as EStore from 'electron-store';
+import isEmpty from 'lodash/isEmpty'
 import message from '~/components/message.vue';
 
 export default {
@@ -30,7 +40,10 @@ export default {
     store: new EStore()
   }),
   computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
+    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
+    htmlText () {
+      return this.text.replace(new RegExp('\r?\n','g'), '<br />')
+    }
   },
   methods: {
     date () {
@@ -70,22 +83,40 @@ export default {
           return `未定義的代碼(${code})`
       }
     },
-    send () {
-      /**
-       * readyState attr
-       * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-       */
-      if (this.websocket && this.websocket.readyState !== 1) {
-        this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
-        this.websocket.readyState === 3 && this.connect()
-      }
-      
+    sendIp () {
       if (this.websocket && this.websocket.readyState === 1) {
-        const jsonString = this.packMessage(this.text)
+        const jsonString = JSON.stringify({
+          type: 'ip',
+          who: '',
+          ip: this.ip,
+          date: this.date(),
+          time: this.time(),
+          message: ''
+        })
         this.list = [...this.list, JSON.parse(jsonString) ]
         this.websocket.send(jsonString)
         // received remote text clear mine
         this.text = ''
+      }
+    },
+    send () {
+      if (!isEmpty(this.text)) {
+        /**
+         * readyState attr
+         * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
+         */
+        if (this.websocket && this.websocket.readyState !== 1) {
+          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
+          this.websocket.readyState === 3 && this.connect()
+        }
+        
+        if (this.websocket && this.websocket.readyState === 1) {
+          const jsonString = this.packMessage(this.htmlText)
+          this.list = [...this.list, JSON.parse(jsonString) ]
+          this.websocket.send(jsonString)
+          // received remote text clear mine
+          this.text = ''
+        }
       }
     },
     connect () {
@@ -93,6 +124,7 @@ export default {
         this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
           this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
+          this.sendIp()
         }
         this.websocket.onclose = (e) => {
           this.list = [...this.list, JSON.parse(this.packMessage(`WebSocket 伺服器連線已關閉，無法進行通訊`)) ]
