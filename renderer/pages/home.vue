@@ -83,15 +83,19 @@ export default {
           return `未定義的代碼(${code})`
       }
     },
-    sendIp () {
+    sendUserInfo () {
       if (this.websocket && this.websocket.readyState === 1) {
         const jsonString = JSON.stringify({
-          type: 'ip',
+          type: 'user',
           who: '信差客戶端',
           ip: this.ip,
           date: this.date(),
           time: this.time(),
-          message: `client ip is ${this.ip}`
+          message: JSON.stringify({
+            ip: this.ip,
+            domain: process.env['USERDOMAIN'],
+            username: process.env['USERNAME']
+          })
         })
         this.websocket.send(jsonString)
       }
@@ -121,7 +125,7 @@ export default {
         this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
           // this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
-          this.sendIp()
+          this.sendUserInfo()
         }
         this.websocket.onclose = (e) => {
           this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
