@@ -61,7 +61,7 @@ export default {
     },
     packMessage (text, who = 'me') {
       return JSON.stringify({
-        type: 'mine',
+        type: text.startsWith('@') ? text : 'mine',
         who: who,
         ip: this.ip,
         date: this.date(),

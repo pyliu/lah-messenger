@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     mine() {
-      return this.raw ? this.type === "mine" : false;
+      return this.raw ? this.type === "mine" || this.type.startsWith("@") : false;
     },
     type() {
       return this.raw ? this.raw["type"] : "";
@@ -47,7 +47,7 @@ export default {
     classes() {
       return [
         this.mine ? "justify-content-end" : "justify-content-start",
-        this.type,
+        this.type.startsWith('@') || this.type === 'mine' ? 'mine' : '',
       ];
     }
   },
