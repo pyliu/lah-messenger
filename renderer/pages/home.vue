@@ -63,7 +63,6 @@ export default {
       return JSON.stringify({
         type: text.startsWith('@') ? text : 'mine',
         who: who,
-        ip: this.ip,
         date: this.date(),
         time: this.time(),
         message: text
@@ -88,7 +87,6 @@ export default {
         const jsonString = JSON.stringify({
           type: 'user',
           who: '信差客戶端',
-          ip: this.ip,
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({
@@ -124,7 +122,7 @@ export default {
       if (window && window.WebSocket) {
         this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
-          // this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
+          // set client info to remote ws server
           this.sendUserInfo()
         }
         this.websocket.onclose = (e) => {
@@ -145,7 +143,7 @@ export default {
   watch: {
     list () {
       // watch list to display the latest message
-      // Vue VDOME workaround ... to display the last message
+      // Vue VDOM workaround ... to display the last message
       this.$nextTick(() => {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
