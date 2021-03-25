@@ -25,10 +25,6 @@ import message from '~/components/message.vue'
 export default {
   components: { message },
   asyncData ({ req, store, redirect, error }) {
-    const now = new Date()
-    const time = ('0' + now.getHours()).slice(-2) + ':' +
-                 ('0' + now.getMinutes()).slice(-2) + ':' +
-                 ('0' + now.getSeconds()).slice(-2)
     return {
       name: process.static ? 'static' : (process.server ? 'server' : 'client')
     }
@@ -92,7 +88,8 @@ export default {
           message: JSON.stringify({
             ip: this.ip,
             domain: process.env['USERDOMAIN'],
-            username: process.env['USERNAME']
+            userid: process.env['USERNAME'],
+            username: 'TODO ... from AD ...'
           })
         })
         this.websocket.send(jsonString)
@@ -132,6 +129,7 @@ export default {
           this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
         }
         this.websocket.onmessage = (e) => {
+          // console.log(JSON.parse(e.data))
           this.list = [...this.list, { ...JSON.parse(e.data) }]
         }
       } else {

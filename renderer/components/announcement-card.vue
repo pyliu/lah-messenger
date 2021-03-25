@@ -1,7 +1,8 @@
 <template lang="pug">
   b-card(
-    :border-variant="borderVariant"
     :header-border-variant="borderVariant"
+    :header-bg-variant="borderVariant"
+    :header-text-variant="'white'"
     :header="header"
   )
     template(#header): .d-flex.justify-content-between.font-weight-bold

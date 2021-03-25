@@ -1,7 +1,7 @@
 <template lang="pug">
-  div
-    div.s-60(v-if="!mine") {{ who }} ( {{ ip }} )
-    .msg-item.d-flex.my-2(:class="classes")
+  .mb-3
+    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ who }}
+    .d-flex.msg-item.my-1(:class="classes")
       announcement-card(
         v-if="type === 'announcement'"
         :data-json="raw['message']"
@@ -34,9 +34,6 @@ export default {
     },
     who() {
       return this.raw ? this.raw["who"] : "";
-    },
-    ip() {
-      return this.raw ? this.raw["ip"] : "";
     },
     time() {
       return this.raw ? this.raw["time"] : "";
