@@ -62,11 +62,11 @@ export default {
     border-radius: 10px;
     background: #3c3d5a;
     color: white;
-    padding: 2px 12px;
-    margin: 0 0 2px 0;
+    padding: 10px;
     max-width: 90%;
     text-align: left;
     box-sizing: border-box;
+    margin-bottom: 0rem !important;
   }
 
   &.mine {
