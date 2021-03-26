@@ -19,6 +19,7 @@
     "animate.css": "^4.1.1",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.18.1",
+    "dompurify": "^2.2.7",
     "electron-serve": "^1.0.0",
     "electron-store": "^7.0.2",
     "jquery": "^3.6.0",

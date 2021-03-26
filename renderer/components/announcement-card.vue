@@ -13,7 +13,10 @@
       span {{ dataJson['sender'] }}
       span {{ dataJson['create_datetime'] }}
 </template>
+
 <script>
+import DOMPurify from 'dompurify'
+import Markd from 'marked'
 import isEmpty from 'lodash/isEmpty'
 export default {
   props: {
@@ -40,7 +43,7 @@ export default {
       if (isEmpty(this.dataJson['content'])) {
         return ''
       }
-      return this.dataJson['content'].replace(new RegExp('\r?\n','g'), '<br />')
+      return DOMPurify(Markd(this.dataJson['content']))
     }
   },
   mounted () {
