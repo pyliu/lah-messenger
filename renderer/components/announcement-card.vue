@@ -43,7 +43,7 @@ export default {
       if (isEmpty(this.dataJson['content'])) {
         return ''
       }
-      return DOMPurify(Markd(this.dataJson['content']))
+      return DOMPurify.sanitize(Markd(this.dataJson['content']))
     }
   },
   mounted () {

@@ -32,7 +32,7 @@ export default {
       return this.raw ? this.raw["type"] : "";
     },
     message() {
-      return this.raw ? DOMPurify(Markd(this.raw["message"])) : "";
+      return this.raw ? DOMPurify.sanitize(Markd(this.raw["message"])) : "";
     },
     who() {
       return this.raw ? this.raw["who"] : "";
