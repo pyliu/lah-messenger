@@ -10,20 +10,21 @@
     "build": "nuxtron build"
   },
   "dependencies": {
-    "activedirectory": "^0.7.2",
-    "electron-serve": "^1.0.0",
-    "electron-store": "^7.0.2",
     "@nuxt/components": "^2.1.2",
     "@nuxtjs/axios": "^5.12.2",
     "@nuxtjs/localforage": "^1.1.0",
     "@nuxtjs/proxy": "^2.0.1",
     "@nuxtjs/style-resources": "^1.0.0",
+    "activedirectory": "^0.7.2",
     "animate.css": "^4.1.1",
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.18.1",
+    "electron-serve": "^1.0.0",
+    "electron-store": "^7.0.2",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
+    "node-markdown": "^0.1.1",
     "nuxt": "^2.14.7",
     "nuxt-fontawesome": "^0.4.0",
     "qs": "^6.9.4"
@@ -31,10 +32,10 @@
   "devDependencies": {
     "electron": "^10.1.5",
     "electron-builder": "^22.9.1",
-    "nuxtron": "^0.3.1",
-    "sass-loader": "10.1.1",
     "node-sass": "5.0.0",
+    "nuxtron": "^0.3.1",
     "pug": "^3.0.2",
-    "pug-plain-loader": "^1.1.0"
+    "pug-plain-loader": "^1.1.0",
+    "sass-loader": "10.1.1"
   }
 }
