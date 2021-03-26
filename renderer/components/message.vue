@@ -12,8 +12,6 @@
 </template>
 
 <script>
-import DOMPurify from 'dompurify'
-import Markd from 'marked'
 import announcementCard from '~/components/announcement-card.vue'
 export default {
   components: { announcementCard },
@@ -32,7 +30,7 @@ export default {
       return this.raw ? this.raw["type"] : "";
     },
     message() {
-      return this.raw ? DOMPurify.sanitize(Markd(this.raw["message"])) : "";
+      return this.raw ? this.raw["message"] : "";
     },
     who() {
       return this.raw ? this.raw["who"] : "";

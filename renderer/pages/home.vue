@@ -20,6 +20,8 @@
 import Electron from 'electron'
 import * as EStore from 'electron-store'
 import isEmpty from 'lodash/isEmpty'
+import DOMPurify from 'dompurify'
+import Markd from 'marked'
 import message from '~/components/message.vue'
 
 export default {
@@ -38,7 +40,7 @@ export default {
   computed: {
     ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
     htmlText () {
-      return this.text.replace(new RegExp('\r?\n','g'), '<br />')
+      return Markd(this.text, { sanitizer: DOMPurify.sanitize })
     }
   },
   methods: {
@@ -107,10 +109,10 @@ export default {
         }
         
         if (this.websocket && this.websocket.readyState === 1) {
-          const jsonString = this.packMessage(this.htmlText)
-          this.list = [...this.list, JSON.parse(jsonString) ]
-          this.websocket.send(jsonString)
-          // received remote text clear mine
+          const jsonStr = this.packMessage(this.htmlText)
+          this.websocket.send(jsonStr)
+          this.list = [...this.list, JSON.parse(jsonStr) ]
+          // sent text then clear it
           this.text = ''
         }
       }
