@@ -2,7 +2,7 @@
   .msg-container
     .msg(ref="box")
       message(v-for="(item, idx) in list" :raw="item" :key="idx")
-    b-input-group(size="sm")
+    b-input-group.mx-auto(size="sm")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
@@ -165,8 +165,6 @@ export default {
 
 .msg {
   width: 470px;
-  margin-left: 5px;
-  margin-right: 5px;
   height: 560px;
   overflow: auto;
   padding: 5px;

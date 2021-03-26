@@ -73,6 +73,7 @@ export default {
     p {
       background: rgb(2, 182, 32);
       color: white;
+      margin-bottom: 0rem !important;
     }
   }
   .time {
