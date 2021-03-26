@@ -23,8 +23,8 @@
     "electron-store": "^7.0.2",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
+    "markd": "^1.2.0",
     "md5": "^2.3.0",
-    "node-markdown": "^0.1.1",
     "nuxt": "^2.14.7",
     "nuxt-fontawesome": "^0.4.0",
     "qs": "^6.9.4"
