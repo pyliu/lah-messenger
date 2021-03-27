@@ -5,6 +5,7 @@
         v-if="['remote', 'announcement'].includes(type)"
         size="1.25rem"
         :src="type === 'announcement' ? '/tyland.jpg' : ''"
+        variant="primary"
       )
       span.mr-1 {{ sender }}
       em {{ from }}
