@@ -38,12 +38,23 @@ if (isProd) {
   })
 
   if (isProd) {
-    await mainWindow.loadURL('app://./home');
+    await mainWindow.loadURL('app://./message/');
   } else {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/message`);
     mainWindow.webContents.openDevTools();
   }
+
+  // open all a link with external browser
+  // https://github.com/electron/electron/issues/1344#issuecomment-359312676
+  const shell = require('electron').shell;
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    if (url.startsWith('http:') || url.startsWith('https:')) {
+      shell.openExternal(url)
+    }
+  });
+
 })();
 
 app.on('window-all-closed', () => {
