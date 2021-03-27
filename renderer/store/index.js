@@ -1,11 +1,13 @@
 import { ipv4, ips } from '~/assets/js/ip.js'
 
 const state = () => ({
+  messages: {},
   address: [ ...ips ],
   ip: ipv4
 })
 
 const getters = {
+  messages: state => state.messages,
   ip: state => state.ip,
   address: state => state.address
 }
@@ -17,6 +19,9 @@ const mutations = {
   },
   address (state, address) {
     state.address = [ ...address ]
+  },
+  addChannel (state, channel) {
+    state.messages = { ...state.messages, ...{[channel]: []} }
   }
 }
 

@@ -31,10 +31,17 @@ export default {
     }
   },
   data: () => ({
-    list: [],
     text: '',
     timer: null
   }),
+  computed: {
+    channel () {
+      return process.env['USERNAME']
+    },
+    list () {
+      return this.messages[this.channel]
+    }
+  },
   watch: {
     list () {
       // watch list to display the latest message
@@ -44,13 +51,17 @@ export default {
       })
     }
   },
+  created () {
+    // create new empty channel in Vuex store
+    this.$store.commit('addChannel', process.env['USERNAME'])
+    // set timer to reconnect to server every 20s
+    this.timer = setInterval(() => this.connect(), 20000)
+  },
   mounted () {
     // connect to ws server
     this.connect()
-    // set timer to reconnect to server every 20s
-    this.timer = setInterval(() => this.connect(), 20000)
     // testing
-    console.log(this.$config, Electron, this.estore)
+    console.log(this.$config, Electron, this.estore, this.messages)
     this.estore.set({
       pyliu: 'awesome'
     })

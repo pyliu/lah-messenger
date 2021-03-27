@@ -31,11 +31,12 @@ Vue.mixin({
   },
   computed: {
     ...mapGetters([
+      'messages',
       'ip',
       'address'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
+    wsConnStr () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
     connected () {
       /**
        * readyState attr
@@ -119,22 +120,23 @@ Vue.mixin({
     },
     connect () {
       if (!this.connected) {
-        this.list = [...this.list, JSON.parse(this.packMessage(`連線中 ... `)) ]
-        this.websocket = new WebSocket(this.ws)
+        this.list.push(JSON.parse(this.packMessage(`連線中 ... `)))
+        this.websocket = new WebSocket(this.wsConnStr)
         this.websocket.onopen = (e) => {
           // set client info to remote ws server
           this.register()
+          this.list.length = 0
         }
         this.websocket.onclose = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
+          this.list.push(JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)))
           setTimeout(() => this.connect(), 20000)
         }
         this.websocket.onerror = () => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
+          this.list.push(JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)))
         }
         this.websocket.onmessage = (e) => {
           // console.log(JSON.parse(e.data))
-          this.list = [...this.list, { ...JSON.parse(e.data) }]
+          this.list.push({ ...JSON.parse(e.data) })
         }
       }
     },
