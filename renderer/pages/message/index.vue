@@ -37,7 +37,8 @@ export default {
     list: [],
     text: '',
     websocket: undefined,
-    store: new EStore()
+    store: new EStore(),
+    timer: null
   }),
   computed: {
     ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
@@ -123,30 +124,23 @@ export default {
       }
     },
     connect () {
-      if (window && window.WebSocket) {
-        if (!this.connected) {
-          console.log(`trying to connect WS server ... `)
-          this.websocket = new WebSocket(this.ws)
-          this.websocket.onopen = (e) => {
-            // set client info to remote ws server
-            this.register()
-          }
-          this.websocket.onclose = (e) => {
-            this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
-          }
-          this.websocket.onerror = () => {
-            this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
-          }
-          this.websocket.onmessage = (e) => {
-            // console.log(JSON.parse(e.data))
-            this.list = [...this.list, { ...JSON.parse(e.data) }]
-          }
+      if (!this.connected) {
+        this.list = [...this.list, JSON.parse(this.packMessage(`連線中 ... `)) ]
+        this.websocket = new WebSocket(this.ws)
+        this.websocket.onopen = (e) => {
+          // set client info to remote ws server
+          this.register()
         }
-        // 20s later to check again
-        setTimeout(() => this.connect(), 20000)
-      } else {
-        console.warn('WebSocket is not available.')
-        this.list = [...this.list, JSON.parse(this.packMessage(`不支援 WebSocket 無法進行通訊`))]
+        this.websocket.onclose = (e) => {
+          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
+        }
+        this.websocket.onerror = () => {
+          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
+        }
+        this.websocket.onmessage = (e) => {
+          // console.log(JSON.parse(e.data))
+          this.list = [...this.list, { ...JSON.parse(e.data) }]
+        }
       }
     }
   },
@@ -162,13 +156,17 @@ export default {
   mounted () {
     // connect to ws server
     this.connect()
-    // 
+    // set timer to reconnect to server
+    this.timer = setInterval(() => this.connect(), 20000)
     // testing
     console.log(this.$config, Electron, this.store)
     this.store.set({
       pyliu: 'awesome'
     })
   },
+  beforeDestroy () {
+    clearTimeout(this.timer)
+  }
 }
 </script>
 
