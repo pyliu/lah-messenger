@@ -20,8 +20,6 @@
 import Electron from 'electron'
 import * as EStore from 'electron-store'
 import isEmpty from 'lodash/isEmpty'
-import DOMPurify from 'dompurify'
-import Markd from 'marked'
 import message from '~/components/message.vue'
 
 export default {
@@ -38,10 +36,7 @@ export default {
     store: new EStore()
   }),
   computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
-    htmlText () {
-      return Markd(this.text, { sanitizer: DOMPurify.sanitize })
-    }
+    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
   },
   methods: {
     date () {
@@ -57,13 +52,17 @@ export default {
                    ('0' + now.getSeconds()).slice(-2)
       return time
     },
-    packMessage (text, who = process.env['USERNAME']) {
+    packMessage (text, opts = {}) {
       return JSON.stringify({
-        type: text.startsWith('@') ? text : 'mine',
-        who: who,
-        date: this.date(),
-        time: this.time(),
-        message: text
+        ...{
+          type: 'mine',
+          sender: process.env['USERNAME'],
+          receiver: process.env['USERNAME'],
+          date: this.date(),
+          time: this.time(),
+          message: text
+        },
+        ...opts
       })
     },
     status (code) {
@@ -109,9 +108,9 @@ export default {
         }
         
         if (this.websocket && this.websocket.readyState === 1) {
-          const jsonStr = this.packMessage(this.htmlText)
+          const jsonStr = this.packMessage(this.text)
           this.websocket.send(jsonStr)
-          this.list = [...this.list, JSON.parse(jsonStr) ]
+          // this.list = [...this.list, JSON.parse(jsonStr) ]
           // sent text then clear it
           this.text = ''
         }
@@ -180,6 +179,6 @@ export default {
 
 .list-enter, .list-leave-to {
   opacity: 0;
-  transform: translateY(-30px);
+  transform: translateX(-30px);
 }
 </style>
