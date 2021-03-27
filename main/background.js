@@ -55,7 +55,7 @@ if (isProd) {
         shell.openExternal(url)
       }
     });
-  }, 1000)
+  }, 5000)
 
 })();
 
