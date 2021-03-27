@@ -11,7 +11,6 @@
         no-resize
         no-auto-shrink
         autofocus
-        trim.lazy
       )
       b-button(@click="send" variant="primary") 傳送
 </template>
@@ -20,6 +19,7 @@
 import Electron from 'electron'
 import * as EStore from 'electron-store'
 import isEmpty from 'lodash/isEmpty'
+import trim from 'lodash/trim'
 import message from '~/components/message.vue'
 
 export default {
@@ -112,7 +112,7 @@ export default {
         }
         
         if (this.websocket && this.websocket.readyState === 1) {
-          const jsonStr = this.packMessage(this.text)
+          const jsonStr = this.packMessage(trim(this.text))
           this.websocket.send(jsonStr)
           // this.list = [...this.list, JSON.parse(jsonStr) ]
           // sent text then clear it
@@ -153,7 +153,9 @@ export default {
     },
   },
   mounted () {
+    // connect to ws server
     this.connect()
+    // testing
     console.log(this.$config, Electron, this.store, this.address, this.ip)
     this.store.set({
       pyliu: 'awesome'

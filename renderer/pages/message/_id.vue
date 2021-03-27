@@ -36,7 +36,8 @@ export default {
     store: new EStore()
   }),
   computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
+    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
+    channel () { return this.$route.params.id }
   },
   methods: {
     date () {
@@ -57,7 +58,7 @@ export default {
         ...{
           type: 'mine',
           sender: process.env['USERNAME'],
-          receiver: process.env['USERNAME'],
+          receiver: this.channel,
           date: this.date(),
           time: this.time(),
           title: this.ip,

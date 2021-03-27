@@ -1,6 +1,6 @@
 <template lang="pug">
   .mb-3
-    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ sender }}
+    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ sender }} #[em {{ from }}]
     .d-flex.msg-item.my-1(:class="classes")
       announcement-card(
         v-if="type === 'announcement'"
@@ -34,6 +34,9 @@ export default {
     },
     sender() {
       return this.raw ? this.raw["sender"] : "";
+    },
+    from() {
+      return this.raw ? this.raw["ip"] : "";
     },
     time() {
       return this.raw ? this.raw["time"] : "";
