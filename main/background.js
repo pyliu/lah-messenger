@@ -33,8 +33,8 @@ if (isProd) {
   });
   // disable the menu bar since menuBarVisible flag does not work properly
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+  mainWindow.once('ready-to-show', function(e) {
+    this.show();
   })
 
   if (isProd) {
@@ -45,7 +45,6 @@ if (isProd) {
     mainWindow.webContents.openDevTools();
   }
 
-  // delay a bit to let webContents open init page correctly
   setTimeout(() => {
     // open all a link with external browser
     // https://github.com/electron/electron/issues/1344#issuecomment-359312676
@@ -56,7 +55,7 @@ if (isProd) {
         shell.openExternal(url)
       }
     });
-  }, 100)
+  }, 1000)
 
 })();
 
