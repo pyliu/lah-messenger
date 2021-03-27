@@ -1,7 +1,7 @@
 <template lang="pug">
   .msg-container
-    .msg(ref="box")
-      message(v-for="(item, idx) in list" :raw="item" :key="idx")
+    .msg(ref="box"): transition-group(name="list" mode="out-in")
+      message(v-for="(item, idx) in list" :raw="item" :key="'msg-'+idx")
     b-input-group.mx-auto(size="sm")
       b-textarea.mr-1(
         v-model="text"
@@ -57,7 +57,7 @@ export default {
                    ('0' + now.getSeconds()).slice(-2)
       return time
     },
-    packMessage (text, who = 'me') {
+    packMessage (text, who = process.env['USERNAME']) {
       return JSON.stringify({
         type: text.startsWith('@') ? text : 'mine',
         who: who,
@@ -172,5 +172,14 @@ export default {
   padding: 5px;
   border: 1px solid gray;
   display: inline-block;
+}
+
+.list-enter-active, .list-leave-active {
+  transition: all .4s;
+}
+
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
 }
 </style>
