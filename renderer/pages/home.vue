@@ -60,6 +60,7 @@ export default {
           receiver: process.env['USERNAME'],
           date: this.date(),
           time: this.time(),
+          title: this.ip,
           message: text
         },
         ...opts
@@ -79,11 +80,11 @@ export default {
           return `未定義的代碼(${code})`
       }
     },
-    sendUserInfo () {
+    register () {
       if (this.websocket && this.websocket.readyState === 1) {
         const jsonString = JSON.stringify({
-          type: 'user',
-          who: '信差客戶端',
+          type: 'register',
+          sender: '信差客戶端',
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({
@@ -121,7 +122,7 @@ export default {
         this.websocket = new WebSocket(this.ws)
         this.websocket.onopen = (e) => {
           // set client info to remote ws server
-          this.sendUserInfo()
+          this.register()
         }
         this.websocket.onclose = (e) => {
           this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]

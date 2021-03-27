@@ -1,6 +1,6 @@
 <template lang="pug">
   .mb-3
-    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ who }}
+    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ sender }}
     .d-flex.msg-item.my-1(:class="classes")
       announcement-card(
         v-if="type === 'announcement'"
@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     mine() {
-      return this.raw ? this.type === "mine" || this.type.startsWith("@") : false;
+      return this.raw ? process.env['USERNAME'] === this.raw["sender"] : false;
     },
     type() {
       return this.raw ? this.raw["type"] : "";
@@ -32,8 +32,8 @@ export default {
     message() {
       return this.raw ? this.raw["message"] : "";
     },
-    who() {
-      return this.raw ? this.raw["who"] : "";
+    sender() {
+      return this.raw ? this.raw["sender"] : "";
     },
     time() {
       return this.raw ? this.raw["time"] : "";
@@ -44,7 +44,7 @@ export default {
     classes() {
       return [
         this.mine ? "justify-content-end" : "justify-content-start",
-        this.type.startsWith('@') || this.type === 'mine' ? 'mine' : '',
+        this.mine ? 'mine' : '',
       ];
     }
   },
