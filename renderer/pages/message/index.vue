@@ -26,7 +26,7 @@ import { ipv6, ipv4, ips } from '~/assets/js/ip.js'
 export default {
   components: { message },
   head: {
-    title: `桃園地政事務所 - 頻道 ${process.env['USERNAME']} - ${ipv4} - ${ipv6}`
+    title: `桃園地政事務所 - 頻道 ${process.env['USERNAME']} - ${ipv4} / ${ipv6}`
   },
   asyncData ({ req, store, redirect, error }) {
     return {
@@ -95,7 +95,8 @@ export default {
             ip: this.ip,
             domain: process.env['USERDOMAIN'],
             userid: process.env['USERNAME'],
-            username: 'TODO ... from AD ...'
+            username: 'TODO ... from AD ...',
+            dept: 'TODO'
           })
         })
         this.websocket.send(jsonString)
@@ -157,7 +158,7 @@ export default {
     // connect to ws server
     this.connect()
     // testing
-    console.log(this.$config, Electron, this.store, this.address, this.ip, ipv4, ipv6, ips)
+    console.log(this.$config, Electron, this.store)
     this.store.set({
       pyliu: 'awesome'
     })
