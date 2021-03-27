@@ -21,11 +21,12 @@ import * as EStore from 'electron-store'
 import isEmpty from 'lodash/isEmpty'
 import trim from 'lodash/trim'
 import message from '~/components/message.vue'
+import { ip, ips } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
   head: {
-    title: `目前頻道 ${process.env['USERNAME']}`
+    title: `桃園地政事務所 - 頻道 ${process.env['USERNAME']} - ${ip}`
   },
   asyncData ({ req, store, redirect, error }) {
     return {
@@ -156,7 +157,7 @@ export default {
     // connect to ws server
     this.connect()
     // testing
-    console.log(this.$config, Electron, this.store, this.address, this.ip)
+    console.log(this.$config, Electron, this.store, this.address, this.ip, ip, ips)
     this.store.set({
       pyliu: 'awesome'
     })
