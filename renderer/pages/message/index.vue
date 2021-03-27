@@ -17,7 +17,6 @@
 
 <script>
 import Electron from 'electron'
-import * as EStore from 'electron-store'
 import isEmpty from 'lodash/isEmpty'
 import trim from 'lodash/trim'
 import message from '~/components/message.vue'
@@ -36,8 +35,6 @@ export default {
   data: () => ({
     list: [],
     text: '',
-    websocket: undefined,
-    store: new EStore(),
     timer: null
   }),
   computed: {
@@ -63,20 +60,6 @@ export default {
                    ('0' + now.getMinutes()).slice(-2) + ':' +
                    ('0' + now.getSeconds()).slice(-2)
       return time
-    },
-    packMessage (text, opts = {}) {
-      return JSON.stringify({
-        ...{
-          type: 'mine',
-          sender: process.env['USERNAME'],
-          receiver: process.env['USERNAME'],
-          date: this.date(),
-          time: this.time(),
-          title: this.ip,
-          message: text
-        },
-        ...opts
-      })
     },
     status (code) {
       switch (code) {
@@ -159,8 +142,8 @@ export default {
     // set timer to reconnect to server
     this.timer = setInterval(() => this.connect(), 20000)
     // testing
-    console.log(this.$config, Electron, this.store)
-    this.store.set({
+    console.log(this.$config, Electron, this.estore)
+    this.estore.set({
       pyliu: 'awesome'
     })
   },

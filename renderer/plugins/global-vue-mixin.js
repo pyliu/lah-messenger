@@ -2,12 +2,15 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
 import $ from 'jquery'
+import * as EStore from 'electron-store'
 
 // inject to all Vue instances
 Vue.mixin({
   data: () => ({
     isBusy: false,
-    busyIconSize: undefined
+    busyIconSize: undefined,
+    websocket: undefined,
+    estore: new EStore()
   }),
   watch: {
     isBusy (flag) {
@@ -30,58 +33,23 @@ Vue.mixin({
       'ip',
       'address'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    site () {
-      if (/(^220\.1\.33\.|^192\.168\.[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'H0'
-      }
-      if (/(^220\.1\.34\.|^192\.168\.1[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HA'
-      }
-      if (/(^220\.1\.35\.|^192\.168\.2[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HB'
-      }
-      if (/(^220\.1\.36\.|^192\.168\.3[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HC'
-      }
-      if (/(^220\.1\.37\.|^192\.168\.4[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HD'
-      }
-      if (/(^220\.1\.38\.|^192\.168\.5[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HE'
-      }
-      if (/(^220\.1\.39\.|^192\.168\.6[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HF'
-      }
-      if (/(^220\.1\.40\.|^192\.168\.7[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HG'
-      }
-      if (/(^220\.1\.41\.|^192\.168\.8[0-9]\.)/g.test(this.apiSvrIp)) {
-        return 'HG'
-      }
-      return this.systemConfigs ? this.systemConfigs.site : 'HB'
-    },
-    myinfo () {
-      return isEmpty(this.user) ? { id: '', name: '' } : this.user
-    },
-    webapIp () { return isEmpty(this.systemConfigs.webap_ip) ?  '127.0.0.1' : this.systemConfigs.webap_ip },
-    apiSvrIp () {
-      if (Array.isArray(this.apiSvrIps) && this.apiSvrIps.length > 0) {
-        return this.apiSvrIps[this.apiSvrIps.length - 1]
-      }
-      return '127.0.0.1'
-    },
-    apiSvrPort () {
-      if (!isEmpty(this.server)) {
-        return this.server.SERVER_PORT
-      }
-      return '80'
-    },
-    apiSvrHttpUrl () {
-      return `http://${this.apiSvrIp}:${this.apiSvrPort}`
-    }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
   },
   methods: {
+    packMessage (text, opts = {}) {
+      return JSON.stringify({
+        ...{
+          type: 'mine',
+          sender: process.env['USERNAME'],
+          receiver: process.env['USERNAME'],
+          date: this.date(),
+          time: this.time(),
+          title: this.ip,
+          message: text
+        },
+        ...opts
+      })
+    },
     ...mapActions([
       
     ]),
