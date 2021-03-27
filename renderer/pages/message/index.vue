@@ -40,7 +40,14 @@ export default {
     store: new EStore()
   }),
   computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` }
+    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
+    connected () {
+      /**
+       * readyState attr
+       * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
+       */
+      return this.websocket && this.websocket.readyState === 1 
+    }
   },
   methods: {
     date () {
@@ -104,41 +111,39 @@ export default {
     },
     send () {
       if (!isEmpty(this.text)) {
-        /**
-         * readyState attr
-         * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-         */
-        if (this.websocket && this.websocket.readyState !== 1) {
-          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
-          this.websocket.readyState === 3 && this.connect()
-        }
-        
-        if (this.websocket && this.websocket.readyState === 1) {
+        if (this.connected) {
           const jsonStr = this.packMessage(trim(this.text))
           this.websocket.send(jsonStr)
           // this.list = [...this.list, JSON.parse(jsonStr) ]
           // sent text then clear it
           this.text = ''
+        } else {
+          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)) ]
         }
       }
     },
     connect () {
       if (window && window.WebSocket) {
-        this.websocket = new WebSocket(this.ws)
-        this.websocket.onopen = (e) => {
-          // set client info to remote ws server
-          this.register()
+        if (!this.connected) {
+          console.log(`trying to connect WS server ... `)
+          this.websocket = new WebSocket(this.ws)
+          this.websocket.onopen = (e) => {
+            // set client info to remote ws server
+            this.register()
+          }
+          this.websocket.onclose = (e) => {
+            this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
+          }
+          this.websocket.onerror = () => {
+            this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
+          }
+          this.websocket.onmessage = (e) => {
+            // console.log(JSON.parse(e.data))
+            this.list = [...this.list, { ...JSON.parse(e.data) }]
+          }
         }
-        this.websocket.onclose = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
-        }
-        this.websocket.onerror = () => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
-        }
-        this.websocket.onmessage = (e) => {
-          // console.log(JSON.parse(e.data))
-          this.list = [...this.list, { ...JSON.parse(e.data) }]
-        }
+        // 20s later to check again
+        setTimeout(() => this.connect(), 20000)
       } else {
         console.warn('WebSocket is not available.')
         this.list = [...this.list, JSON.parse(this.packMessage(`不支援 WebSocket 無法進行通訊`))]
@@ -152,11 +157,12 @@ export default {
       this.$nextTick(() => {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
-    },
+    }
   },
   mounted () {
     // connect to ws server
     this.connect()
+    // 
     // testing
     console.log(this.$config, Electron, this.store)
     this.store.set({
