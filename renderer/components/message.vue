@@ -15,7 +15,7 @@
         :data-json="raw['message']"
       )
       p(v-else-if="!mine" v-html="message")
-      .time.s-60.mx-1.text-muted {{ time }}
+      .time.s-60.mx-1.text-muted {{ mtime }}
       p(v-if="mine" v-html="message")
 </template>
 
@@ -46,10 +46,10 @@ export default {
     from() {
       return this.raw ? this.raw["ip"] : "";
     },
-    time() {
+    mtime() {
       return this.raw ? this.raw["time"] : "";
     },
-    date() {
+    mdate() {
       return this.raw ? this.raw["date"] : "";
     },
     classes() {

@@ -17,10 +17,8 @@
 
 <script>
 import Electron from 'electron'
-import isEmpty from 'lodash/isEmpty'
-import trim from 'lodash/trim'
 import message from '~/components/message.vue'
-import { ipv6, ipv4, ips } from '~/assets/js/ip.js'
+import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
@@ -37,96 +35,6 @@ export default {
     text: '',
     timer: null
   }),
-  computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
-    connected () {
-      /**
-       * readyState attr
-       * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-       */
-      return this.websocket && this.websocket.readyState === 1 
-    }
-  },
-  methods: {
-    date () {
-      const now = new Date()
-      return now.getFullYear() + '-' +
-        ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + now.getDate()).slice(-2)
-    },
-    time () {
-      const now = new Date()
-      const time = ('0' + now.getHours()).slice(-2) + ':' +
-                   ('0' + now.getMinutes()).slice(-2) + ':' +
-                   ('0' + now.getSeconds()).slice(-2)
-      return time
-    },
-    status (code) {
-      switch (code) {
-        case 0:
-          return '連線中'
-        case 1:
-          return '已連線'
-        case 2:
-          return '關閉中'
-        case 3:
-          return '已關閉'
-        default:
-          return `未定義的代碼(${code})`
-      }
-    },
-    register () {
-      if (this.websocket && this.websocket.readyState === 1) {
-        const jsonString = JSON.stringify({
-          type: 'register',
-          sender: '信差客戶端',
-          date: this.date(),
-          time: this.time(),
-          message: JSON.stringify({
-            ip: this.ip,
-            domain: process.env['USERDOMAIN'],
-            userid: process.env['USERNAME'],
-            username: 'TODO ... from AD ...',
-            dept: 'TODO'
-          })
-        })
-        this.websocket.send(jsonString)
-      }
-    },
-    send () {
-      if (!isEmpty(this.text)) {
-        if (this.connected) {
-          const jsonStr = this.packMessage(trim(this.text))
-          this.websocket.send(jsonStr)
-          // this.list = [...this.list, JSON.parse(jsonStr) ]
-          // sent text then clear it
-          this.text = ''
-        } else {
-          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)) ]
-        }
-      }
-    },
-    connect () {
-      if (!this.connected) {
-        this.list = [...this.list, JSON.parse(this.packMessage(`連線中 ... `)) ]
-        this.websocket = new WebSocket(this.ws)
-        this.websocket.onopen = (e) => {
-          // set client info to remote ws server
-          this.register()
-        }
-        this.websocket.onclose = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
-        }
-        this.websocket.onerror = () => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
-        }
-        this.websocket.onmessage = (e) => {
-          // console.log(JSON.parse(e.data))
-          this.list = [...this.list, { ...JSON.parse(e.data) }]
-        }
-      }
-    }
-  },
   watch: {
     list () {
       // watch list to display the latest message
@@ -139,7 +47,7 @@ export default {
   mounted () {
     // connect to ws server
     this.connect()
-    // set timer to reconnect to server
+    // set timer to reconnect to server every 20s
     this.timer = setInterval(() => this.connect(), 20000)
     // testing
     console.log(this.$config, Electron, this.estore)
