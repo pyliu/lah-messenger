@@ -1,6 +1,13 @@
 <template lang="pug">
   .mb-3
-    .s-75.font-weight-bold.align-middle(v-if="!mine") #[b-avatar.my-auto(v-if="type === 'remote'" size="1.25rem")] {{ sender }} #[em {{ from }}]
+    .s-75.font-weight-bold.align-middle(v-if="!mine")
+      b-avatar.my-auto.mr-1(
+        v-if="['remote', 'announcement'].includes(type)"
+        size="1.25rem"
+        :src="type === 'announcement' ? '/tyland.jpg' : ''"
+      )
+      span.mr-1 {{ sender }}
+      em {{ from }}
     .d-flex.msg-item.my-1(:class="classes")
       announcement-card(
         v-if="type === 'announcement'"
