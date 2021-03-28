@@ -2,16 +2,16 @@
   .mb-3
     .s-75.font-weight-bold.align-middle(v-if="!mine")
       b-avatar.my-auto.mr-1(
-        v-if="['remote', 'announcement'].includes(type)"
+        v-if="['remote'].includes(type) || isAnnouncement"
         size="1.25rem"
-        :src="type === 'announcement' ? '/tyland.jpg' : ''"
+        :src="isAnnouncement ? '/tyland.jpg' : ''"
         variant="primary"
       )
       span.mr-1 {{ sender }}
       em {{ from }}
     .d-flex.msg-item.my-1(:class="classes")
       announcement-card(
-        v-if="type === 'announcement'"
+        v-if="isAnnouncement"
         :data-json="raw['message']"
       )
       p(v-else-if="!mine" v-html="message")
@@ -31,6 +31,9 @@ export default {
     return {};
   },
   computed: {
+    isAnnouncement() {
+      return this.channel === 'announcement'
+    },
     mine() {
       return this.raw ? process.env['USERNAME'] === this.raw["sender"] : false;
     },
@@ -51,6 +54,9 @@ export default {
     },
     mdate() {
       return this.raw ? this.raw["date"] : "";
+    },
+    channel() {
+      return this.raw ? this.raw["channel"] : "";
     },
     classes() {
       return [
