@@ -106,16 +106,15 @@ Vue.mixin({
       }
     },
     send () {
+      !this.connected && this.connect()
       if (!isEmpty(this.text)) {
         if (this.connected) {
           const jsonStr = this.packMessage(trim(this.text))
           this.websocket.send(jsonStr)
-          // this.list = [...this.list, JSON.parse(jsonStr) ]
           // sent text then clear it
           this.text = ''
         } else {
           this.list.push(JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)))
-          this.connect()
         }
       }
     },

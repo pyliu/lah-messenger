@@ -53,7 +53,7 @@ export default {
   },
   created () {
     // create new empty channel in Vuex store
-    this.$store.commit('addChannel', process.env['USERNAME'])
+    this.$store.commit('addChannel', this.channel)
   },
   mounted () {
     // connect to ws server

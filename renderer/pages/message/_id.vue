@@ -36,8 +36,8 @@ export default {
     store: new EStore()
   }),
   computed: {
-    ws () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
-    channel () { return this.$route.params.id }
+    channel () { return this.$route.params.id },
+    list () { return this.messages[this.channel] }
   },
   methods: {
     date () {
@@ -149,6 +149,10 @@ export default {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
     },
+  },
+  created () {
+    // create new empty channel in Vuex store
+    this.$store.commit('addChannel', this.channel)
   },
   mounted () {
     this.connect()
