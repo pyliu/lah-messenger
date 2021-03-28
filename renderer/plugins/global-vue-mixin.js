@@ -73,20 +73,6 @@ Vue.mixin({
           return `未定義的代碼(${code})`
       }
     },
-    packMessage (text, opts = {}) {
-      return JSON.stringify({
-        ...{
-          type: 'mine',
-          sender: process.env['USERNAME'],
-          receiver: process.env['USERNAME'],
-          date: this.date(),
-          time: this.time(),
-          title: this.ip,
-          message: text
-        },
-        ...opts
-      })
-    },
     register () {
       if (this.connected) {
         const jsonString = JSON.stringify({
@@ -105,18 +91,33 @@ Vue.mixin({
         this.websocket.send(jsonString)
       }
     },
-    send () {
+    packMessage (text, opts = {}) {
+      return JSON.stringify({
+        ...{
+          type: 'mine',
+          sender: process.env['USERNAME'],
+          date: this.date(),
+          time: this.time(),
+          title: 'dontcare',
+          from: this.ip,
+          message: text,
+          channel: process.env['USERNAME']
+        },
+        ...opts
+      })
+    },
+    sendTo (message, channel) {
       !this.connected && this.connect()
-      if (!isEmpty(this.text)) {
+      if (!isEmpty(message)) {
         if (this.connected) {
-          const jsonStr = this.packMessage(trim(this.text))
+          const jsonStr = this.packMessage(trim(message), { channel: channel })
           this.websocket.send(jsonStr)
-          // sent text then clear it
-          this.text = ''
+          return true
         } else {
           this.list.push(JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)))
         }
       }
+      return false
     },
     connect () {
       if (!this.connected) {
