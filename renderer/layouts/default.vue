@@ -1,20 +1,24 @@
 <template lang="pug">
-  .main-window(v-cloak)
-    b-row(align-v="center" align-h="between")
-      b-col aaa
-      b-col bbb
+  b-card(v-cloak no-body header-tag="nav")
+    template(#header): b-nav(card-header tabs)
+      b-nav-item(:active="defActive") {{ userid }}
+      b-nav-item LDS
+      b-nav-item(disabled) 關閉
     Nuxt
 </template>
 
 <script>
+import isEmpty from 'lodash/isEmpty'
 export default {
+  data: () => ({
+    userid: process.env['USERNAME']
+  }),
+  computed: {
+    defActive () { return isEmpty(this.$route.params.id) }
+  },
+  mounted() { console.log(this.$route.params) }
 }
 </script>
 
 <style lang="scss" scoped>
-.main-window {
-  width: 640px;
-  height: 100vh;
-  border: 3px solid red;
-}
 </style>
