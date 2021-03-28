@@ -22,9 +22,9 @@ if (isProd) {
     width: isProd ? 480 : 960,
     height: 640,
     show: false,  // use 'ready-to-show' event to show the window
-    useContentSize: false,
+    useContentSize: true,
     center: true,
-    resizable: true,
+    resizable: false,
     maximizable: false,
     minimizable: true,
     alwaysOnTop: false,
