@@ -114,7 +114,8 @@ Vue.mixin({
           // sent text then clear it
           this.text = ''
         } else {
-          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)) ]
+          this.list.push(JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)))
+          this.connect()
         }
       }
     },
@@ -129,7 +130,6 @@ Vue.mixin({
         }
         this.websocket.onclose = (e) => {
           this.list.push(JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)))
-          setTimeout(() => this.connect(), 20000)
         }
         this.websocket.onerror = () => {
           this.list.push(JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)))

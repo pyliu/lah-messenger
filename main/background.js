@@ -45,17 +45,17 @@ if (isProd) {
     mainWindow.webContents.openDevTools();
   }
 
-  setTimeout(() => {
-    // open all a link with external browser
-    // https://github.com/electron/electron/issues/1344#issuecomment-359312676
-    const shell = require('electron').shell;
-    mainWindow.webContents.on('will-navigate', (event, url) => {
+  // open all a link with external browser
+  // https://github.com/electron/electron/issues/1344#issuecomment-359312676
+  const shell = require('electron').shell;
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('http://localhost:8888')) {
       event.preventDefault()
       if (url.startsWith('http:') || url.startsWith('https:')) {
         shell.openExternal(url)
       }
-    });
-  }, 5000)
+    }
+  });
 
 })();
 
