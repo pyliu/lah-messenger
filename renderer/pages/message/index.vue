@@ -59,7 +59,7 @@ export default {
     // connect to ws server
     this.connect()
     // set timer to reconnect to server every 20s
-    this.timer = setInterval(() => this.connect(), 20000)
+    this.timer = setInterval(() => { this.connect() }, 20000)
     // testing
     console.log(this.$config, Electron, this.estore, this.messages)
     this.estore.set({

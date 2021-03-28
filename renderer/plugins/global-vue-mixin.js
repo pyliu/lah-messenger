@@ -88,7 +88,7 @@ Vue.mixin({
       })
     },
     register () {
-      if (this.websocket && this.websocket.readyState === 1) {
+      if (this.connected) {
         const jsonString = JSON.stringify({
           type: 'register',
           sender: '信差客戶端',
@@ -129,6 +129,7 @@ Vue.mixin({
         }
         this.websocket.onclose = (e) => {
           this.list.push(JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)))
+          this.websocket = undefined
         }
         this.websocket.onerror = () => {
           this.list.push(JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)))
