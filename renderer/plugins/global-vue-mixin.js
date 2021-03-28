@@ -135,7 +135,7 @@ Vue.mixin({
           this.list.push(JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)))
         }
         this.websocket.onmessage = (e) => {
-          // console.log(JSON.parse(e.data))
+          console.log(JSON.parse(e.data))
           this.list.push({ ...JSON.parse(e.data) })
         }
       }
