@@ -84,8 +84,8 @@ Vue.mixin({
             ip: this.ip,
             domain: process.env['USERDOMAIN'],
             userid: process.env['USERNAME'],
-            username: 'TODO ... from AD ...',
-            dept: 'TODO'
+            username: 'FROM AD',
+            dept: 'lds'
           })
         })
         this.websocket.send(jsonString)
