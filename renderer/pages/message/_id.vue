@@ -11,133 +11,35 @@
         no-resize
         no-auto-shrink
         autofocus
-        trim
       )
       b-button(@click="send" variant="primary") 傳送
 </template>
 
 <script>
-import Electron from 'electron'
-import * as EStore from 'electron-store'
-import isEmpty from 'lodash/isEmpty'
 import message from '~/components/message.vue'
+import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
+  head: {
+    title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
+  },
   asyncData ({ req, store, redirect, error }) {
     return {
       name: process.static ? 'static' : (process.server ? 'server' : 'client')
     }
   },
   data: () => ({
-    list: [],
-    text: '',
-    websocket: undefined,
-    store: new EStore()
+    text: ''
   }),
   computed: {
     channel () { return this.$route.params.id },
     list () { return this.messages[this.channel] }
   },
   methods: {
-    date () {
-      const now = new Date()
-      return now.getFullYear() + '-' +
-        ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + now.getDate()).slice(-2)
-    },
-    time () {
-      const now = new Date()
-      const time = ('0' + now.getHours()).slice(-2) + ':' +
-                   ('0' + now.getMinutes()).slice(-2) + ':' +
-                   ('0' + now.getSeconds()).slice(-2)
-      return time
-    },
-    packMessage (text, opts = {}) {
-      return JSON.stringify({
-        ...{
-          type: 'mine',
-          sender: process.env['USERNAME'],
-          receiver: this.channel,
-          date: this.date(),
-          time: this.time(),
-          title: this.ip,
-          message: text
-        },
-        ...opts
-      })
-    },
-    status (code) {
-      switch (code) {
-        case 0:
-          return '連線中'
-        case 1:
-          return '已連線'
-        case 2:
-          return '關閉中'
-        case 3:
-          return '已關閉'
-        default:
-          return `未定義的代碼(${code})`
-      }
-    },
-    register () {
-      if (this.websocket && this.websocket.readyState === 1) {
-        const jsonString = JSON.stringify({
-          type: 'register',
-          sender: '信差客戶端',
-          date: this.date(),
-          time: this.time(),
-          message: JSON.stringify({
-            ip: this.ip,
-            domain: process.env['USERDOMAIN'],
-            userid: process.env['USERNAME'],
-            username: 'TODO ... from AD ...'
-          })
-        })
-        this.websocket.send(jsonString)
-      }
-    },
     send () {
-      if (!isEmpty(this.text)) {
-        /**
-         * readyState attr
-         * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-         */
-        if (this.websocket && this.websocket.readyState !== 1) {
-          this.list = [...this.list, JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ...`)) ]
-          this.websocket.readyState === 3 && this.connect()
-        }
-        
-        if (this.websocket && this.websocket.readyState === 1) {
-          const jsonStr = this.packMessage(this.text)
-          this.websocket.send(jsonStr)
-          // this.list = [...this.list, JSON.parse(jsonStr) ]
-          // sent text then clear it
-          this.text = ''
-        }
-      }
-    },
-    connect () {
-      if (window && window.WebSocket) {
-        this.websocket = new WebSocket(this.ws)
-        this.websocket.onopen = (e) => {
-          // set client info to remote ws server
-          this.register()
-        }
-        this.websocket.onclose = (e) => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) ]
-        }
-        this.websocket.onerror = () => {
-          this.list = [...this.list, JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.ws}】`)) ]
-        }
-        this.websocket.onmessage = (e) => {
-          // console.log(JSON.parse(e.data))
-          this.list = [...this.list, { ...JSON.parse(e.data) }]
-        }
-      } else {
-        console.warn('WebSocket is not available.')
-        this.list = [...this.list, JSON.parse(this.packMessage(`不支援 WebSocket 無法進行通訊`))]
+      if (this.sendTo(this.text, this.channel)) {
+        this.text = ''
       }
     }
   },
@@ -156,35 +58,9 @@ export default {
   },
   mounted () {
     this.connect()
-    console.log(this.$config, Electron, this.store, this.address, this.ip)
-    this.store.set({
-      pyliu: 'awesome'
-    })
   },
 }
 </script>
 
 <style lang="scss" scoped>
-.msg-container {
-  max-width: 470px;
-  margin: 5px;
-}
-
-.msg {
-  width: 470px;
-  height: 560px;
-  overflow: auto;
-  padding: 5px;
-  border: 1px solid gray;
-  display: inline-block;
-}
-
-.list-enter-active, .list-leave-active {
-  transition: all .4s;
-}
-
-.list-enter, .list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
 </style>
