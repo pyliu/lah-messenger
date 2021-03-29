@@ -53,9 +53,6 @@ export default {
       this.$nextTick(() => {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
-    },
-    messages (obj) {
-      console.log(obj)
     }
   },
   methods: {
@@ -75,7 +72,7 @@ export default {
     // set timer to reconnect to server every 20s
     this.timer = setInterval(() => { this.connect() }, 20000)
     // testing
-    console.log(this.$config, Electron, this.estore, this.messages)
+    // console.log(this.$config, Electron, this.estore, this.messages)
     this.estore.set({
       pyliu: 'awesome'
     })
@@ -88,26 +85,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.msg-container {
-  // max-width: 470px;
-  margin: 5px;
-}
-
-.msg {
-  width: 100%;
-  height: 570px;
-  overflow: auto;
-  padding: 5px;
-  border: 1px solid gray;
-  display: inline-block;
-}
-
-.list-enter-active, .list-leave-active {
-  transition: all .4s;
-}
-
-.list-enter, .list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
 </style>
