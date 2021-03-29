@@ -33,7 +33,7 @@ export default {
     isSur () { return this.pageId === 'sur' },
     isAcc () { return this.pageId === 'acc' },
     isHr () { return this.pageId === 'hr' },
-    isSupervisor () { return this.pageId === 'supervisoor' },
+    isSupervisor () { return this.pageId === 'supervisor' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -42,7 +42,7 @@ export default {
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisoor' }
+    belongToSupervisor () { return this.userdept === 'supervisor' }
   },
   mounted() { console.log(this.$route.params) }
 }
