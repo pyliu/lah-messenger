@@ -105,6 +105,8 @@ export default {
   publicRuntimeConfig: {
     websocketHost: process.env.WEBSOCKET_HOST,
     websocketPort: process.env.WEBSOCKET_PORT,
+    username: process.env.WEBAD_USERNAME,
+    userdept: process.env.WEBAD_USERDEPT,
     axios: {
       // Default: baseURL; when the proxy option is true, it will become PREFIX instead of baseURL
       browserBaseURL: process.env.BROWSER_BASE_URL

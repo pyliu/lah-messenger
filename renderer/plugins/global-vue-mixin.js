@@ -75,6 +75,9 @@ Vue.mixin({
     },
     register () {
       if (this.connected) {
+
+        console.log(this.$config, process.env)
+
         const jsonString = JSON.stringify({
           type: 'register',
           sender: '信差客戶端',
@@ -84,8 +87,8 @@ Vue.mixin({
             ip: this.ip,
             domain: process.env['USERDOMAIN'],
             userid: process.env['USERNAME'],
-            username: 'FROM AD',
-            dept: 'lds'
+            username: this.$config.username,
+            dept: this.$config.userdept
           })
         })
         this.websocket.send(jsonString)
