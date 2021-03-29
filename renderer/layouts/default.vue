@@ -1,5 +1,5 @@
 <template lang="pug">
-  b-card.max-w640(v-cloak no-body header-tag="nav")
+  b-card.max-w640.m-1(v-cloak no-body header-tag="nav")
     template(#header): b-nav(card-header tabs)
       b-nav-item(:active="defActive" v-if="defActive") {{ userid }}
       b-nav-item(:active="isAnnouncement" v-if="isAnnouncement") 公告
