@@ -16,11 +16,13 @@
 </template>
 
 <script>
+import messageMixin from '~/pages/message/messageMixin.js'
 import message from '~/components/message.vue'
 import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
+  mixins: [ messageMixin ],
   head: {
     title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
   },
@@ -32,10 +34,6 @@ export default {
   data: () => ({
     text: ''
   }),
-  computed: {
-    channel () { return this.$route.params.id },
-    list () { return this.messages[this.channel] }
-  },
   methods: {
     send () {
       if (this.sendTo(this.text, this.channel)) {
@@ -51,10 +49,6 @@ export default {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
     },
-  },
-  created () {
-    // create new empty channel in Vuex store
-    this.$store.commit('addChannel', this.channel)
   },
   mounted () {
     this.connect()

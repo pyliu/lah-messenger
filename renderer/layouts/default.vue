@@ -1,6 +1,6 @@
 <template lang="pug">
   b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
-    template(#header): b-nav(card-header tabs)
+    template(#header): client-only: b-nav(card-header tabs)
       b-nav-item(:active="defActive"): nuxt-link(to="/message") {{ username }}
       b-nav-item(:active="isAnnouncement"): nuxt-link(to="/message/announcement") 公告
       b-nav-item(:active="isInf" v-if="belongToInf"): nuxt-link(to="/message/inf") 資訊課
@@ -43,8 +43,7 @@ export default {
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' }
-  },
-  mounted() { console.log(this.$route.params) }
+  }
 }
 </script>
 

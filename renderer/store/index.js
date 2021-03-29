@@ -1,12 +1,14 @@
 import { ipv4, ips } from '~/assets/js/ip.js'
 
 const state = () => ({
+  websocket: undefined,
   messages: {},
   address: [ ...ips ],
   ip: ipv4
 })
 
 const getters = {
+  websocket: state => state.websocket,
   messages: state => state.messages,
   ip: state => state.ip,
   address: state => state.address
@@ -14,6 +16,9 @@ const getters = {
 
 // only sync operation
 const mutations = {
+  websocket (state, ws) {
+    state.websocket = ws
+  },
   ip (state, ip) {
     state.ip = ip
   },

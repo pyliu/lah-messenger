@@ -20,12 +20,13 @@
 </template>
 
 <script>
-import Electron from 'electron'
+import messageMixin from '~/pages/message/messageMixin.js'
 import message from '~/components/message.vue'
 import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
+  mixins: [ messageMixin ],
   head: {
     title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
   },
@@ -38,14 +39,6 @@ export default {
     text: '',
     timer: null
   }),
-  computed: {
-    channel () {
-      return process.env['USERNAME']
-    },
-    list () {
-      return this.messages[this.channel]
-    }
-  },
   watch: {
     list (dontcare) {
       // watch list to display the latest message
@@ -61,10 +54,6 @@ export default {
         this.text = ''
       }
     }
-  },
-  created () {
-    // create new empty channel in Vuex store
-    this.$store.commit('addChannel', this.channel)
   },
   mounted () {
     // connect to ws server
