@@ -19,12 +19,12 @@ if (isProd) {
   await app.whenReady();
 
   const mainWindow = createWindow('main', {
-    width: isProd ? 480 : 960,
-    height: 640,
+    width: isProd ? 490 : 960,
+    height: 700,
     show: false,  // use 'ready-to-show' event to show the window
     useContentSize: true,
     center: true,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: true,
     alwaysOnTop: false,

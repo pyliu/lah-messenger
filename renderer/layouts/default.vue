@@ -1,5 +1,5 @@
 <template lang="pug">
-  b-card.max-w640.m-1(v-cloak no-body header-tag="nav")
+  b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
     template(#header): b-nav(card-header tabs)
       b-nav-item(:active="defActive" v-if="defActive") {{ username }}
       b-nav-item(:active="isAnnouncement") 公告
@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.max-w640 {
+.max-w480 {
   max-width: 480px;
 }
 </style>
