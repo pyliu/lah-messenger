@@ -1,8 +1,8 @@
 <template lang="pug">
   b-card.max-w640.m-1(v-cloak no-body header-tag="nav")
     template(#header): b-nav(card-header tabs)
-      b-nav-item(:active="defActive" v-if="defActive") {{ userid }}
-      b-nav-item(:active="isAnnouncement" v-if="isAnnouncement") 公告
+      b-nav-item(:active="defActive" v-if="defActive") {{ username }}
+      b-nav-item(:active="isAnnouncement") 公告
       b-nav-item(:active="isInf" v-if="belongToInf") 資訊課
       b-nav-item(:active="isAdm" v-if="belongToAdm") 行政課
       b-nav-item(:active="isVal" v-if="belongToVal") 地價課
