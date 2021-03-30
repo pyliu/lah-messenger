@@ -131,7 +131,7 @@ export default {
           // set client info to remote ws server
           this.register()
           this.list.length = 0
-          this.channel !== 'announcement' && this.list.push(JSON.parse(this.packMessage(`已上線`)))
+          // TODO: get this channel top 30 messages
         }
         ws.onclose = (e) => {
           this.list.push( JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) )
@@ -176,7 +176,6 @@ export default {
       this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
       this.$store.commit('timer', setInterval(() => {
         this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
-        this.connect()
       }, 20000))
     }
   }
