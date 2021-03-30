@@ -2,6 +2,7 @@ import { ipv4, ips } from '~/assets/js/ip.js'
 
 const state = () => ({
   websocket: undefined,
+  timer: null,
   messages: {},
   address: [ ...ips ],
   ip: ipv4
@@ -9,6 +10,7 @@ const state = () => ({
 
 const getters = {
   websocket: state => state.websocket,
+  timer: state => state.timer,
   messages: state => state.messages,
   ip: state => state.ip,
   address: state => state.address
@@ -18,6 +20,9 @@ const getters = {
 const mutations = {
   websocket (state, ws) {
     state.websocket = ws
+  },
+  timer (state, timer) {
+    state.timer = timer
   },
   ip (state, ip) {
     state.ip = ip

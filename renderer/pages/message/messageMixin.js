@@ -26,7 +26,7 @@ export default {
     channel(val) {
       if (!(val in this.messages)) {
         this.$store.commit("addChannel", val || process.env['USERNAME'] || 'mine')
-        this.$config.isDev && console.log(`add channel ${val} to $store!`)
+        this.$config.isDev && console.log(this.time(), `add channel ${val} to $store!`)
       }
     }
   },
@@ -120,47 +120,64 @@ export default {
       return false
     },
     connect() {
-      if (!this.connected) {
-        this.list.push(JSON.parse(this.packMessage(`連線中 ...`)))
+      if (this.connected) {
+        this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
+      } else {
         const ws = new WebSocket(this.wsConnStr)
         ws.onopen = (e) => {
           // set client info to remote ws server
           this.register()
           this.list.length = 0
+          this.list.push(JSON.parse(this.packMessage(`已上線`)))
+          // ws to Vuex store
+          this.$store.commit('websocket', ws)
+          this.$config.isDev && console.log(this.time(), "已連線", e)
         }
         ws.onclose = (e) => {
-          this.list.push(
-            JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`))
-          )
+          this.list.push( JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) )
+          this.$store.commit('websocket', undefined)
+          this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
         }
-        ws.onerror = () => {
-          this.list.push(
-            JSON.parse(
-              this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)
-            )
-          )
+        ws.onerror = (e) => {
+          this.list.push( JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)) )
+          this.$store.commit('websocket', undefined)
+          this.$config.isDev && console.error(this.time(), "WS伺服器連線出錯", this.wsConnStr, e)
         }
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
           const channel = incoming['channel'] || process.env['USERNAME'] || 'mine'
-          this.$config.isDev && console.log(`收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
+          this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
           
           if (!(channel in this.messages)) {
             this.$store.commit("addChannel", channel)
-            this.$config.isDev && console.log(`add channel ${channel} to $store! [messageMixin::ws.onmessage]`)
+            this.$config.isDev && console.log(this.time(), `add channel ${channel} to $store! [messageMixin::ws.onmessage]`)
           }
           // add message to store channel list
           this.messages[channel].push({ ...incoming })
         }
-        // ws to Vuex store
-        this.$store.commit('websocket', ws)
       }
     },
   },
   created() {
     if (!(this.channel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.channel)
-      this.$config.isDev && console.log(`add channel ${this.channel} to $store! [messageMixin::created]`)
+      this.$config.isDev && console.log(this.time(), `add channel ${this.channel} to $store! [messageMixin::created]`)
     }
   },
+  mounted() {
+    // reset timer if it already settle
+    if (this.timer) {
+      this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
+      clearTimeout(this.timer)
+      this.$store.commit('timer', null)
+    }
+    // check connection every 20s
+    if (this.timer === null) {
+      this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
+      this.$store.commit('timer', setInterval(() => {
+        this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
+        this.connect()
+      }, 20000))
+    }
+  }
 }
