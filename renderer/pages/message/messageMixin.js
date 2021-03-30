@@ -31,6 +31,13 @@ export default {
         this.$store.commit("addChannel", val || process.env['USERNAME'] || 'mine')
         this.$config.isDev && console.log(this.time(), `add channel ${val} to $store!`)
       }
+    },
+    list (dontcare) {
+      // watch list to display the latest message
+      // Vue VDOM workaround ... to display the last message
+      this.$nextTick(() => {
+        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+      })
     }
   },
   methods: {
@@ -163,13 +170,14 @@ export default {
           this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
           
           if (Array.isArray(this.messages[channel])) {
+            this.$config.isDev && console.log(this.time(), `目前 Store 中的頻道物件`, this.messages)
             // add message to store channel list
-            this.messages[channel].push({ ...incoming })
+            this.messages[channel].push(incoming)
           } else {
             this.$store.commit("addChannel", channel)
             this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
             setTimeout(() => {
-              this.messages[channel].push({ ...incoming })
+              this.messages[channel].push(incoming)
             }, 100)
           }
         }
@@ -197,5 +205,9 @@ export default {
         this.connect()
       }, 20000))
     }
+    // move scroll bar to the bottom
+    this.$nextTick(() => {
+      this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+    })
   }
 }
