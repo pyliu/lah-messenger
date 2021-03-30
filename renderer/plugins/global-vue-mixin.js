@@ -31,6 +31,7 @@ Vue.mixin({
     ...mapGetters([
       'websocket',
       'messages',
+      'unread',
       'ip',
       'address',
       'timer'

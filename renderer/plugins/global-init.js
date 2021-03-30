@@ -124,8 +124,10 @@ export default ({ $axios, store }, inject) => {
         if (isEmpty(selector)) {
           reject(`selector is empty.`)
         } else if (process.client) {
+          const patternLen = consts.animateAttentionSeekers.length
+          const seekerIdx = parseInt(Math.random() * 1000) % patternLen
           opts = Object.assign({
-            name: consts.animateAttentionSeekers[this.rand(consts.animateAttentionSeekers.length)],
+            name: consts.animateAttentionSeekers[seekerIdx],
             speed: 'faster', // 'slower', 'slow', '', 'fast', 'faster' (3s, 2s, 1s, 800ms, 500ms)
             repeat: '', // repeat-[1-3], infinite
             delay: '' // delay, delay-[2s-5s]

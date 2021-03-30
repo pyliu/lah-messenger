@@ -168,18 +168,22 @@ export default {
           const incoming = JSON.parse(e.data)
           const channel = incoming['channel'] || process.env['USERNAME'] || 'mine'
           this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
-          
-          if (Array.isArray(this.messages[channel])) {
-            this.$config.isDev && console.log(this.time(), `目前 Store 中的頻道物件`, this.messages)
+          this.$config.isDev && console.log(this.time(), `目前頻道：${this.channel} <=> 接收頻道：${channel} [messageMixin::ws.onmessage]`,)
+          if (this.channel === channel) {
+            if (Array.isArray(this.messages[channel])) {
+              this.$config.isDev && console.log(this.time(), `目前 Store 中的頻道物件`, this.messages)
+            } else {
+              this.$store.commit("addChannel", channel)
+              this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
+            }
+            this.$nextTick(() => {
+              this.$config.isDev && console.log(this.time(), `插入`, incoming, '進', channel, '頻道', this.messages[channel], this.messages)
+              // add message to store channel list
+              this.messages[channel].push(incoming)
+            })
           } else {
-            this.$store.commit("addChannel", channel)
-            this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
+            this.$store.commit("addChannelUnread", channel)
           }
-          this.$nextTick(() => {
-            this.$config.isDev && console.log(this.time(), `插入`, incoming, '進', channel, '頻道', this.messages[channel], this.messages)
-            // add message to store channel list
-            this.messages[channel].push(incoming)
-          })
         }
       }
     },
@@ -189,6 +193,7 @@ export default {
       this.$store.commit("addChannel", this.channel)
       this.$config.isDev && console.log(this.time(), `add channel ${this.channel} to $store! [messageMixin::created]`)
     }
+    // TODO: query this channel messages by once
   },
   mounted() {
     // reset timer if it already settle
@@ -210,8 +215,9 @@ export default {
       this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       // make the last message shake
       if (this.list.length > 0) {
-        this.attention(`#msg-${this.channel}-${this.list.length - 1}`, { name: 'headShake', speed: 'normal' })
+        this.attention(`#msg-${this.channel}-${this.list.length - 1}`, { speed: 'fast' })
       }
+      this.$store.commit("resetChannelUnread", this.channel)
     })
   }
 }
