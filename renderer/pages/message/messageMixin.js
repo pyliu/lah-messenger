@@ -125,13 +125,13 @@ export default {
       } else {
         const ws = new WebSocket(this.wsConnStr)
         ws.onopen = (e) => {
-          // set client info to remote ws server
-          this.register()
-          this.list.length = 0
-          this.list.push(JSON.parse(this.packMessage(`已上線`)))
           // ws to Vuex store
           this.$store.commit('websocket', ws)
           this.$config.isDev && console.log(this.time(), "已連線", e)
+          // set client info to remote ws server
+          this.register()
+          this.list.length = 0
+          this.channel !== 'announcement' && this.list.push(JSON.parse(this.packMessage(`已上線`)))
         }
         ws.onclose = (e) => {
           this.list.push( JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) )

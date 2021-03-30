@@ -23,7 +23,6 @@ export default {
   computed: {
     username () { return this.$config ? this.$config.username : '' },
     userdept () { return this.$config ? this.$config.userdept : '' },
-    defActive () { return isEmpty(this.pageId) },
     pageId () { return this.$route.params.id },
     isPersonal () { return isEmpty(this.pageId) },
     isAnnouncement () { return this.pageId === 'announcement' },

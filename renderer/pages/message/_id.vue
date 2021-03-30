@@ -2,7 +2,7 @@
   .msg-container
     .msg(ref="box"): transition-group(name="list" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :key="'msg-'+idx")
-    b-input-group.mx-auto(size="sm")
+    b-input-group.mx-auto(size="sm" v-if="!isAnnouncementChannel")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
@@ -34,6 +34,9 @@ export default {
   data: () => ({
     text: ''
   }),
+  computed: {
+    isAnnouncementChannel () { return this.channel === 'announcement' }
+  },
   methods: {
     send () {
       if (this.sendTo(this.text, this.channel)) {
