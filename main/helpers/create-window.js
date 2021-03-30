@@ -65,6 +65,8 @@ export default function createWindow(windowName, options) {
   };
 
   state = ensureVisibleOnSomeDisplay(restore());
+  // use default window size
+  state = resetToDefaults()
 
   win = new BrowserWindow({
     ...options,

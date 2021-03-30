@@ -20,11 +20,11 @@ if (isProd) {
 
   const mainWindow = createWindow('main', {
     width: isProd ? 490 : 960,
-    height: 700,
+    height: 740,
     show: false,  // use 'ready-to-show' event to show the window
     useContentSize: true,
     center: true,
-    resizable: true,
+    resizable: false,
     maximizable: false,
     minimizable: true,
     alwaysOnTop: false,
