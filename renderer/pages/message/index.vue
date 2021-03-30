@@ -38,15 +38,6 @@ export default {
   data: () => ({
     text: ''
   }),
-  watch: {
-    list (dontcare) {
-      // watch list to display the latest message
-      // Vue VDOM workaround ... to display the last message
-      this.$nextTick(() => {
-        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
-      })
-    }
-  },
   methods: {
     send () {
       if (this.sendTo(this.text, this.channel)) {

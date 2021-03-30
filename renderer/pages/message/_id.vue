@@ -45,15 +45,6 @@ export default {
       }
     }
   },
-  watch: {
-    list () {
-      // watch list to display the latest message
-      // Vue VDOM workaround ... to display the last message
-      this.$nextTick(() => {
-        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
-      })
-    },
-  },
   mounted () {
     this.connect()
   },
