@@ -182,6 +182,9 @@ export default {
               this.messages[channel].push(incoming)
             })
           } else {
+            if (!Array.isArray(this.unread[channel])) {
+              this.$store.commit("addUnread", channel)
+            }
             this.$store.commit("addChannelUnread", channel)
           }
         }
