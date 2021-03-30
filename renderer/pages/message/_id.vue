@@ -1,7 +1,7 @@
 <template lang="pug">
   .msg-container
     .msg(ref="box"): transition-group(name="list" mode="out-in")
-      message(v-for="(item, idx) in list" :raw="item" :key="'msg-'+idx")
+      message(v-for="(item, idx) in list" :raw="item" :key="`msg-${channel}-${idx}`" :id="`msg-${channel}-${idx}`")
     b-input-group.mx-auto(size="sm")
       b-textarea.mr-1(
         v-model="text"

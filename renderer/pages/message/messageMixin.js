@@ -208,6 +208,10 @@ export default {
     // move scroll bar to the bottom
     this.$nextTick(() => {
       this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+      // make the last message shake
+      if (this.list.length > 0) {
+        this.attention(`#msg-${this.channel}-${this.list.length - 1}`, { name: 'headShake', speed: 'normal' })
+      }
     })
   }
 }
