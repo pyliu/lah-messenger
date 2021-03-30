@@ -171,15 +171,14 @@ export default {
           
           if (Array.isArray(this.messages[channel])) {
             this.$config.isDev && console.log(this.time(), `目前 Store 中的頻道物件`, this.messages)
-            // add message to store channel list
-            this.messages[channel].push(incoming)
           } else {
             this.$store.commit("addChannel", channel)
             this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
-            setTimeout(() => {
-              this.messages[channel].push(incoming)
-            }, 100)
           }
+          this.$nextTick(() => {
+            // add message to store channel list
+            this.messages[channel].push(incoming)
+          })
         }
       }
     },
