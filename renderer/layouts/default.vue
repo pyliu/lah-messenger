@@ -38,7 +38,8 @@
 import isEmpty from 'lodash/isEmpty'
 export default {
   data: () => ({
-    userid: process.env['USERNAME']
+    userid: process.env['USERNAME'],
+    channel: process.env['USERNAME']
   }),
   computed: {
     username () { return this.$config ? this.$config.username : '' },

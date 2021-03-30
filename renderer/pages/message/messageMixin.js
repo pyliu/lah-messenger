@@ -4,6 +4,9 @@ import isEmpty from 'lodash/isEmpty'
 export default {
   name: "messageMixin",
   fetchOnServer: false,
+  data: () => ({
+    channel: process.env['USERNAME']
+  }),
   computed: {
     wsConnStr() {
       return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}`
@@ -18,25 +21,30 @@ export default {
     disconnected() {
       return isEmpty(this.websocket) || this.websocket.readyState === 3
     },
-    channel() {
-      return this.$route.params.id || process.env['USERNAME'] || 'mine'
-    },
+    // channel() {
+    //   return this.$route.params.id || process.env['USERNAME']
+    // },
     list() {
       return this.messages[this.channel]
     },
   },
   watch: {
-    channel(val) {
-      if (!(val in this.messages)) {
-        this.$store.commit("addChannel", val || process.env['USERNAME'] || 'mine')
-        this.$config.isDev && console.log(this.time(), `add channel ${val} to $store!`)
+    channel(nVal, oVal) {
+      this.$config.isDev && console.log(oVal, nVal, this.$route.params.id)
+      if (!(nVal in this.messages)) {
+        this.$store.commit("addChannel", nVal || process.env['USERNAME'])
+        this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
+        this.$store.commit("addUnread", nVal || process.env['USERNAME'])
+        this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
       }
     },
     list (dontcare) {
       // watch list to display the latest message
       // Vue VDOM workaround ... to display the last message
       this.$nextTick(() => {
-        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+        if (this.$refs.box) {
+          this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+        }
       })
     }
   },
@@ -166,7 +174,7 @@ export default {
         }
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
-          const channel = incoming['channel'] || process.env['USERNAME'] || 'mine'
+          const channel = incoming['channel'] || process.env['USERNAME']
           this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
           this.$config.isDev && console.log(this.time(), `目前頻道：${this.channel} <=> 接收頻道：${channel} [messageMixin::ws.onmessage]`,)
           if (this.channel === channel) {
@@ -182,7 +190,7 @@ export default {
               this.messages[channel].push(incoming)
             })
           } else {
-            if (!Array.isArray(this.unread[channel])) {
+            if (parseInt(this.unread[channel]) === NaN) {
               this.$store.commit("addUnread", channel)
             }
             this.$store.commit("addChannelUnread", channel)
@@ -195,10 +203,13 @@ export default {
     if (!(this.channel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.channel)
       this.$config.isDev && console.log(this.time(), `add channel ${this.channel} to $store! [messageMixin::created]`)
+      this.$store.commit("addUnread", this.channel)
+      this.$config.isDev && console.log(this.time(), `add unread ${this.channel} to $store! [messageMixin::created]`)
     }
     // TODO: query this channel messages by once
   },
   mounted() {
+    this.channel = this.$route.params.id || process.env['USERNAME']
     // reset timer if it already settle
     if (this.timer !== null) {
       this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
@@ -215,7 +226,9 @@ export default {
     }
     // move scroll bar to the bottom
     this.$nextTick(() => {
-      this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+      if (this.$refs.box) {
+        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+      }
       // make the last message shake
       if (this.list.length > 0) {
         this.attention(`#msg-${this.channel}-${this.list.length - 1}`, { speed: 'fast' })

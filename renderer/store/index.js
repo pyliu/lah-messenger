@@ -18,8 +18,30 @@ const timestamp = (full = false) => {
 const state = () => ({
   websocket: undefined,
   timer: null,
-  messages: {},
-  unread: {},
+  messages: {
+    'announcement': [],
+    'adm': [],
+    'inf': [],
+    'val': [],
+    'reg': [],
+    'sur': [],
+    'acc': [],
+    'hr': [],
+    'supervisor': [],
+    [process.env['USERNAME']]: []
+  },
+  unread: {
+    'announcement': 0,
+    'adm': 0,
+    'inf': 0,
+    'val': 0,
+    'reg': 0,
+    'sur': 0,
+    'acc': 0,
+    'hr': 0,
+    'supervisor': 0,
+    [process.env['USERNAME']]: 0
+  },
   address: [ ...ips ],
   ip: ipv4
 })
@@ -58,11 +80,16 @@ const mutations = {
   addChannelUnread (state, channel) {
     if (parseInt(state.unread[channel]) === NaN) {
       state.unread = { ...state.unread, ...{ [channel]: 0 } }
+      this.$config.isDev && console.log(timestamp(), `新增 ${channel} unread 頻道到 store。 [Vuex::addChannelUnread]`, state.unread)
     }
     state.unread[channel]++
     this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::addChannelUnread]`, state.unread)
   },
   resetChannelUnread (state, channel) {
+    if (parseInt(state.unread[channel]) === NaN) {
+      state.unread = { ...state.unread, ...{ [channel]: 0 } }
+      this.$config.isDev && console.log(timestamp(), `新增 ${channel} unread 頻道到 store。 [Vuex::resetChannelUnread]`, state.unread)
+    }
     state.unread[channel] = 0
     this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數設為 0。 [Vuex::resetChannelUnread]`, state.unread)
   }
@@ -74,8 +101,6 @@ const actions = {
   async nuxtServerInit ({ commit, dispatch }, nuxt) {
     try {
       // init once here
-      // add default channel
-      commit('addChannel', process.env['USERNAME'])
     } catch (e) {
       console.error(e)
     }
