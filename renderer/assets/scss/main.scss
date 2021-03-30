@@ -88,3 +88,26 @@ blockquote p {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.msg-container {
+  // max-width: 470px;
+  margin: 5px;
+}
+
+.msg {
+  width: 100%;
+  height: 570px;
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid gray;
+  display: inline-block;
+}
+
+.list-enter-active, .list-leave-active {
+  transition: all .4s;
+}
+
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}

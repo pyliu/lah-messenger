@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import isEmpty from 'lodash/isEmpty'
-import trim from 'lodash/trim'
 import $ from 'jquery'
 import * as EStore from 'electron-store'
 
@@ -10,7 +9,6 @@ Vue.mixin({
   data: () => ({
     isBusy: false,
     busyIconSize: undefined,
-    websocket: undefined,
     estore: new EStore()
   }),
   watch: {
@@ -31,119 +29,14 @@ Vue.mixin({
   },
   computed: {
     ...mapGetters([
+      'websocket',
       'messages',
       'ip',
       'address'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    wsConnStr () { return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}` },
-    connected () {
-      /**
-       * readyState attr
-       * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-       */
-      return this.websocket && this.websocket.readyState === 1 
-    }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
   },
   methods: {
-    date () {
-      const now = new Date()
-      return now.getFullYear() + '-' +
-        ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + now.getDate()).slice(-2)
-    },
-    time () {
-      const now = new Date()
-      const time = ('0' + now.getHours()).slice(-2) + ':' +
-                   ('0' + now.getMinutes()).slice(-2) + ':' +
-                   ('0' + now.getSeconds()).slice(-2)
-      return time
-    },
-    status (code) {
-      switch (code) {
-        case 0:
-          return '連線中'
-        case 1:
-          return '已連線'
-        case 2:
-          return '關閉中'
-        case 3:
-          return '已關閉'
-        default:
-          return `未定義的代碼(${code})`
-      }
-    },
-    register () {
-      if (this.connected) {
-
-        console.log(this.$config, process.env)
-
-        const jsonString = JSON.stringify({
-          type: 'register',
-          sender: '信差客戶端',
-          date: this.date(),
-          time: this.time(),
-          message: JSON.stringify({
-            ip: this.ip,
-            domain: process.env['USERDOMAIN'],
-            userid: process.env['USERNAME'],
-            username: this.$config.username,
-            dept: this.$config.userdept
-          })
-        })
-        this.websocket.send(jsonString)
-      }
-    },
-    packMessage (text, opts = {}) {
-      return JSON.stringify({
-        ...{
-          type: 'mine',
-          sender: process.env['USERNAME'],
-          date: this.date(),
-          time: this.time(),
-          title: 'dontcare',
-          from: this.ip,
-          message: text,
-          channel: process.env['USERNAME']
-        },
-        ...opts
-      })
-    },
-    sendTo (message, channel) {
-      !this.connected && this.connect()
-      if (!isEmpty(message)) {
-        if (this.connected) {
-          const jsonStr = this.packMessage(trim(message), { channel: channel })
-          this.websocket.send(jsonStr)
-          return true
-        } else {
-          this.list.push(JSON.parse(this.packMessage(`伺服器連線${this.status(this.websocket.readyState)} ... 無法傳送訊息`)))
-        }
-      }
-      return false
-    },
-    connect () {
-      if (!this.connected) {
-        this.list.push(JSON.parse(this.packMessage(`連線中 ... `)))
-        this.websocket = new WebSocket(this.wsConnStr)
-        this.websocket.onopen = (e) => {
-          // set client info to remote ws server
-          this.register()
-          this.list.length = 0
-        }
-        this.websocket.onclose = (e) => {
-          this.list.push(JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)))
-          this.websocket = undefined
-        }
-        this.websocket.onerror = () => {
-          this.list.push(JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)))
-        }
-        this.websocket.onmessage = (e) => {
-          console.log(JSON.parse(e.data))
-          this.list.push({ ...JSON.parse(e.data) })
-        }
-      }
-    },
     ...mapActions([
       
     ]),

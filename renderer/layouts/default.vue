@@ -1,16 +1,16 @@
 <template lang="pug">
   b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
-    template(#header): b-nav(card-header tabs)
-      b-nav-item(:active="defActive" v-if="defActive") {{ username }}
-      b-nav-item(:active="isAnnouncement") 公告
-      b-nav-item(:active="isInf" v-if="belongToInf") 資訊課
-      b-nav-item(:active="isAdm" v-if="belongToAdm") 行政課
-      b-nav-item(:active="isVal" v-if="belongToVal") 地價課
-      b-nav-item(:active="isReg" v-if="belongToReg") 登記課
-      b-nav-item(:active="isSur" v-if="belongToSur") 測量課
-      b-nav-item(:active="isAcc" v-if="belongToAcc") 會計室
-      b-nav-item(:active="isHr" v-if="belongToHr") 人事室
-      b-nav-item(:active="isSupervisor" v-if="belongToSupervisor") 主任祕書室
+    template(#header): client-only: b-nav(card-header tabs)
+      b-nav-item(:active="defActive"): nuxt-link(to="/message") {{ username }}
+      b-nav-item(:active="isAnnouncement"): nuxt-link(to="/message/announcement") 公告
+      b-nav-item(:active="isInf" v-if="belongToInf"): nuxt-link(to="/message/inf") 資訊課
+      b-nav-item(:active="isAdm" v-if="belongToAdm"): nuxt-link(to="/message/adm") 行政課
+      b-nav-item(:active="isVal" v-if="belongToVal"): nuxt-link(to="/message/val") 地價課
+      b-nav-item(:active="isReg" v-if="belongToReg"): nuxt-link(to="/message/reg") 登記課
+      b-nav-item(:active="isSur" v-if="belongToSur"): nuxt-link(to="/message/sur") 測量課
+      b-nav-item(:active="isAcc" v-if="belongToAcc"): nuxt-link(to="/message/acc") 會計室
+      b-nav-item(:active="isHr" v-if="belongToHr"): nuxt-link(to="/message/hr") 人事室
+      b-nav-item(:active="isSupervisor" v-if="belongToSupervisor"): nuxt-link(to="/message/supervisor") 主任祕書室
     Nuxt
 </template>
 
@@ -33,7 +33,7 @@ export default {
     isSur () { return this.pageId === 'sur' },
     isAcc () { return this.pageId === 'acc' },
     isHr () { return this.pageId === 'hr' },
-    isSupervisor () { return this.pageId === 'supervisoor' },
+    isSupervisor () { return this.pageId === 'supervisor' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -42,9 +42,8 @@ export default {
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisoor' }
-  },
-  mounted() { console.log(this.$route.params) }
+    belongToSupervisor () { return this.userdept === 'supervisor' }
+  }
 }
 </script>
 

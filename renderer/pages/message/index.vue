@@ -20,12 +20,13 @@
 </template>
 
 <script>
-import Electron from 'electron'
+import messageMixin from '~/pages/message/messageMixin.js'
 import message from '~/components/message.vue'
 import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   components: { message },
+  mixins: [ messageMixin ],
   head: {
     title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
   },
@@ -38,14 +39,6 @@ export default {
     text: '',
     timer: null
   }),
-  computed: {
-    channel () {
-      return process.env['USERNAME']
-    },
-    list () {
-      return this.messages[this.channel]
-    }
-  },
   watch: {
     list (dontcare) {
       // watch list to display the latest message
@@ -53,9 +46,6 @@ export default {
       this.$nextTick(() => {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       })
-    },
-    messages (obj) {
-      console.log(obj)
     }
   },
   methods: {
@@ -65,17 +55,13 @@ export default {
       }
     }
   },
-  created () {
-    // create new empty channel in Vuex store
-    this.$store.commit('addChannel', this.channel)
-  },
   mounted () {
     // connect to ws server
     this.connect()
     // set timer to reconnect to server every 20s
     this.timer = setInterval(() => { this.connect() }, 20000)
     // testing
-    console.log(this.$config, Electron, this.estore, this.messages)
+    // console.log(this.$config, Electron, this.estore, this.messages)
     this.estore.set({
       pyliu: 'awesome'
     })
@@ -88,26 +74,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.msg-container {
-  // max-width: 470px;
-  margin: 5px;
-}
-
-.msg {
-  width: 100%;
-  height: 565px;
-  overflow: auto;
-  padding: 5px;
-  border: 1px solid gray;
-  display: inline-block;
-}
-
-.list-enter-active, .list-leave-active {
-  transition: all .4s;
-}
-
-.list-enter, .list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
 </style>
