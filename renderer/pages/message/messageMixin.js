@@ -176,6 +176,7 @@ export default {
             this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
           }
           this.$nextTick(() => {
+            this.$config.isDev && console.log(this.time(), `插入`, incoming, '進', channel, '頻道', this.messages[channel], this.messages)
             // add message to store channel list
             this.messages[channel].push(incoming)
           })
