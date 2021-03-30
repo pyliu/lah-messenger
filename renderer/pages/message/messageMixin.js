@@ -28,7 +28,7 @@ export default {
         this.$store.commit("addChannel", val || process.env['USERNAME'] || 'mine')
         this.$config.isDev && console.log(`add channel ${val} to $store!`)
       }
-    },
+    }
   },
   methods: {
     date() {
