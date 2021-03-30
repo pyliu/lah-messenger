@@ -19,6 +19,7 @@ const state = () => ({
   websocket: undefined,
   timer: null,
   messages: {},
+  unread: {},
   address: [ ...ips ],
   ip: ipv4
 })
@@ -27,6 +28,7 @@ const getters = {
   websocket: state => state.websocket,
   timer: state => state.timer,
   messages: state => state.messages,
+  unread: state => state.unread,
   ip: state => state.ip,
   address: state => state.address
 }
@@ -46,8 +48,17 @@ const mutations = {
     state.address = [ ...address ]
   },
   addChannel (state, channel) {
-    state.messages = { ...state.messages, ...{[channel]: []} }
-    this.$config.isDev && console.log(timestamp(), `新增 ${channel} 頻道到 store。 [Vuex::addChannel]`, state.messages)
+    state.messages = { ...state.messages, ...{ [channel]: [] } }
+    state.unread = { ...state.unread, ...{ [channel]: 0 } }
+    this.$config.isDev && console.log(timestamp(), `新增 ${channel} 頻道到 store。 [Vuex::addChannel]`, state.messages, state.unread)
+  },
+  addChannelUnread (state, channel) {
+    state.unread[channel]++
+    this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::addChannelUnread]`, state.unread)
+  },
+  resetChannelUnread (state, channel) {
+    state.unread[channel] = 0
+    this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數設為 0。 [Vuex::resetChannelUnread]`, state.unread)
   }
 }
 
