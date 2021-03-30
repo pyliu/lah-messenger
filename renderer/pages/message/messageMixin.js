@@ -15,6 +15,9 @@ export default {
        */
       return this.websocket && this.websocket.readyState === 1
     },
+    disconnected() {
+      return isEmpty(this.websocket) || this.websocket.readyState === 3
+    },
     channel() {
       return this.$route.params.id || process.env['USERNAME'] || 'mine'
     },
@@ -81,6 +84,17 @@ export default {
           }),
         })
         this.websocket.send(jsonString)
+      } else {
+        this.$config.isDev && console.log(
+          this.time(),
+          "尚未連線無法登錄客戶端資料", {
+            ip: this.ip,
+            domain: process.env["USERDOMAIN"],
+            userid: process.env["USERNAME"],
+            username: this.$config.username,
+            dept: this.$config.userdept,
+          }
+        )
       }
     },
     packMessage(text, opts = {}) {
@@ -148,12 +162,16 @@ export default {
           const channel = incoming['channel'] || process.env['USERNAME'] || 'mine'
           this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
           
-          if (!(channel in this.messages)) {
+          if (Array.isArray(this.messages[channel])) {
+            // add message to store channel list
+            this.messages[channel].push({ ...incoming })
+          } else {
             this.$store.commit("addChannel", channel)
-            this.$config.isDev && console.log(this.time(), `add channel ${channel} to $store! [messageMixin::ws.onmessage]`)
+            this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
+            setTimeout(() => {
+              this.messages[channel].push({ ...incoming })
+            }, 100)
           }
-          // add message to store channel list
-          this.messages[channel].push({ ...incoming })
         }
       }
     },
@@ -166,7 +184,7 @@ export default {
   },
   mounted() {
     // reset timer if it already settle
-    if (this.timer) {
+    if (this.timer !== null) {
       this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
       clearTimeout(this.timer)
       this.$store.commit('timer', null)
@@ -176,6 +194,7 @@ export default {
       this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
       this.$store.commit('timer', setInterval(() => {
         this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
+        this.connect()
       }, 20000))
     }
   }

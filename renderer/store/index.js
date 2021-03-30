@@ -32,6 +32,7 @@ const mutations = {
   },
   addChannel (state, channel) {
     state.messages = { ...state.messages, ...{[channel]: []} }
+    this.$config.isDev && console.log(`新增 ${channel} 頻道到Vuex Store。 [Vuex::addChannel]`, state.messages)
   }
 }
 
