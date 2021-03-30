@@ -2,7 +2,7 @@
   .msg-container
     .msg(ref="box"): transition-group(name="list" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :key="'msg-'+idx")
-    b-input-group.mx-auto(size="sm" v-if="!isAnnouncementChannel")
+    b-input-group.mx-auto(size="sm")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
@@ -11,8 +11,9 @@
         no-resize
         no-auto-shrink
         autofocus
+        :disabled="isAnnouncementChannel"
       )
-      b-button(@click="send" variant="primary") 傳送
+      b-button(@click="send" variant="primary" :disabled="isAnnouncementChannel") 傳送
 </template>
 
 <script>
