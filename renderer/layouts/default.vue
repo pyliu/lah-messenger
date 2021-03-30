@@ -1,7 +1,6 @@
 <template lang="pug">
   b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
     template(#header): client-only: b-nav(card-header tabs)
-      b-nav-item(:active="defActive"): nuxt-link(to="/message") {{ username }}
       b-nav-item(:active="isAnnouncement"): nuxt-link(to="/message/announcement") 公告
       b-nav-item(:active="isInf" v-if="belongToInf"): nuxt-link(to="/message/inf") 資訊課
       b-nav-item(:active="isAdm" v-if="belongToAdm"): nuxt-link(to="/message/adm") 行政課
@@ -11,6 +10,7 @@
       b-nav-item(:active="isAcc" v-if="belongToAcc"): nuxt-link(to="/message/acc") 會計室
       b-nav-item(:active="isHr" v-if="belongToHr"): nuxt-link(to="/message/hr") 人事室
       b-nav-item(:active="isSupervisor" v-if="belongToSupervisor"): nuxt-link(to="/message/supervisor") 主任祕書室
+      b-nav-item(:active="isPersonal"): nuxt-link(to="/message") 個人通知
     Nuxt
 </template>
 
@@ -25,6 +25,7 @@ export default {
     userdept () { return this.$config ? this.$config.userdept : '' },
     defActive () { return isEmpty(this.pageId) },
     pageId () { return this.$route.params.id },
+    isPersonal () { return isEmpty(this.pageId) },
     isAnnouncement () { return this.pageId === 'announcement' },
     isInf () { return this.pageId === 'inf' },
     isAdm () { return this.pageId === 'adm' },
