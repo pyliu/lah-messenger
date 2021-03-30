@@ -26,7 +26,7 @@ export default {
     channel(val) {
       if (!(val in this.messages)) {
         this.$store.commit("addChannel", val || process.env['USERNAME'] || 'mine')
-        console.log(`add channel ${val} to $store!`)
+        this.$config.isDev && console.log(`add channel ${val} to $store!`)
       }
     },
   },
@@ -143,11 +143,11 @@ export default {
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
           const channel = incoming['channel'] || process.env['USERNAME'] || 'mine'
-          console.log(`收到的 ${channel} 頻道的資料`, incoming)
+          this.$config.isDev && console.log(`收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
           
           if (!(channel in this.messages)) {
             this.$store.commit("addChannel", channel)
-            console.log(`add channel ${channel} to $store!`)
+            this.$config.isDev && console.log(`add channel ${channel} to $store! [messageMixin::ws.onmessage]`)
           }
           // add message to store channel list
           this.messages[channel].push({ ...incoming })
@@ -160,7 +160,7 @@ export default {
   created() {
     if (!(this.channel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.channel)
-      console.log(`add channel ${this.channel} to $store!`)
+      this.$config.isDev && console.log(`add channel ${this.channel} to $store! [messageMixin::created]`)
     }
   },
 }

@@ -45,9 +45,6 @@ export default {
       }
       return DOMPurify.sanitize(Markd(this.dataJson['content']))
     }
-  },
-  mounted () {
-    // console.log(this.dataJson)
   }
 }
 </script>
