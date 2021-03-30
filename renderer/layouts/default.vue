@@ -1,35 +1,35 @@
 <template lang="pug">
   b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
-    template(#header): client-only: b-nav(card-header tabs)
+    template(#header): client-only: b-nav(card-header tabs ends)
       b-nav-item(:active="isAnnouncement")
-        nuxt-link.mr-1(to="/message/announcement") 公告
+        a.mr-1(@click="setCurrentChannel('announcement')") 公告
         b-badge(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
       b-nav-item(:active="isInf" v-if="belongToInf")
-        nuxt-link.mr-1(to="/message/inf") 資訊課
+        a.mr-1(@click="setCurrentChannel('inf')") 資訊課
         b-badge(variant="primary" pill v-if="showUnread('inf')") {{ getUnread('inf') }}
       b-nav-item(:active="isAdm" v-if="belongToAdm")
-        nuxt-link.mr-1(to="/message/adm") 行政課
+        a.mr-1(@click="setCurrentChannel('adm')") 行政課
         b-badge(variant="primary" pill v-if="showUnread('adm')") {{ getUnread('adm') }}
       b-nav-item(:active="isVal" v-if="belongToVal")
-        nuxt-link.mr-1(to="/message/val") 地價課
+        a.mr-1(@click="setCurrentChannel('val')") 地價課
         b-badge(variant="primary" pill v-if="showUnread('val')") {{ getUnread('val') }}
       b-nav-item(:active="isReg" v-if="belongToReg")
-        nuxt-link.mr-1(to="/message/reg") 登記課
+        a.mr-1(@click="setCurrentChannel('reg')") 登記課
         b-badge(variant="primary" pill v-if="showUnread('reg')") {{ getUnread('reg') }}
       b-nav-item(:active="isSur" v-if="belongToSur")
-        nuxt-link.mr-1(to="/message/sur") 測量課
+        a.mr-1(@click="setCurrentChannel('sur')") 測量課
         b-badge(variant="primary" pill v-if="showUnread('sur')") {{ getUnread('sur') }}
       b-nav-item(:active="isAcc" v-if="belongToAcc")
-        nuxt-link.mr-1(to="/message/acc") 會計室
+        a.mr-1(@click="setCurrentChannel('acc')") 會計室
         b-badge(variant="primary" pill v-if="showUnread('acc')") {{ getUnread('acc') }}
       b-nav-item(:active="isHr" v-if="belongToHr")
-        nuxt-link.mr-1(to="/message/hr") 人事室
+        a.mr-1(@click="setCurrentChannel('hr')") 人事室
         b-badge(variant="primary" pill v-if="showUnread('hr')") {{ getUnread('hr') }}
       b-nav-item(:active="isSupervisor" v-if="belongToSupervisor")
-        nuxt-link.mr-1(to="/message/supervisor") 主任祕書室
+        a.mr-1(@click="setCurrentChannel('supervisor')") 主任祕書室
         b-badge(variant="primary" pill v-if="showUnread('supervisor')") {{ getUnread('supervisor') }}
       b-nav-item(:active="isPersonal")
-        nuxt-link.mr-1(to="/message") 個人通知
+        a.mr-1(@click="setCurrentChannel(userid)") 個人通知
         b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
     Nuxt
 </template>
@@ -38,23 +38,21 @@
 import isEmpty from 'lodash/isEmpty'
 export default {
   data: () => ({
-    userid: process.env['USERNAME'],
-    channel: process.env['USERNAME']
+    userid: process.env['USERNAME']
   }),
   computed: {
     username () { return this.$config ? this.$config.username : '' },
     userdept () { return this.$config ? this.$config.userdept : '' },
-    pageId () { return this.$route.params.id },
-    isPersonal () { return isEmpty(this.pageId) },
-    isAnnouncement () { return this.pageId === 'announcement' },
-    isInf () { return this.pageId === 'inf' },
-    isAdm () { return this.pageId === 'adm' },
-    isVal () { return this.pageId === 'val' },
-    isReg () { return this.pageId === 'reg' },
-    isSur () { return this.pageId === 'sur' },
-    isAcc () { return this.pageId === 'acc' },
-    isHr () { return this.pageId === 'hr' },
-    isSupervisor () { return this.pageId === 'supervisor' },
+    isPersonal () { return this.userid === this.currentChannel },
+    isAnnouncement () { return this.currentChannel === 'announcement' },
+    isInf () { return this.currentChannel === 'inf' },
+    isAdm () { return this.currentChannel === 'adm' },
+    isVal () { return this.currentChannel === 'val' },
+    isReg () { return this.currentChannel === 'reg' },
+    isSur () { return this.currentChannel === 'sur' },
+    isAcc () { return this.currentChannel === 'acc' },
+    isHr () { return this.currentChannel === 'hr' },
+    isSupervisor () { return this.currentChannel === 'supervisor' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -65,7 +63,25 @@ export default {
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' }
   },
+  watch: {
+    currentChannel(nVal, oVal) {
+      this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
+      if (!(nVal in this.messages)) {
+        this.$store.commit("addChannel", nVal || this.userid)
+        this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
+        this.$store.commit("addUnread", nVal || this.userid)
+        this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
+      }
+      // release from channel items
+      this.messages[oVal].length = 0
+      // switch to new channel reset the unread number
+      this.$store.commit("addUnread", nVal)
+    }
+  },
   methods: {
+    setCurrentChannel (channel) {
+      this.$store.commit('currentChannel', channel)
+    },
     showUnread (channel) {
       return this.getUnread(channel) > 0
     },

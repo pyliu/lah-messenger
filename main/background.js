@@ -38,10 +38,10 @@ if (isProd) {
   })
 
   if (isProd) {
-    await mainWindow.loadURL('app://./message/');
+    await mainWindow.loadURL('app://./home');
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/message`);
+    await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
   }
 

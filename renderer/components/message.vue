@@ -32,7 +32,7 @@ export default {
   },
   computed: {
     isAnnouncement() {
-      return this.channel === 'announcement'
+      return this.currentChannel === 'announcement'
     },
     mine() {
       return this.raw ? process.env['USERNAME'] === this.raw["sender"] : false;

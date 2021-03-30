@@ -1,13 +1,46 @@
+<template lang="pug">
+  .msg-container
+    .msg(ref="box"): transition-group(name="list" mode="out-in")
+      message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :id="`msg-${currentChannel}-${idx}`")
+    b-input-group.mx-auto(size="sm")
+      b-textarea.mr-1(
+        v-model="text"
+        debounce="200"
+        placeholder="... Ctrl + Enter 直接送出 ..."
+        @keyup.ctrl.enter="send"
+        no-resize
+        no-auto-shrink
+        autofocus
+        :disabled="isAnnouncement"
+      )
+      b-button(@click="send" variant="primary" :disabled="isAnnouncement") 傳送
+</template>
 
+<script>
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
+import message from '~/components/message.vue'
+import { ipv6, ipv4 } from '~/assets/js/ip.js'
+
 export default {
-  name: "messageMixin",
-  fetchOnServer: false,
+  components: { message },
+  head: {
+    title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
+  },
+  asyncData ({ req, store, redirect, error }) {
+    return {
+      name: process.static ? 'static' : (process.server ? 'server' : 'client')
+    }
+  },
   data: () => ({
-    channel: process.env['USERNAME']
+    userid: process.env['USERNAME'],
+    text: ''
   }),
   computed: {
+    username () { return this.$config ? this.$config.username : '' },
+    userdept () { return this.$config ? this.$config.userdept : '' },
+    isAnnouncement () { return this.currentChannel === 'announcement' },
+
     wsConnStr() {
       return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}`
     },
@@ -21,23 +54,11 @@ export default {
     disconnected() {
       return isEmpty(this.websocket) || this.websocket.readyState === 3
     },
-    // channel() {
-    //   return this.$route.params.id || process.env['USERNAME']
-    // },
     list() {
-      return this.messages[this.channel]
-    },
+      return this.messages[this.currentChannel]
+    }
   },
   watch: {
-    channel(nVal, oVal) {
-      this.$config.isDev && console.log(oVal, nVal, this.$route.params.id)
-      if (!(nVal in this.messages)) {
-        this.$store.commit("addChannel", nVal || process.env['USERNAME'])
-        this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
-        this.$store.commit("addUnread", nVal || process.env['USERNAME'])
-        this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
-      }
-    },
     list (dontcare) {
       // watch list to display the latest message
       // Vue VDOM workaround ... to display the last message
@@ -49,6 +70,11 @@ export default {
     }
   },
   methods: {
+    send () {
+      if (this.sendTo(this.text, this.currentChannel)) {
+        this.text = ''
+      }
+    },
     date() {
       const now = new Date()
       return (
@@ -122,7 +148,7 @@ export default {
           title: "dontcare",
           from: this.ip,
           message: text,
-          channel: this.channel,
+          channel: this.currentChannel,
         },
         ...opts,
       })
@@ -160,7 +186,6 @@ export default {
           // set client info to remote ws server
           this.register()
           this.list.length = 0
-          // TODO: get this channel top 30 messages
         }
         ws.onclose = (e) => {
           this.list.push( JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) )
@@ -175,14 +200,14 @@ export default {
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
           const channel = incoming['channel'] || process.env['USERNAME']
-          this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`, incoming)
-          this.$config.isDev && console.log(this.time(), `目前頻道：${this.channel} <=> 接收頻道：${channel} [messageMixin::ws.onmessage]`,)
-          if (this.channel === channel) {
-            if (Array.isArray(this.messages[channel])) {
-              this.$config.isDev && console.log(this.time(), `目前 Store 中的頻道物件`, this.messages)
-            } else {
+
+          this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel} [messageMixin::ws.onmessage]`,)
+          this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [messageMixin::ws.onmessage]`)
+          
+          if (this.currentChannel === channel) {
+            if (!Array.isArray(this.messages[channel])) {
               this.$store.commit("addChannel", channel)
-              this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到Vuex Store。 [messageMixin::ws.onmessage]`)
+              this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
             }
             this.$nextTick(() => {
               this.$config.isDev && console.log(this.time(), `插入`, incoming, '進', channel, '頻道', this.messages[channel], this.messages)
@@ -193,23 +218,25 @@ export default {
             if (parseInt(this.unread[channel]) === NaN) {
               this.$store.commit("addUnread", channel)
             }
-            this.$store.commit("addChannelUnread", channel)
+            this.$store.commit("plusUnread", channel)
           }
         }
       }
-    },
+    }
   },
   created() {
-    if (!(this.channel in this.messages) && !this.$isServer) {
-      this.$store.commit("addChannel", this.channel)
-      this.$config.isDev && console.log(this.time(), `add channel ${this.channel} to $store! [messageMixin::created]`)
-      this.$store.commit("addUnread", this.channel)
-      this.$config.isDev && console.log(this.time(), `add unread ${this.channel} to $store! [messageMixin::created]`)
+    if (!(this.currentChannel in this.messages) && !this.$isServer) {
+      this.$store.commit("addChannel", this.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
+      this.$store.commit("addUnread", this.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
     // TODO: query this channel messages by once
   },
-  mounted() {
-    this.channel = this.$route.params.id || process.env['USERNAME']
+  mounted () {
+    // connect to ws server
+    this.connect()
+
     // reset timer if it already settle
     if (this.timer !== null) {
       this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
@@ -231,9 +258,20 @@ export default {
       }
       // make the last message shake
       if (this.list.length > 0) {
-        this.attention(`#msg-${this.channel}-${this.list.length - 1}`, { speed: 'fast' })
+        this.attention(`#msg-${this.currentChannel}-${this.list.length - 1}`, { speed: 'fast' })
       }
-      this.$store.commit("resetChannelUnread", this.channel)
+      this.$store.commit("addUnread", this.$route.params.id || process.env['USERNAME'])
     })
+
+    // testing
+    // console.log(this.$config, Electron, this.estore, this.messages)
+    this.estore.set({
+      pyliu: 'awesome'
+    })
+    
   }
 }
+</script>
+
+<style lang="scss" scoped>
+</style>

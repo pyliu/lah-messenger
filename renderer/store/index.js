@@ -18,6 +18,7 @@ const timestamp = (full = false) => {
 const state = () => ({
   websocket: undefined,
   timer: null,
+  currentChannel: process.env['USERNAME'],
   messages: {
     'announcement': [],
     'adm': [],
@@ -52,7 +53,8 @@ const getters = {
   messages: state => state.messages,
   unread: state => state.unread,
   ip: state => state.ip,
-  address: state => state.address
+  address: state => state.address,
+  currentChannel: state => state.currentChannel
 }
 
 // only sync operation
@@ -69,29 +71,24 @@ const mutations = {
   address (state, address) {
     state.address = [ ...address ]
   },
+  currentChannel(state, currentChannel) {
+    state.currentChannel = currentChannel
+  },
   addChannel (state, channel) {
     state.messages = { ...state.messages, ...{ [channel]: [] } }
-    this.$config.isDev && console.log(timestamp(), `新增 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
+    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
   },
   addUnread (state, channel) {
     state.unread = { ...state.unread, ...{ [channel]: 0 } }
-    this.$config.isDev && console.log(timestamp(), `新增 ${channel} unread 頻道到 store。 [Vuex::addChannel]`, state.unread)
+    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::addUnread]`, state.unread)
   },
-  addChannelUnread (state, channel) {
+  plusUnread (state, channel) {
     if (parseInt(state.unread[channel]) === NaN) {
       state.unread = { ...state.unread, ...{ [channel]: 0 } }
-      this.$config.isDev && console.log(timestamp(), `新增 ${channel} unread 頻道到 store。 [Vuex::addChannelUnread]`, state.unread)
+      this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
     }
     state.unread[channel]++
-    this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::addChannelUnread]`, state.unread)
-  },
-  resetChannelUnread (state, channel) {
-    if (parseInt(state.unread[channel]) === NaN) {
-      state.unread = { ...state.unread, ...{ [channel]: 0 } }
-      this.$config.isDev && console.log(timestamp(), `新增 ${channel} unread 頻道到 store。 [Vuex::resetChannelUnread]`, state.unread)
-    }
-    state.unread[channel] = 0
-    this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數設為 0。 [Vuex::resetChannelUnread]`, state.unread)
+    this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
   }
 }
 
