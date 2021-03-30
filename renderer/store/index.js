@@ -36,6 +36,8 @@ const actions = {
   async nuxtServerInit ({ commit, dispatch }, nuxt) {
     try {
       // init once here
+      // add default channel
+      commit('addChannel', process.env['USERNAME'])
     } catch (e) {
       console.error(e)
     }
