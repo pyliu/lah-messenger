@@ -20,6 +20,7 @@ const state = () => ({
   timer: null,
   currentChannel: process.env['USERNAME'],
   messages: {
+    'lds': [],
     'announcement': [],
     'adm': [],
     'inf': [],
@@ -32,6 +33,7 @@ const state = () => ({
     [process.env['USERNAME']]: []
   },
   unread: {
+    'lds': 0,
     'announcement': 0,
     'adm': 0,
     'inf': 0,
