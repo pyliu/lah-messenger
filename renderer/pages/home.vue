@@ -1,5 +1,5 @@
 <template lang="pug">
-  .msg-container
+  .msg-container(@click="delayConnect")
     .msg(ref="box"): transition-group(name="list" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :ref="`msg-${currentChannel}-${idx}`")
     b-input-group.my-1(size="sm")
@@ -8,6 +8,7 @@
         debounce="200"
         placeholder="... Ctrl + Enter 直接送出 ..."
         @keyup.ctrl.enter="send"
+        @keydown="delayConnect"
         no-resize
         no-auto-shrink
         autofocus
@@ -19,6 +20,7 @@
 <script>
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
+import debounce from 'lodash/debounce'
 import message from '~/components/message.vue'
 import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
@@ -222,6 +224,7 @@ export default {
         }
       }
     },
+    delayConnect () { /* placeholder */},
     latestMessage() {
       if (this.connected) {
         const jsonString = JSON.stringify({
@@ -247,6 +250,7 @@ export default {
       this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
+    this.delayConnect = debounce(this.connect, 800)
   },
   mounted () {
     // connect to ws server
