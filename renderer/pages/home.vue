@@ -1,7 +1,7 @@
 <template lang="pug">
   .msg-container
     .msg(ref="box"): transition-group(name="list" mode="out-in")
-      message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :id="`msg-${currentChannel}-${idx}`")
+      message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :ref="`msg-${currentChannel}-${idx}`")
     b-input-group.mx-auto(size="sm")
       b-textarea.mr-1(
         v-model="text"
@@ -209,9 +209,9 @@ export default {
               this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
             }
             this.$nextTick(() => {
-              this.$config.isDev && console.log(this.time(), `插入`, incoming, '進', channel, '頻道', this.messages[channel], this.messages)
+              this.$config.isDev && console.log(this.time(), `${channel} 頻道新訊息 #${incoming['id']}`, this.messages[channel])
               // add message to store channel list
-              this.messages[channel].push(incoming)
+              !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
             })
           } else {
             if (parseInt(this.unread[channel]) === NaN) {
@@ -226,7 +226,7 @@ export default {
       if (this.connected) {
         const jsonString = JSON.stringify({
           type: "latest",
-          sender: "信差客戶端",
+          sender: this.userid,
           date: this.date(),
           time: this.time(),
           message: this.currentChannel

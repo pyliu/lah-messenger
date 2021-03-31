@@ -1,6 +1,9 @@
 <template lang="pug">
   b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
     template(#header): client-only: b-nav(card-header tabs ends)
+      b-nav-item(:active="isPersonal")
+        a.mr-1(@click="setCurrentChannel(userid)") 個人通知
+        b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
       b-nav-item(:active="isAnnouncement")
         a.mr-1(@click="setCurrentChannel('announcement')") 公告
         b-badge(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
@@ -28,9 +31,9 @@
       b-nav-item(:active="isSupervisor" v-if="belongToSupervisor")
         a.mr-1(@click="setCurrentChannel('supervisor')") 主任祕書室
         b-badge(variant="primary" pill v-if="showUnread('supervisor')") {{ getUnread('supervisor') }}
-      b-nav-item(:active="isPersonal")
-        a.mr-1(@click="setCurrentChannel(userid)") 個人通知
-        b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+      b-nav-item(:active="isLds")
+        a.mr-1(@click="setCurrentChannel('lds')") 全所頻道
+        b-badge(variant="secondary" pill v-if="showUnread('lds')") {{ getUnread('lds') }}
     Nuxt
 </template>
 
@@ -53,6 +56,7 @@ export default {
     isAcc () { return this.currentChannel === 'acc' },
     isHr () { return this.currentChannel === 'hr' },
     isSupervisor () { return this.currentChannel === 'supervisor' },
+    isLds () { return this.currentChannel === 'lds' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -104,7 +108,7 @@ export default {
       if (this.websocket && this.websocket.readyState === 1) {
         const jsonString = JSON.stringify({
           type: "latest",
-          sender: "信差客戶端",
+          sender: this.userid,
           date: this.date(),
           time: this.time(),
           message: this.currentChannel
