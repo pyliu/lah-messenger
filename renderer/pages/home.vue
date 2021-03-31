@@ -25,7 +25,7 @@ import { ipv6, ipv4 } from '~/assets/js/ip.js'
 export default {
   components: { message },
   head: {
-    title: `桃園地政事務所 - ${ipv4} / ${ipv6}`
+    title: `桃園地政事務所 - ${process.env['USERNAME']} ${ipv4} / ${ipv6}`
   },
   asyncData ({ req, store, redirect, error }) {
     return {
