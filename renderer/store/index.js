@@ -103,6 +103,12 @@ const actions = {
     } catch (e) {
       console.error(e)
     }
+  },
+  async resetUnread ({ commit, getters }, channel) {
+    commit('resetUnread', channel)
+  },
+  async plusUnread ({ commit, getters }, channel) {
+    commit('plusUnread', channel)
   }
 }
 

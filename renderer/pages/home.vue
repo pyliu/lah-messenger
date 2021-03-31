@@ -215,9 +215,9 @@ export default {
             })
           } else {
             if (parseInt(this.unread[channel]) === NaN) {
-              this.$store.commit("resetUnread", channel)
+              this.$store.dispatch("resetUnread", channel)
             }
-            this.$store.commit("plusUnread", channel)
+            this.$store.dispatch("plusUnread", channel)
           }
         }
       }
