@@ -40,7 +40,6 @@ export default {
     username () { return this.$config ? this.$config.username : '' },
     userdept () { return this.$config ? this.$config.userdept : '' },
     isAnnouncement () { return this.currentChannel === 'announcement' },
-
     wsConnStr() {
       return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}`
     },
@@ -222,6 +221,23 @@ export default {
           }
         }
       }
+    },
+    latestMessage() {
+      if (this.connected) {
+        const jsonString = JSON.stringify({
+          type: "latest",
+          sender: "信差客戶端",
+          date: this.date(),
+          time: this.time(),
+          message: this.currentChannel
+        })
+        this.websocket.send(jsonString)
+      } else {
+        this.$config.isDev && console.log(
+          this.time(),
+          `尚未連線無法取得 ${this.currentChannel} 最新訊息資料`
+        )
+      }
     }
   },
   created() {
@@ -231,7 +247,6 @@ export default {
       this.$store.commit("addUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
-    // TODO: query this channel messages by once
   },
   mounted () {
     // connect to ws server
@@ -256,18 +271,16 @@ export default {
       if (this.$refs.box) {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       }
-      // make the last message shake
-      if (this.list.length > 0) {
-        this.attention(`#msg-${this.currentChannel}-${this.list.length - 1}`, { speed: 'fast' })
-      }
-      this.$store.commit("addUnread", this.$route.params.id || process.env['USERNAME'])
+      this.$store.commit("addUnread", this.userid)
+      // query current channel messages by once
+      this.latestMessage()
     })
 
     // testing
     // console.log(this.$config, Electron, this.estore, this.messages)
-    this.estore.set({
-      pyliu: 'awesome'
-    })
+    // this.estore.set({
+    //   pyliu: 'awesome'
+    // })
     
   }
 }

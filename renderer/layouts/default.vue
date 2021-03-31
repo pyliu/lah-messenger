@@ -76,9 +76,47 @@ export default {
       this.messages[oVal].length = 0
       // switch to new channel reset the unread number
       this.$store.commit("addUnread", nVal)
+      this.latestMessage()
     }
   },
   methods: {
+    date() {
+      const now = new Date()
+      return (
+        now.getFullYear() +
+        "-" +
+        ("0" + (now.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + now.getDate()).slice(-2)
+      )
+    },
+    time() {
+      const now = new Date()
+      const time =
+        ("0" + now.getHours()).slice(-2) +
+        ":" +
+        ("0" + now.getMinutes()).slice(-2) +
+        ":" +
+        ("0" + now.getSeconds()).slice(-2)
+      return time
+    },
+    latestMessage() {
+      if (this.websocket && this.websocket.readyState === 1) {
+        const jsonString = JSON.stringify({
+          type: "latest",
+          sender: "信差客戶端",
+          date: this.date(),
+          time: this.time(),
+          message: this.currentChannel
+        })
+        this.websocket.send(jsonString)
+      } else {
+        this.$config.isDev && console.log(
+          this.time(),
+          `尚未連線無法取得 ${this.currentChannel} 最新訊息資料`
+        )
+      }
+    },
     setCurrentChannel (channel) {
       this.$store.commit('currentChannel', channel)
     },
