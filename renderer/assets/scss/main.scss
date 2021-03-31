@@ -24,7 +24,6 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
-  min-width: 1012px;
   scroll-behavior: smooth;
 }
 
@@ -33,7 +32,7 @@ body::-webkit-scrollbar {
 }
 
 a {
-  color: var(--dark);
+  color: var(--gray-dark);
 }
 
 .title {
