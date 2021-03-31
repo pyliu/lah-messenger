@@ -215,7 +215,7 @@ export default {
             })
           } else {
             if (parseInt(this.unread[channel]) === NaN) {
-              this.$store.commit("addUnread", channel)
+              this.$store.commit("resetUnread", channel)
             }
             this.$store.commit("plusUnread", channel)
           }
@@ -244,7 +244,7 @@ export default {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
-      this.$store.commit("addUnread", this.currentChannel)
+      this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
   },
@@ -271,7 +271,7 @@ export default {
       if (this.$refs.box) {
         this.$refs.box.scrollTop = this.$refs.box.scrollHeight
       }
-      this.$store.commit("addUnread", this.userid)
+      this.$store.commit("resetUnread", this.userid)
       // query current channel messages by once
       this.latestMessage()
     })

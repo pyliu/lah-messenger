@@ -73,13 +73,11 @@ export default {
       if (!(nVal in this.messages)) {
         this.$store.commit("addChannel", nVal || this.userid)
         this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
-        this.$store.commit("addUnread", nVal || this.userid)
+        this.$store.commit("resetUnread", nVal || this.userid)
         this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
       }
       // release from channel items
       this.messages[oVal].length = 0
-      // switch to new channel reset the unread number
-      this.$store.commit("addUnread", nVal)
       this.latestMessage()
     }
   },
@@ -123,6 +121,8 @@ export default {
     },
     setCurrentChannel (channel) {
       this.$store.commit('currentChannel', channel)
+      // switch to new channel reset the unread number
+      this.$store.commit("resetUnread", channel)
     },
     showUnread (channel) {
       return this.getUnread(channel) > 0

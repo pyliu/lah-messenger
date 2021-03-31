@@ -80,9 +80,9 @@ const mutations = {
     state.messages = { ...state.messages, ...{ [channel]: [] } }
     this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
   },
-  addUnread (state, channel) {
+  resetUnread (state, channel) {
     state.unread = { ...state.unread, ...{ [channel]: 0 } }
-    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::addUnread]`, state.unread)
+    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
   },
   plusUnread (state, channel) {
     if (parseInt(state.unread[channel]) === NaN) {
