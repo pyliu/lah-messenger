@@ -187,16 +187,17 @@ export default {
           // set client info to remote ws server
           this.register()
           this.list.length = 0
+          this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
         }
         ws.onclose = (e) => {
-          this.list.push( JSON.parse(this.packMessage(`WS伺服器連線已關閉，無法進行通訊`)) )
           this.$store.commit('websocket', undefined)
           this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
+          this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
         }
         ws.onerror = (e) => {
-          this.list.push( JSON.parse(this.packMessage(`WS伺服器連線出錯【${this.wsConnStr}】`)) )
           this.$store.commit('websocket', undefined)
           this.$config.isDev && console.error(this.time(), "WS伺服器連線出錯", this.wsConnStr, e)
+          this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
         }
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
@@ -250,7 +251,7 @@ export default {
       this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
-    this.delayConnect = debounce(this.connect, 800)
+    this.delayConnect = debounce(this.connect, 1500)
   },
   mounted () {
     // connect to ws server
@@ -270,15 +271,18 @@ export default {
         this.connect()
       }, 20000))
     }
+
+    // query current channel messages by once
+    setTimeout(() => this.latestMessage(), 400)
+
+    this.$store.commit("resetUnread", this.userid)
+
     // move scroll bar to the bottom
-    this.$nextTick(() => {
-      if (this.$refs.box) {
-        this.$refs.box.scrollTop = this.$refs.box.scrollHeight
-      }
-      this.$store.commit("resetUnread", this.userid)
-      // query current channel messages by once
-      this.latestMessage()
-    })
+    // this.$nextTick(() => {
+    //   if (this.$refs.box) {
+    //     this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+    //   }
+    // })
 
     // testing
     // console.log(this.$config, Electron, this.estore, this.messages)
@@ -291,4 +295,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.msg-container {
+  // max-width: 470px;
+  margin: 5px;
+  height: 570px;
+}
+
+.msg {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  // padding: 5px;
+  // border: 1px solid gray;
+  // border-radius: 5px;
+  display: inline-block;
+}
 </style>

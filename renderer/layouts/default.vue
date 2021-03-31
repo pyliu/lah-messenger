@@ -1,6 +1,6 @@
 <template lang="pug">
-  b-card.max-w480.m-1(v-cloak no-body header-tag="nav")
-    template(#header): client-only: b-nav(card-header tabs ends)
+  b-card.m-1(v-cloak no-body header-tag="nav")
+    template(#header): client-only: b-nav(card-header :tabs="tabs" :pills="!tabs" fill)
       b-nav-item(:active="isPersonal")
         a.mr-1(@click="setCurrentChannel(userid)") 個人通知
         b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
@@ -41,7 +41,8 @@
 import isEmpty from 'lodash/isEmpty'
 export default {
   data: () => ({
-    userid: process.env['USERNAME']
+    userid: process.env['USERNAME'],
+    tabs: parseInt(Math.random() * 100) % 2 == 0
   }),
   computed: {
     username () { return this.$config ? this.$config.username : '' },
@@ -138,7 +139,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.max-w480 {
-  max-width: 480px;
-}
 </style>
