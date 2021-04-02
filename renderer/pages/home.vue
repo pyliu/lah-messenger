@@ -39,7 +39,7 @@
       .msg-container(@click="delayConnect"): .msg(ref="box"): transition-group(name="list" mode="out-in")
         message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :ref="`msg-${currentChannel}-${idx}`")
     
-    b-input-group.m-1(size="sm")
+    b-input-group.p-1.mt-n1(size="sm")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
