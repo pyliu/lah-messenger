@@ -298,7 +298,7 @@ export default {
 .msg-container {
   // max-width: 470px;
   margin: 5px;
-  height: 570px;
+  height: 80vh;
 }
 
 .msg {
