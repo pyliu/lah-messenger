@@ -75,8 +75,8 @@ export default {
   p {
     display: inline-block;
     border-radius: 10px;
-    background: #3c3d5a;
-    color: white;
+    background: #dddde2;
+    color: rgb(37, 36, 36);
     padding: 10px;
     max-width: 90%;
     text-align: left;

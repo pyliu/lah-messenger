@@ -2,7 +2,7 @@
   b-card.m-1(v-cloak no-body header-tag="nav")
     template(#header): client-only: b-nav(card-header :tabs="tabs" :pills="!tabs" fill)
       b-nav-item(:active="isPersonal")
-        a.mr-1(@click="setCurrentChannel(userid)") 個人通知
+        a.mr-1(@click="setCurrentChannel(userid)") {{ username }}
         b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
       b-nav-item(:active="isAnnouncement")
         a.mr-1(@click="setCurrentChannel('announcement')") 公告
@@ -32,7 +32,7 @@
         a.mr-1(@click="setCurrentChannel('supervisor')") 主任祕書室
         b-badge(variant="primary" pill v-if="showUnread('supervisor')") {{ getUnread('supervisor') }}
       b-nav-item(:active="isLds")
-        a.mr-1(@click="setCurrentChannel('lds')") 全所頻道
+        a.mr-1(@click="setCurrentChannel('lds')") 全所
         b-badge(variant="secondary" pill v-if="showUnread('lds')") {{ getUnread('lds') }}
     Nuxt
 </template>
