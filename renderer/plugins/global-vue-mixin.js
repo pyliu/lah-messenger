@@ -37,7 +37,9 @@ Vue.mixin({
       'timer',
       'currentChannel'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
+    username () { return this.$config ? this.$config.username : '' },
+    userdept () { return this.$config ? this.$config.userdept : '' }
   },
   methods: {
     ...mapActions([

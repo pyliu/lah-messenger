@@ -31,6 +31,9 @@
     "qs": "^6.9.4"
   },
   "devDependencies": {
+    "@fortawesome/free-brands-svg-icons": "^5.15.3",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@nuxtjs/fontawesome": "^1.1.2",
     "electron": "^10.1.5",
     "electron-builder": "^22.9.1",
     "node-sass": "5.0.0",

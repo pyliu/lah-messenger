@@ -2,43 +2,23 @@
   div
     b-card.m-1(v-cloak no-body header-tag="nav")
       template(#header): client-only: b-nav(card-header tabs fill)
-        b-nav-item(:active="isPersonal")
-          a.mr-1(@click="setCurrentChannel(userid)") {{ username }}
-          b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-        b-nav-item(:active="isAnnouncement")
-          a.mr-1(@click="setCurrentChannel('announcement')") 公告
+        b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
+          span 公告
           b-badge(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-        b-nav-item(:active="isInf" v-if="belongToInf")
-          a.mr-1(@click="setCurrentChannel('inf')") 資訊課
-          b-badge(variant="primary" pill v-if="showUnread('inf')") {{ getUnread('inf') }}
-        b-nav-item(:active="isAdm" v-if="belongToAdm")
-          a.mr-1(@click="setCurrentChannel('adm')") 行政課
-          b-badge(variant="primary" pill v-if="showUnread('adm')") {{ getUnread('adm') }}
-        b-nav-item(:active="isVal" v-if="belongToVal")
-          a.mr-1(@click="setCurrentChannel('val')") 地價課
-          b-badge(variant="primary" pill v-if="showUnread('val')") {{ getUnread('val') }}
-        b-nav-item(:active="isReg" v-if="belongToReg")
-          a.mr-1(@click="setCurrentChannel('reg')") 登記課
-          b-badge(variant="primary" pill v-if="showUnread('reg')") {{ getUnread('reg') }}
-        b-nav-item(:active="isSur" v-if="belongToSur")
-          a.mr-1(@click="setCurrentChannel('sur')") 測量課
-          b-badge(variant="primary" pill v-if="showUnread('sur')") {{ getUnread('sur') }}
-        b-nav-item(:active="isAcc" v-if="belongToAcc")
-          a.mr-1(@click="setCurrentChannel('acc')") 會計室
-          b-badge(variant="primary" pill v-if="showUnread('acc')") {{ getUnread('acc') }}
-        b-nav-item(:active="isHr" v-if="belongToHr")
-          a.mr-1(@click="setCurrentChannel('hr')") 人事室
-          b-badge(variant="primary" pill v-if="showUnread('hr')") {{ getUnread('hr') }}
-        b-nav-item(:active="isSupervisor" v-if="belongToSupervisor")
-          a.mr-1(@click="setCurrentChannel('supervisor')") 主任祕書室
-          b-badge(variant="primary" pill v-if="showUnread('supervisor')") {{ getUnread('supervisor') }}
-        b-nav-item(:active="isLds")
-          a.mr-1(@click="setCurrentChannel('lds')") 全所
-          b-badge(variant="secondary" pill v-if="showUnread('lds')") {{ getUnread('lds') }}
+        b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)")
+          span 個人
+          b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+        b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
+          fa-icon.mr-1(:icon="['fas', 'comments']" title="進入交談選單")
+          span 交談
+      transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
+        fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
+        span 與 {{ currentChannelName }} 交談中
+
+      transition(name="list" mode="out-in")
+        chat-board(v-if="isChat")
+        message-board(v-else :list="list")
       
-      .msg-container(@click="delayConnect"): .msg(ref="box"): transition-group(name="list" mode="out-in")
-        message(v-for="(item, idx) in list" :raw="item" :key="`msg-${currentChannel}-${idx}`" :ref="`msg-${currentChannel}-${idx}`")
-    
     b-input-group.p-1.mt-n1(size="sm")
       b-textarea.mr-1(
         v-model="text"
@@ -49,20 +29,18 @@
         no-resize
         no-auto-shrink
         autofocus
-        :disabled="isAnnouncement"
+        :disabled="isAnnouncement || isChat"
       )
-      b-button(@click="send" variant="primary" :disabled="isAnnouncement") 傳送
+      b-button(@click="send" variant="primary" :disabled="isAnnouncement || isChat") 傳送
 </template>
 
 <script>
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
-import message from '~/components/message.vue'
 import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
-  components: { message },
   head: {
     title: `桃園地政事務所 - ${process.env['USERNAME']} ${ipv4} / ${ipv6}`
   },
@@ -76,8 +54,7 @@ export default {
     text: ''
   }),
   computed: {
-    username () { return this.$config ? this.$config.username : '' },
-    userdept () { return this.$config ? this.$config.userdept : '' },
+    isChat () { return !this.isAnnouncement && !this.isPersonal },
     isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
     isInf () { return this.currentChannel === 'inf' },
@@ -114,18 +91,35 @@ export default {
     },
     list() {
       return this.messages[this.currentChannel]
-    }
+    },
+    currentChannelName () {
+      switch (this.currentChannel) {
+        case 'inf':
+          return '資訊課'
+        case 'adm':
+          return '行政課'
+        case 'val':
+          return '地價課'
+        case 'reg':
+          return '登記課'
+        case 'sur':
+          return '測量課'
+        case 'acc':
+          return '會計室'
+        case 'hr':
+          return '人事室'
+        case 'supervisor':
+          return '主任祕書室'
+        case 'lds':
+          return '全所'
+        default:
+          return '未知'
+      }
+    },
+
+    inChatting () { return !['announcement', this.userid, 'chat'].includes(this.currentChannel) }
   },
   watch: {
-    list (dontcare) {
-      // watch list to display the latest message
-      // Vue VDOM workaround ... to display the last message
-      this.$nextTick(() => {
-        if (this.$refs.box) {
-          this.$refs.box.scrollTop = this.$refs.box.scrollHeight
-        }
-      })
-    },
     currentChannel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
       if (!(nVal in this.messages)) {
@@ -378,7 +372,6 @@ export default {
 
 <style lang="scss" scoped>
 .msg-container {
-  // max-width: 470px;
   margin: 5px;
   height: 81.5vh;
 }
@@ -387,9 +380,6 @@ export default {
   width: 100%;
   height: 100%;
   overflow: auto;
-  // padding: 5px;
-  // border: 1px solid gray;
-  // border-radius: 5px;
   display: inline-block;
 }
 </style>

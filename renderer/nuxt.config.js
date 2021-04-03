@@ -62,8 +62,16 @@ export default {
   components: true,
   // Modules for dev and build (recommended) (https://go.nuxtjs.dev/config-modules)
   buildModules: [
-    // https://go.nuxtjs.dev/eslint
-    // '@nuxtjs/eslint-module'
+    // https://www.npmjs.com/package/@nuxtjs/fontawesome
+    ['@nuxtjs/fontawesome', {
+      component: 'fa',
+      suffix: true,
+      icons: {
+        solid: true,
+        regular: [  ],
+        brands: [ ]
+      }
+    }]
   ],
   // Modules (https://go.nuxtjs.dev/config-modules)
   modules: [
@@ -76,6 +84,16 @@ export default {
     '@nuxtjs/localforage',
     'nuxt-fontawesome'
   ],
+  fontawesome: {
+    // icon 的標籤使用 <fa>，這邊不設定就會依照 plugin 裡的設定<font-awesome-icon>
+    component: 'fa-icon', 
+    imports: [
+      {
+        set: '@fortawesome/free-solid-svg-icons',
+        icons: ['fas']
+      }
+    ]
+  },
   bootstrapVue: {
     // Install the `IconsPlugin` plugin (in addition to `BootstrapVue` plugin)
     icons: true,
