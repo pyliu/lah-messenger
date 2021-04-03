@@ -4,22 +4,22 @@
       template(#header): client-only: b-nav(card-header tabs fill)
         b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
           span 公告
-          b-badge(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
+          b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
         b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)")
-          span 個人
-          b-badge(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+          span 個人通知
+          b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
         b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
           fa-icon.mr-1(:icon="['fas', 'comments']" title="進入交談選單")
-          span 交談
+          span 交談頻道
+
       transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
         fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
         span 與 {{ currentChannelName }} 交談中
 
-      transition(name="list" mode="out-in")
-        chat-board(v-if="isChat")
-        message-board(v-else :list="list")
+      transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
+      transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
       
-    b-input-group.p-1.mt-n1(size="sm")
+    transition(name="list" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
@@ -29,9 +29,8 @@
         no-resize
         no-auto-shrink
         autofocus
-        :disabled="isAnnouncement || isChat"
       )
-      b-button(@click="send" variant="primary" :disabled="isAnnouncement || isChat") 傳送
+      b-button(@click="send" variant="primary") 傳送
 </template>
 
 <script>
@@ -54,6 +53,10 @@ export default {
     text: ''
   }),
   computed: {
+    showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
+    showMessageBoard () { return this.currentChannel !== 'chat' },
+    showChatBoard () { return this.isChat },
+
     isChat () { return !this.isAnnouncement && !this.isPersonal },
     isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
@@ -371,15 +374,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.msg-container {
-  margin: 5px;
-  height: 81.5vh;
-}
-
-.msg {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  display: inline-block;
-}
 </style>

@@ -1,6 +1,6 @@
 <template lang="pug">
-  .chat-container
-    b-list-group(v-if="isChat" flush)
+  .chat-channel-list(v-if="isChat")
+    b-list-group(flush)
       b-list-group-item(v-if="belongToInf"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('inf')")
         span 資訊課
         b-badge(variant="primary" pill v-if="showUnread('inf')") {{ getUnread('inf') }}
@@ -68,15 +68,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.chat-container {
+.chat-channel-list {
   margin: 5px;
-  height: 81.5vh;
-}
-
-.chat-channel {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  display: inline-block;
+  height: 89.5vh;
 }
 </style>
