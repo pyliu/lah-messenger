@@ -1,5 +1,5 @@
-  <template lang="pug">
-  div
+<template lang="pug">
+  div(v-cloak)
     b-card.m-1(v-cloak no-body header-tag="nav")
       template(#header): client-only: b-nav(card-header tabs fill)
         b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
@@ -19,7 +19,7 @@
       transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
       transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
       
-    transition(name="list" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
+    transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
       b-textarea.mr-1(
         v-model="text"
         debounce="200"
@@ -374,4 +374,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 </style>

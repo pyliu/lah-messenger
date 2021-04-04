@@ -54,7 +54,7 @@ export default {
 
 .chat-container {
   margin: 5px;
-  height: 73.5vh;
+  height: 73.25vh;
 }
 
 .msg {

@@ -88,11 +88,21 @@ blockquote p {
   margin-bottom: 0;
 }
 
-.list-enter-active, .list-leave-active {
+.list-enter-active, .list-leave-active,
+.listY-enter-active, .listY-leave-active {
   transition: all .4s;
 }
 
-.list-enter, .list-leave-to {
+@mixin opacity() {
   opacity: 0;
+}
+
+.list-enter, .list-leave-to {
+  @include opacity();
   transform: translateX(-30px);
+}
+
+.listY-enter, .listY-leave-to {
+  @include opacity();
+  transform: translateY(30px);
 }
