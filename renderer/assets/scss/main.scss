@@ -34,6 +34,10 @@ body::-webkit-scrollbar {
 a {
   color: var(--gray-dark);
 }
+a:hover {
+  text-decoration: none;
+  font-weight: bold;
+}
 
 .title {
   font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont,

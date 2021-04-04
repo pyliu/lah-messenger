@@ -14,7 +14,7 @@
 
       transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
         fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ getChannelName(currentChannel) }}
+        span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill" variant="primary")] {{ getChannelName(currentChannel) }}
 
       transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
       transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")

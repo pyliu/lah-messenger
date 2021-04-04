@@ -2,7 +2,7 @@
   .chat-channel-list(v-if="isChat")
     b-list-group.gray-bottom-border(flush)
       b-list-group-item(v-for="(item, idx) in deptChannels" v-if="userdept === item.id || item.id === 'lds'" :key="`key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill" variant="primary")] {{ item.name }}
+        span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
     
 
