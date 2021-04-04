@@ -143,14 +143,10 @@ export default {
     sendChannelActivity(oVal, nVal) {
       this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
       // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
-      if (this.currentChannel !== nVal) {
-        const oCName = this.getChannelName(oVal)
-        const nCName = this.getChannelName(nVal)
-        !['announcement', this.userid, 'chat'].includes(oVal) && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
-        !['announcement', this.userid, 'chat'].includes(nVal) && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
-      } else {
-        this.$config.isDev && console.log(`略過送出頻道活動訊息`)
-      }
+      const oCName = this.getChannelName(oVal)
+      const nCName = this.getChannelName(nVal)
+      !['announcement', this.userid, 'chat'].includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+      !['announcement', this.userid, 'chat'].includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
     },
     send () {
       if (this.sendTo(this.text, this.currentChannel)) {
