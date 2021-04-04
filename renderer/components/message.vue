@@ -1,8 +1,10 @@
 <template lang="pug">
   .mb-3
     //- show date if the message has previous days' message
-    .d-flex.msg-item.my-1(v-if="showMdate" :class="['justify-content-center', 'system', 'date']")
-      p(v-html="mdate")
+    .d-flex.msg-item(
+      v-if="showMdate"
+      :class="['justify-content-center', 'system', 'date']"
+    ): p(v-html="mdate")
 
     .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
       b-avatar.my-auto.mr-1(
@@ -129,25 +131,15 @@ export default {
       background: #f8f9fa;
       color: #2e2e2e;
       font-size: .75rem;
-      margin-bottom: 0rem !important;
     }
-    margin-top: 0.5rem;
+    margin-top: .5rem;
     margin-bottom: 0.5rem;
   }
   &.date {
     p {
       width: 100%;
-      text-align: center;
-      font-weight: bold;
       padding: 5px 15px 5px 15px;
-      border-radius: 5px;
-      background: #f8f9fa;
-      color: #2e2e2e;
-      font-size: .75rem;
-      margin-bottom: 0rem !important;
     }
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
   }
   .time {
     display: inline-block;
