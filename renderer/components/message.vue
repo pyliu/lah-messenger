@@ -1,5 +1,9 @@
 <template lang="pug">
   .mb-3
+    //- show date if the message has previous days' message
+    .d-flex.msg-item.my-1(v-if="showMdate" :class="['justify-content-center', 'system', 'date']")
+      p(v-html="mdate")
+
     .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
       b-avatar.my-auto.mr-1(
         v-if="['remote'].includes(type) || isAnnouncement"
@@ -9,13 +13,22 @@
       )
       span.mr-1 {{ sender }}
       em {{ from }}
+    
     .d-flex.msg-item.my-1(:class="classes")
+
+      //- special card message for announcement
       announcement-card(
         v-if="isAnnouncement"
         :data-json="raw['message']"
       )
+
+      //- remote or system message
       p(v-else-if="!mine" v-html="message")
-      .time.s-60.mx-1.text-muted {{ mtime }}
+
+      //- timestamp for the message
+      .time.s-60.mx-1.text-muted(v-if="!system") {{ mtime }}
+
+      //- my message
       p(v-if="mine" v-html="message")
 </template>
 
@@ -25,12 +38,16 @@ export default {
   components: { announcementCard },
   props: {
     raw: { type: Object, required: true },
+    prev: { type: Object, default: undefined }
   },
   data: () => ({}),
   asyncData(ctx) {
     return {};
   },
   computed: {
+    showMdate() {
+      return this.prevMdate !== this.mdate
+    },
     isAnnouncement() {
       return this.currentChannel === 'announcement'
     },
@@ -39,6 +56,9 @@ export default {
     },
     system() {
       return this.raw ? 'system' === this.sender : false;
+    },
+    id() {
+      return this.raw ? this.raw["id"] : "";
     },
     type() {
       return this.raw ? this.raw["type"] : "";
@@ -54,6 +74,12 @@ export default {
     },
     mtime() {
       return this.raw ? this.raw["time"] : "";
+    },
+    prevMdate() {
+      if (this.prev) {
+        return this.prev['date']
+      }
+      return ''
     },
     mdate() {
       return this.raw ? this.raw["date"] : "";
@@ -96,13 +122,32 @@ export default {
   }
   &.system {
     p {
-      padding: 5px;
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 10px 5px 10px;
       border-radius: 5px;
-      background: #17a2b8;
-      color: #f8f9fa;
+      background: #f8f9fa;
+      color: #2e2e2e;
       font-size: .75rem;
       margin-bottom: 0rem !important;
     }
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  &.date {
+    p {
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 15px 5px 15px;
+      border-radius: 5px;
+      background: #f8f9fa;
+      color: #2e2e2e;
+      font-size: .75rem;
+      margin-bottom: 0rem !important;
+    }
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
   .time {
     display: inline-block;

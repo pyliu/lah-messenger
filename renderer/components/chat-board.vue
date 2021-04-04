@@ -1,38 +1,25 @@
 <template lang="pug">
   .chat-channel-list(v-if="isChat")
     b-list-group(flush)
-      b-list-group-item(v-if="belongToInf"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('inf')")
-        span 資訊課
-        b-badge(variant="primary" pill v-if="showUnread('inf')") {{ getUnread('inf') }}
-      b-list-group-item(v-if="belongToAdm"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('adm')")
-        span 行政課
-        b-badge(variant="primary" pill v-if="showUnread('adm')") {{ getUnread('adm') }}
-      b-list-group-item(v-if="belongToVal"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('val')")
-        span 地價課
-        b-badge(variant="primary" pill v-if="showUnread('val')") {{ getUnread('val') }}
-      b-list-group-item(v-if="belongToReg"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('reg')")
-        span 登記課
-        b-badge(variant="primary" pill v-if="showUnread('reg')") {{ getUnread('reg') }}
-      b-list-group-item(v-if="belongToSur"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('sur')")
-        span 測量課
-        b-badge(variant="primary" pill v-if="showUnread('sur')") {{ getUnread('sur') }}
-      b-list-group-item(v-if="belongToAcc"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('acc')")
-        span 會計室
-        b-badge(variant="primary" pill v-if="showUnread('acc')") {{ getUnread('acc') }}
-      b-list-group-item(v-if="belongToHr"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('hr')")
-        span 人事室
-        b-badge(variant="primary" pill v-if="showUnread('hr')") {{ getUnread('hr') }}
-      b-list-group-item(v-if="belongToSupervisor"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('supervisor')")
-        span 主任祕書室
-        b-badge(variant="primary" pill v-if="showUnread('supervisor')") {{ getUnread('supervisor') }}
-      b-list-group-item: b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('lds')")
-        span 全所
-        b-badge(variant="primary" pill v-if="showUnread('lds')") {{ getUnread('lds') }}
+      b-list-group-item(v-for="(item, idx) in deptChannels" v-if="userdept === item.id || item.id === 'lds'" :key="`key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
+        span {{ item.name }}
+        b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 </template>
 
 <script>
 export default {
   data: () => ({
+    deptChannels: [
+      { id: 'inf', name: '資訊課' },
+      { id: 'adm', name: '行政課' },
+      { id: 'reg', name: '登記課' },
+      { id: 'val', name: '地價課' },
+      { id: 'sur', name: '測量課' },
+      { id: 'acc', name: '會計室' },
+      { id: 'hr', name: '人事室' },
+      { id: 'supervisor', name: '主任祕書室' },
+      { id: 'lds', name: '全所' },
+    ]
   }),
   computed: {
     belongToInf () { return this.userdept === 'inf' },

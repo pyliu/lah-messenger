@@ -14,7 +14,7 @@
 
       transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
         fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
-        span 與 {{ currentChannelName }} 交談中
+        span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ getChannelName(currentChannel) }}
 
       transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
       transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
@@ -94,30 +94,6 @@ export default {
     },
     list() {
       return this.messages[this.currentChannel]
-    },
-    currentChannelName () {
-      switch (this.currentChannel) {
-        case 'inf':
-          return '資訊課'
-        case 'adm':
-          return '行政課'
-        case 'val':
-          return '地價課'
-        case 'reg':
-          return '登記課'
-        case 'sur':
-          return '測量課'
-        case 'acc':
-          return '會計室'
-        case 'hr':
-          return '人事室'
-        case 'supervisor':
-          return '主任祕書室'
-        case 'lds':
-          return '全所'
-        default:
-          return '未知'
-      }
     },
 
     inChatting () { return !['announcement', this.userid, 'chat'].includes(this.currentChannel) }
@@ -343,7 +319,7 @@ export default {
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
     this.delayConnect = debounce(this.connect, 1500)
-    this.delaySendChannelActivity = debounce(this.sendChannelActivity, 5000)
+    this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
   },
   mounted () {
     // connect to ws server

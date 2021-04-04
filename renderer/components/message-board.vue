@@ -1,6 +1,6 @@
 <template lang="pug">
   div(:class="blockCss"): .msg(ref="box"): transition-group(name="list" mode="out-in")
-    message(v-for="(item, idx) in list" :raw="item" :key="`msg-${idx}`" :ref="`msg-${idx}`")
+    message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
 </template>
 
 <script>
