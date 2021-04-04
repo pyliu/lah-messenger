@@ -381,6 +381,10 @@ export default {
     // this.estore.set({
     //   pyliu: 'awesome'
     // })
+  },
+  beforeDestroy () {
+    const cName = this.getChannelName(this.currentChannel)
+    !['announcement', this.userid, 'chat'].includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道`, { sender: 'system', channel: this.currentChannel })
   }
 }
 </script>
