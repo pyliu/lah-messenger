@@ -43,8 +43,26 @@ Vue.mixin({
   },
   methods: {
     ...mapActions([
-      
+      'resetUnread',
+      'plusUnread'
     ]),
+    getChannelName(channelId) {
+      switch (channelId) {
+        case 'announcement': return '公告'
+        case 'lds': return '全所'
+        case 'inf': return '資訊課'
+        case 'adm': return '行政課'
+        case 'reg': return '登記課'
+        case 'sur': return '測量課'
+        case 'val': return '地價課'
+        case 'hr': return '人事室'
+        case 'acc': return '會計室'
+        case 'supervisor': return '主任祕書室'
+        default:
+          // TODO: find channel name by query
+          return channelId
+      }
+    },
     $,  // jQuery '$',
     parseHTML (string) {
       const context = document.implementation.createHTMLDocument()

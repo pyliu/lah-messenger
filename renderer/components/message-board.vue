@@ -23,11 +23,11 @@ export default {
     }
   },
   watch: {
-    userid (val) { concole.log('userid', val) },
-    isAnnouncement (val) { console.log('announcement', val) },
-    isPersonal (val) { console.log('personal', val) },
-    isChat (val) { console.log('chat', val) },
-    blockCss (val) { console.log('css', val) },
+    // userid (val) { concole.log('userid', val) },
+    // isAnnouncement (val) { console.log('announcement', val) },
+    // isPersonal (val) { console.log('personal', val) },
+    // isChat (val) { console.log('chat', val) },
+    // blockCss (val) { console.log('css', val) },
     list (dontcare) {
       // watch list to display the latest message
       // Vue VDOM workaround ... to display the last message

@@ -125,6 +125,8 @@ export default {
   watch: {
     currentChannel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
+      this.delaySendChannelActivity(oVal, nVal)
+
       if (!(nVal in this.messages)) {
         this.$store.commit("addChannel", nVal || this.userid)
         this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
@@ -137,10 +139,44 @@ export default {
     }
   },
   methods: {
+    delaySendChannelActivity: function noop () {},
+    sendChannelActivity(oVal, nVal) {
+      this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
+      // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
+      if (this.currentChannel !== nVal) {
+        const oCName = this.getChannelName(oVal)
+        const nCName = this.getChannelName(nVal)
+        !['announcement', this.userid, 'chat'].includes(oVal) && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+        !['announcement', this.userid, 'chat'].includes(nVal) && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+      } else {
+        this.$config.isDev && console.log(`略過送出頻道活動訊息`)
+      }
+    },
     send () {
       if (this.sendTo(this.text, this.currentChannel)) {
         this.text = ''
       }
+    },
+    sendTo(message, opts = {}) {
+      !this.connected && this.connect()
+      if (!isEmpty(message)) {
+        if (this.connected) {
+          const jsonStr = this.packMessage(trim(message), { channel: this.currentChannel, ...opts })
+          this.websocket.send(jsonStr)
+          return true
+        } else {
+          this.list.push(
+            JSON.parse(
+              this.packMessage(
+                `伺服器連線${this.status(
+                  this.websocket.readyState
+                )} ... 無法傳送訊息`
+              )
+            )
+          )
+        }
+      }
+      return false
     },
     date() {
       const now = new Date()
@@ -219,27 +255,6 @@ export default {
         },
         ...opts,
       })
-    },
-    sendTo(message, channel) {
-      !this.connected && this.connect()
-      if (!isEmpty(message)) {
-        if (this.connected) {
-          const jsonStr = this.packMessage(trim(message), { channel: channel })
-          this.websocket.send(jsonStr)
-          return true
-        } else {
-          this.list.push(
-            JSON.parse(
-              this.packMessage(
-                `伺服器連線${this.status(
-                  this.websocket.readyState
-                )} ... 無法傳送訊息`
-              )
-            )
-          )
-        }
-      }
-      return false
     },
     connect() {
       if (this.connected) {
@@ -332,6 +347,7 @@ export default {
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
     this.delayConnect = debounce(this.connect, 1500)
+    this.delaySendChannelActivity = debounce(this.sendChannelActivity, 5000)
   },
   mounted () {
     // connect to ws server

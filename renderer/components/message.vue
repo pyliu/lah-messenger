@@ -1,6 +1,6 @@
 <template lang="pug">
   .mb-3
-    .s-75.font-weight-bold.align-middle(v-if="!mine")
+    .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
       b-avatar.my-auto.mr-1(
         v-if="['remote'].includes(type) || isAnnouncement"
         size="1.25rem"
@@ -35,7 +35,10 @@ export default {
       return this.currentChannel === 'announcement'
     },
     mine() {
-      return this.raw ? process.env['USERNAME'] === this.raw["sender"] : false;
+      return this.raw ? process.env['USERNAME'] === this.sender : false;
+    },
+    system() {
+      return this.raw ? 'system' === this.sender : false;
     },
     type() {
       return this.raw ? this.raw["type"] : "";
@@ -60,8 +63,8 @@ export default {
     },
     classes() {
       return [
-        this.mine ? "justify-content-end" : "justify-content-start",
-        this.mine ? 'mine' : '',
+        this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
+        this.mine ? 'mine' : this.system ? 'system' : '',
       ];
     }
   },
@@ -88,6 +91,16 @@ export default {
     p {
       background: rgb(2, 182, 32);
       color: white;
+      margin-bottom: 0rem !important;
+    }
+  }
+  &.system {
+    p {
+      padding: 5px;
+      border-radius: 5px;
+      background: #17a2b8;
+      color: #f8f9fa;
+      font-size: .75rem;
       margin-bottom: 0rem !important;
     }
   }
