@@ -5,7 +5,7 @@
         span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
     b-list-group.gray-bottom-border(flush)
-      b-list-group-item(v-for="(item, idx) in talkedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
+      b-list-group-item(v-for="(item, idx) in participatedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
         span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 </template>
@@ -23,10 +23,6 @@ export default {
       { id: 'hr', name: '人事室' },
       { id: 'supervisor', name: '主任祕書室' },
       { id: 'lds', name: '全所' },
-    ],
-    talkedChannels: [
-      { id: '0541_HB0542', name: '賴俋儒' },
-      { id: '0541_HB0543', name: '葉宇敦' },
     ]
   }),
   computed: {

@@ -35,7 +35,8 @@ Vue.mixin({
       'ip',
       'address',
       'timer',
-      'currentChannel'
+      'currentChannel',
+      'participatedChannels'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     username () { return this.$config ? this.$config.username : '' },
@@ -59,7 +60,11 @@ Vue.mixin({
         case 'acc': return '會計室'
         case 'supervisor': return '主任祕書室'
         default:
-          // TODO: find channel name by query
+          // find channel name by query
+          const found = this.participatedChannels.find(item => item.id === channelId)
+          if (found) {
+            return found.name
+          }
           return channelId
       }
     },

@@ -46,7 +46,8 @@ const state = () => ({
     [process.env['USERNAME']]: 0
   },
   address: [ ...ips ],
-  ip: ipv4
+  ip: ipv4,
+  participatedChannels: []
 })
 
 const getters = {
@@ -56,7 +57,8 @@ const getters = {
   unread: state => state.unread,
   ip: state => state.ip,
   address: state => state.address,
-  currentChannel: state => state.currentChannel
+  currentChannel: state => state.currentChannel,
+  participatedChannels: state => state.participatedChannels
 }
 
 // only sync operation
@@ -91,6 +93,27 @@ const mutations = {
     }
     state.unread[channel]++
     this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
+  },
+  resetParticipatedChannel (state) {
+    state.participatedChannels.length = 0
+  },
+  addParticipatedChannel (state, channelPayload) {
+    if (channelPayload.id && channelPayload.name) {
+      state.participatedChannels = [ ... state.participatedChannels, channelPayload ]
+      // add to messages list as well
+      state.messages = { ...state.messages, ...{ [channelPayload.id]: [] } }
+    } else {
+      this.$config.isDev && console.log(timestamp(), `[addParticipatedChannel] channelPayload is not correct`, channelPayload)
+    }
+  },
+  removeParticipatedChannel (state, channelPayload) {
+    if (channelPayload.id) {
+      state.participatedChannels = [ ...state.participatedChannels.filter(item => item.id !== channelPayload.id)]
+      // clean the channel
+      state.messages = { ...state.messages, ...{ [channelPayload.id]: [] } }
+    } else {
+      this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
+    }
   }
 }
 
