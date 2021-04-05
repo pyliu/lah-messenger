@@ -9,12 +9,12 @@
           span 個人通知
           b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
         b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
-          fa-icon.mr-1(:icon="['fas', 'comments']" title="進入交談選單")
+          fa-icon.mr-1.color-primary(:icon="['fas', 'comments']" title="進入交談選單")
           span 交談頻道
 
       transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
         fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill" variant="primary")] {{ getChannelName(currentChannel) }}
+        span #[b-avatar.mt-n1(size="1.25rem" icon="chat")] {{ getChannelName(currentChannel) }}
 
       transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
       transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
@@ -125,7 +125,7 @@ export default {
       !['announcement', this.userid, 'chat'].includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
     },
     send () {
-      if (this.sendTo(this.text, this.currentChannel)) {
+      if (this.sendTo(this.text, { channel: this.currentChannel })) {
         this.text = ''
       }
     },
@@ -366,5 +366,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.color-primary {
+  color: #007bff;
+}
 </style>
