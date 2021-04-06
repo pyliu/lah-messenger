@@ -35,9 +35,14 @@
         )
         b-button(@click="send" variant="primary") 傳送
     .center.vh-100(v-else @click="delayConnect")
-      h5.d-flex.justify-content-center
-        b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
-        .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
+      div
+        h5.d-flex.justify-content-center
+          b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
+          .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
+        b-input-group(size="sm" prepend="伺服器")
+          b-input(v-model="wsHost")
+          span :
+          b-input(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 65px;")
 </template>
 
 <script>
@@ -58,7 +63,9 @@ export default {
   data: () => ({
     userid: process.env['USERNAME'],
     text: '',
-    connectText: '連線中'
+    connectText: '連線中',
+    wsHost: '127.0.0.1',
+    wsPort: 8081
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -88,7 +95,7 @@ export default {
     belongToSupervisor () { return this.userdept === 'supervisor' },
 
     wsConnStr() {
-      return `ws://${this.$config.websocketHost}:${this.$config.websocketPort}`
+      return `ws://${this.wsHost}:${this.wsPort}`
     },
     connected() {
       /**
@@ -278,6 +285,7 @@ export default {
           this.connectText = '已上線'
         }
         ws.onclose = (e) => {
+          this.connectText = 'WS伺服器連線已關閉'
           this.$store.commit('websocket', undefined)
           this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
           setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
@@ -364,6 +372,8 @@ export default {
     this.delayConnect = debounce(this.connect, 1500)
     this.delayLatestMessage = debounce(this.latestMessage, 400)
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
+    this.wsHost = this.$config.websocketHost
+    this.wsPort = this.$config.websocketPort
   },
   mounted () {
     // connect to ws server
