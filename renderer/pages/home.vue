@@ -35,9 +35,9 @@
         )
         b-button(@click="send" variant="primary") 傳送
     .center.vh-100(v-else @click="delayConnect")
-      h5
-        b-icon.mr-1(icon="bar-chart-line")
-        span {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")] 
+      h5.d-flex.justify-content-center
+        b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
+        .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
 </template>
 
 <script>
