@@ -328,7 +328,7 @@ export default {
       this.$store.commit("resetUnread", channel)
     },
     showUnread (channel) {
-      return this.getUnread(channel) > 0
+      return this.getUnread(channel) > 0 || this.getUnread(channel) === '99+'
     },
     getUnread (channel) {
       if (this.unread) {
