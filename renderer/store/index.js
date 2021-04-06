@@ -92,6 +92,8 @@ const mutations = {
       this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
     }
     state.unread[channel]++
+    // maximun is 99
+    state.unread[channel] > 99 && (state.unread[channel] = 99)
     this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
   },
   resetParticipatedChannel (state) {
