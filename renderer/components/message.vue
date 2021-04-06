@@ -128,7 +128,7 @@ export default {
       font-weight: bold;
       padding: 5px 10px 5px 10px;
       border-radius: 5px;
-      background: #f8f9fa;
+      background: #e9ebec;
       color: #2e2e2e;
       font-size: .75rem;
       max-width: 100%;
