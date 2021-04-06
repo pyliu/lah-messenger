@@ -39,10 +39,11 @@
         h5.d-flex.justify-content-center
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
           .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
-        b-input-group(size="sm" prepend="伺服器")
+        b-input-group(prepend="伺服器")
           b-input(v-model="wsHost")
-          span :
-          b-input(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 65px;")
+          span.my-auto.mx-1 :
+          b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
+          b-button(@click="connect" variant="outline-primary") 連線
 </template>
 
 <script>
