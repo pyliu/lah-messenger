@@ -278,7 +278,7 @@ export default {
         ws.onclose = (e) => {
           this.$store.commit('websocket', undefined)
           this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
-          this.connectText = `等待重新連線中(${this.wsConnStr})`
+          setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
           // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
         }
         ws.onerror = (e) => {
