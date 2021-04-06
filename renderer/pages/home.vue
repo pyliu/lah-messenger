@@ -66,7 +66,8 @@ export default {
     text: '',
     connectText: '連線中',
     wsHost: '127.0.0.1',
-    wsPort: 8081
+    wsPort: 8081,
+    connecting: false
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -268,64 +269,75 @@ export default {
     connect() {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
-      } else {
-        this.connectText = '連線中'
-        const ws = new WebSocket(this.wsConnStr)
-        ws.onopen = (e) => {
-          // ws to Vuex store
-          this.$store.commit('websocket', ws)
-          this.$config.isDev && console.log(this.time(), "已連線", e)
-          // set client info to remote ws server
-          this.register()
+      } else if (!this.connecting) {
+        try {
+          this.connecting = true
+          this.connectText = '連線中'
+          const ws = new WebSocket(this.wsConnStr)
+          ws.onopen = (e) => {
+            // ws to Vuex store
+            this.$store.commit('websocket', ws)
+            this.$config.isDev && console.log(this.time(), "已連線", e)
+            // set client info to remote ws server
+            this.register()
 
-          // query current channel latest messages
-          this.list.length = 0
-          this.delayLatestMessage()
+            // query current channel latest messages
+            this.list.length = 0
+            this.delayLatestMessage()
 
-          this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
-          this.connectText = '已上線'
-        }
-        ws.onclose = (e) => {
-          this.connectText = 'WS伺服器連線已關閉'
-          this.$store.commit('websocket', undefined)
-          this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
-          setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
-          // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
-        }
-        ws.onerror = (e) => {
-          this.$store.commit('websocket', undefined)
-          this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
-          this.connectText = 'WS伺服器連線出錯'
-          // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
-        }
-        ws.onmessage = (e) => {
-          const incoming = JSON.parse(e.data)
-          const channel = incoming['channel'] || process.env['USERNAME']
+            this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
+            this.connectText = '已上線'
 
-          this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel} [home::ws.onmessage]`)
-          this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [home::ws.onmessage]`)
-
-          this.$config.isDev && console.log(this.time(), incoming)
-
-          if (channel === 'system') {
-            // got system message
-            this.handleSystemMessage(incoming.message)
-          } else if (this.currentChannel == channel) {
-            if (!Array.isArray(this.messages[channel])) {
-              this.$store.commit("addChannel", channel)
-              this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
-            }
-            this.$nextTick(() => {
-              this.$config.isDev && console.log(this.time(), `${channel} 頻道新訊息 #${incoming['id']}`, this.messages[channel])
-              // add message to store channel list
-              !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
-            })
-          } else if (incoming.message && incoming.sender !== 'system') {
-            if (parseInt(this.unread[channel]) === NaN) {
-              this.$store.dispatch("resetUnread", channel)
-            }
-            this.$store.dispatch("plusUnread", channel)
+            this.connecting = false
           }
+          ws.onclose = (e) => {
+            this.connectText = 'WS伺服器連線已關閉'
+            this.$store.commit('websocket', undefined)
+            this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
+            setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
+            // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
+            this.connecting = false
+          }
+          ws.onerror = (e) => {
+            this.$store.commit('websocket', undefined)
+            this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
+            this.connectText = 'WS伺服器連線出錯'
+            // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
+            this.connecting = false
+          }
+          ws.onmessage = (e) => {
+            const incoming = JSON.parse(e.data)
+            const channel = incoming['channel'] || process.env['USERNAME']
+
+            this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel} [home::ws.onmessage]`)
+            this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [home::ws.onmessage]`)
+
+            this.$config.isDev && console.log(this.time(), incoming)
+
+            if (channel === 'system') {
+              // got system message
+              this.handleSystemMessage(incoming.message)
+            } else if (this.currentChannel == channel) {
+              if (!Array.isArray(this.messages[channel])) {
+                this.$store.commit("addChannel", channel)
+                this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
+              }
+              this.$nextTick(() => {
+                this.$config.isDev && console.log(this.time(), `${channel} 頻道新訊息 #${incoming['id']}`, this.messages[channel])
+                // add message to store channel list
+                !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
+              })
+            } else if (incoming.message && incoming.sender !== 'system') {
+              if (parseInt(this.unread[channel]) === NaN) {
+                this.$store.dispatch("resetUnread", channel)
+              }
+              this.$store.dispatch("plusUnread", channel)
+            }
+          }
+        } catch (e) {
+          console.error(e)
+        } finally {
+          this.connecting = false
         }
       }
     },
