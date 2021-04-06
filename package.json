@@ -24,16 +24,12 @@
     "electron-store": "^7.0.2",
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
-    "markd": "^1.2.0",
+    "markd": "^1.0.1",
     "md5": "^2.3.0",
     "nuxt": "^2.14.7",
-    "nuxt-fontawesome": "^0.4.0",
     "qs": "^6.9.4"
   },
   "devDependencies": {
-    "@fortawesome/free-brands-svg-icons": "^5.15.3",
-    "@fortawesome/free-solid-svg-icons": "^5.15.3",
-    "@nuxtjs/fontawesome": "^1.1.2",
     "electron": "^10.1.5",
     "electron-builder": "^22.9.1",
     "node-sass": "5.0.0",

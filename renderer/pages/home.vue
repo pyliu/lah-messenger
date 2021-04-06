@@ -4,17 +4,19 @@
       b-card.m-1(no-body header-tag="nav")
         template(#header): client-only: b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
+            b-icon.mr-1(icon="bookmarks")
             span 公告
             b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-          b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)")
+          b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)" title="進入個人通知列表")
+            b-icon.mr-1(icon="person")
             span 個人通知
             b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-          b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
-            fa-icon.mr-1.color-primary(:icon="['fas', 'comments']" title="進入交談選單")
+          b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')" title="進入會話選單")
+            b-icon.mr-1(icon="chat-text")
             span 交談頻道
 
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
-          fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
+          b-icon.mr-1(icon="arrow-left" title="返回列表")
           span #[b-avatar.mt-n1(size="1.25rem" icon="chat")] {{ getChannelName(currentChannel) }}
 
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
@@ -34,7 +36,7 @@
         b-button(@click="send" variant="primary") 傳送
     .center.vh-100(v-else @click="delayConnect")
       h5
-        fa-icon.mr-1(:icon="['fas', 'network-wired']")
+        b-icon.mr-1(icon="bar-chart-line")
         span {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")] 
 </template>
 
