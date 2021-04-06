@@ -33,7 +33,9 @@
           no-auto-shrink
           autofocus
         )
-        b-button(@click="send" variant="primary") 傳送
+        b-button(@click="send" variant="outline-primary")
+          b-icon(icon="cursor")
+          span 傳送
     .center.vh-100(v-else @click="delayConnect")
       div
         h5.d-flex.justify-content-center
@@ -350,7 +352,7 @@ export default {
           sender: this.userid,
           date: this.date(),
           time: this.time(),
-          message: this.currentChannel
+          message: { channel: this.currentChannel, count: 20 }
         })
         this.websocket.send(jsonString)
       } else {
