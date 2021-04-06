@@ -1,36 +1,41 @@
 <template lang="pug">
   div(v-cloak)
-    b-card.m-1(v-cloak no-body header-tag="nav")
-      template(#header): client-only: b-nav(card-header tabs fill)
-        b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
-          span 公告
-          b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-        b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)")
-          span 個人通知
-          b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-        b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
-          fa-icon.mr-1.color-primary(:icon="['fas', 'comments']" title="進入交談選單")
-          span 交談頻道
+    transition(v-if="connected" name="list"): div
+      b-card.m-1(no-body header-tag="nav")
+        template(#header): client-only: b-nav(card-header tabs fill)
+          b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
+            span 公告
+            b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
+          b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)")
+            span 個人通知
+            b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+          b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')")
+            fa-icon.mr-1.color-primary(:icon="['fas', 'comments']" title="進入交談選單")
+            span 交談頻道
 
-      transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
-        fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="chat")] {{ getChannelName(currentChannel) }}
+        transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
+          fa-icon.mr-1.align-middle(:icon="['fas', 'chevron-left']" title="返回列表")
+          span #[b-avatar.mt-n1(size="1.25rem" icon="chat")] {{ getChannelName(currentChannel) }}
 
-      transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
-      transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
-      
-    transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
-      b-textarea.mr-1(
-        v-model="text"
-        debounce="200"
-        placeholder="... Ctrl + Enter 直接送出 ..."
-        @keyup.ctrl.enter="send"
-        @keydown="delayConnect"
-        no-resize
-        no-auto-shrink
-        autofocus
-      )
-      b-button(@click="send" variant="primary") 傳送
+        transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
+        transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
+        
+      transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
+        b-textarea.mr-1(
+          v-model="text"
+          debounce="200"
+          placeholder="... Ctrl + Enter 直接送出 ..."
+          @keyup.ctrl.enter="send"
+          @keydown="delayConnect"
+          no-resize
+          no-auto-shrink
+          autofocus
+        )
+        b-button(@click="send" variant="primary") 傳送
+    .center.vh-100(v-else @click="delayConnect")
+      h5
+        fa-icon.mr-1(:icon="['fas', 'network-wired']")
+        span {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")] 
 </template>
 
 <script>
@@ -50,7 +55,8 @@ export default {
   },
   data: () => ({
     userid: process.env['USERNAME'],
-    text: ''
+    text: '',
+    connectText: '連線中'
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -253,6 +259,7 @@ export default {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
       } else {
+        this.connectText = '連線中'
         const ws = new WebSocket(this.wsConnStr)
         ws.onopen = (e) => {
           // ws to Vuex store
@@ -260,18 +267,25 @@ export default {
           this.$config.isDev && console.log(this.time(), "已連線", e)
           // set client info to remote ws server
           this.register()
+
+          // query current channel latest messages
           this.list.length = 0
+          this.delayLatestMessage()
+
           this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
+          this.connectText = '已上線'
         }
         ws.onclose = (e) => {
           this.$store.commit('websocket', undefined)
           this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
-          this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
+          this.connectText = `等待重新連線中(${this.wsConnStr})`
+          // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
         }
         ws.onerror = (e) => {
           this.$store.commit('websocket', undefined)
-          this.$config.isDev && console.error(this.time(), "WS伺服器連線出錯", this.wsConnStr, e)
-          this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
+          this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
+          this.connectText = 'WS伺服器連線出錯'
+          // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
         }
         ws.onmessage = (e) => {
           const incoming = JSON.parse(e.data)
@@ -304,7 +318,8 @@ export default {
         }
       }
     },
-    delayConnect () { /* placeholder */},
+    delayConnect () { /* placeholder */ },
+    delayLatestMessage () { /* placeholder */ },
     latestMessage() {
       if (this.connected) {
         const jsonString = JSON.stringify({
@@ -345,6 +360,7 @@ export default {
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
     this.delayConnect = debounce(this.connect, 1500)
+    this.delayLatestMessage = debounce(this.latestMessage, 400)
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
   },
   mounted () {
@@ -365,9 +381,6 @@ export default {
         this.connect()
       }, 20000))
     }
-
-    // query current channel messages by once
-    setTimeout(() => this.latestMessage(), 400)
 
     this.$store.commit("resetUnread", this.userid)
 
@@ -394,5 +407,8 @@ export default {
 <style lang="scss" scoped>
 .color-primary {
   color: #007bff;
+}
+.vh-100 {
+  height: 100vh;
 }
 </style>
