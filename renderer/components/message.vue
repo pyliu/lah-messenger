@@ -131,6 +131,7 @@ export default {
       background: #f8f9fa;
       color: #2e2e2e;
       font-size: .75rem;
+      max-width: 100%;
     }
     margin-top: .5rem;
     margin-bottom: 0.5rem;
