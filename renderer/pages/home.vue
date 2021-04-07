@@ -154,22 +154,17 @@ export default {
       }
     },
     sendTo(message, opts = {}) {
+      message = trim(message)
       !this.connected && this.connect()
-      if (!isEmpty(trim(message))) {
+      if (!isEmpty(message)) {
         if (this.connected) {
-          const jsonStr = this.packMessage(trim(message), { channel: this.currentChannel, ...opts })
+          const jsonStr = this.packMessage(message, { channel: this.currentChannel, ...opts })
           this.websocket.send(jsonStr)
           return true
         } else {
-          this.list.push(
-            JSON.parse(
-              this.packMessage(
-                `伺服器連線${this.status(
-                  this.websocket.readyState
-                )} ... 無法傳送訊息`
-              )
-            )
-          )
+          this.notify(`伺服器連線${this.status(
+            this.websocket.readyState
+          )} ... 無法傳送訊息`, { type: 'warning', pos: 'tf' })
         }
       }
       return false
