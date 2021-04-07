@@ -16,8 +16,8 @@
             span 交談頻道
 
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
-          b-icon.mr-1(icon="arrow-left" title="返回列表")
-          span #[b-avatar.mt-n1(size="1.25rem" icon="chat")] {{ getChannelName(currentChannel) }}
+          b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
+          span {{ getChannelName(currentChannel) }} 
 
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
@@ -33,8 +33,8 @@
           no-auto-shrink
           autofocus
         )
-        b-button(@click="send" variant="outline-primary")
-          b-icon(icon="cursor")
+        b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
+          b-icon(icon="cursor" v-if="valid")
           span 傳送
     .center.vh-100(v-else @click="delayConnect")
       div
@@ -45,7 +45,9 @@
           b-input(v-model="wsHost")
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
-          b-button(@click="manualConnect" variant="outline-primary") 連線
+          b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
+            b-icon(icon="arrow-clockwise" animation="spin" v-if="connecting")
+            span(v-else) 連線
 </template>
 
 <script>
@@ -68,7 +70,8 @@ export default {
     text: '',
     connectText: '連線中',
     wsHost: '127.0.0.1',
-    wsPort: 8081
+    wsPort: 8081,
+    connecting: false
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -110,6 +113,7 @@ export default {
     disconnected() {
       return isEmpty(this.websocket) || this.websocket.readyState === 3
     },
+    valid() { return !isEmpty(trim(this.text)) },
     list() {
       return this.messages[this.currentChannel]
     },
@@ -151,7 +155,7 @@ export default {
     },
     sendTo(message, opts = {}) {
       !this.connected && this.connect()
-      if (!isEmpty(message)) {
+      if (!isEmpty(trim(message))) {
         if (this.connected) {
           const jsonStr = this.packMessage(trim(message), { channel: this.currentChannel, ...opts })
           this.websocket.send(jsonStr)
@@ -270,6 +274,7 @@ export default {
       })
     },
     manualConnect() {
+      this.connecting = true
       this.resetReconnectTimer()
       this.delayConnect()
     }, 
@@ -277,6 +282,7 @@ export default {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
       } else {
+        this.connecting = true
         try {
           this.websocket && this.websocket.close()
           this.connectText = '連線中'
@@ -292,7 +298,6 @@ export default {
             this.list.length = 0
             this.delayLatestMessage()
 
-            this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
             this.connectText = '已上線'
           }
           ws.onclose = (e) => {
@@ -341,6 +346,7 @@ export default {
           console.error(e)
           this.$store.commit('websocket', undefined)
         } finally {
+          this.connecting = false
         }
       }
     },
@@ -413,6 +419,10 @@ export default {
     this.$store.commit("resetUnread", this.userid)
     this.resetReconnectTimer()
 
+
+    // const { BrowserWindow } = require('electron').remote
+    // const win = new BrowserWindow({ width: 800, height: 600 })
+    // win.loadURL('https://github.com')
     // move scroll bar to the bottom
     // this.$nextTick(() => {
     //   if (this.$refs.box) {
