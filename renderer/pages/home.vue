@@ -68,8 +68,7 @@ export default {
     text: '',
     connectText: '連線中',
     wsHost: '127.0.0.1',
-    wsPort: 8081,
-    connecting: false
+    wsPort: 8081
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -115,7 +114,9 @@ export default {
       return this.messages[this.currentChannel]
     },
 
-    inChatting () { return !['announcement', this.userid, 'chat'].includes(this.currentChannel) }
+    stickyChannels() { return ['announcement', this.userid, 'chat'] },
+    inChatting() { return !this.stickyChannels.includes(this.currentChannel) }
+
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -140,8 +141,8 @@ export default {
       // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
       const oCName = this.getChannelName(oVal)
       const nCName = this.getChannelName(nVal)
-      !['announcement', this.userid, 'chat'].includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
-      !['announcement', this.userid, 'chat'].includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+      !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+      !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
     },
     send () {
       if (this.sendTo(this.text, { channel: this.currentChannel })) {
@@ -270,14 +271,14 @@ export default {
     },
     manualConnect() {
       this.resetReconnectTimer()
-      this.connect()
+      this.delayConnect()
     }, 
     connect() {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
-      } else if (!this.connecting) {
+      } else {
         try {
-          this.connecting = true
+          this.websocket && this.websocket.close()
           this.connectText = '連線中'
           const ws = new WebSocket(this.wsConnStr)
           ws.onopen = (e) => {
@@ -293,8 +294,6 @@ export default {
 
             this.notify('已上線', { type: 'success', pos: 'tf', delay: 2 })
             this.connectText = '已上線'
-
-            this.connecting = false
           }
           ws.onclose = (e) => {
             this.connectText = 'WS伺服器連線已關閉'
@@ -302,14 +301,12 @@ export default {
             this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
             setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
             // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
-            this.connecting = false
           }
           ws.onerror = (e) => {
             this.$store.commit('websocket', undefined)
             this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
             this.connectText = 'WS伺服器連線出錯'
             // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
-            this.connecting = false
           }
           ws.onmessage = (e) => {
             const incoming = JSON.parse(e.data)
@@ -342,8 +339,8 @@ export default {
           }
         } catch (e) {
           console.error(e)
+          this.$store.commit('websocket', undefined)
         } finally {
-          this.connecting = false
         }
       }
     },
@@ -431,7 +428,7 @@ export default {
   },
   beforeDestroy () {
     const cName = this.getChannelName(this.currentChannel)
-    !['announcement', this.userid, 'chat'].includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道`, { sender: 'system', channel: this.currentChannel })
+    !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道`, { sender: 'system', channel: this.currentChannel })
   }
 }
 </script>
