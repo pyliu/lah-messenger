@@ -45,7 +45,7 @@
           b-input(v-model="wsHost")
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
-          b-button(@click="connect" variant="outline-primary") 連線
+          b-button(@click="manualConnect" variant="outline-primary") 連線
 </template>
 
 <script>
@@ -268,6 +268,10 @@ export default {
         ...opts,
       })
     },
+    manualConnect() {
+      this.resetReconnectTimer()
+      this.connect()
+    }, 
     connect() {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
@@ -375,6 +379,22 @@ export default {
          return this.unread[channel] || 0
       }
       return 0
+    },
+    resetReconnectTimer () {
+      // reset timer if it already settle
+      if (this.timer !== null) {
+        this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
+        clearTimeout(this.timer)
+        this.$store.commit('timer', null)
+      }
+      // check connection every 20s
+      if (this.timer === null) {
+        this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
+        this.$store.commit('timer', setInterval(() => {
+          this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
+          this.connect()
+        }, 20000))
+      }
     }
   },
   created() {
@@ -393,23 +413,8 @@ export default {
   mounted () {
     // connect to ws server
     this.connect()
-
-    // reset timer if it already settle
-    if (this.timer !== null) {
-      this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
-      clearTimeout(this.timer)
-      this.$store.commit('timer', null)
-    }
-    // check connection every 20s
-    if (this.timer === null) {
-      this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
-      this.$store.commit('timer', setInterval(() => {
-        this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
-        this.connect()
-      }, 20000))
-    }
-
     this.$store.commit("resetUnread", this.userid)
+    this.resetReconnectTimer()
 
     // move scroll bar to the bottom
     // this.$nextTick(() => {
