@@ -381,7 +381,7 @@ export default {
       return 0
     },
     resetReconnectTimer () {
-      // reset timer if it already settle
+      // reset timer if it already settled
       if (this.timer !== null) {
         this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
         clearTimeout(this.timer)
