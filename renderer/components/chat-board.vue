@@ -7,7 +7,9 @@
     b-list-group.gray-bottom-border(flush)
       b-list-group-item(v-for="(item, idx) in participatedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
         span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.name }}
-        b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
+        span
+          b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
+          b-icon(icon="x-circle-fill" variant="danger" font-scale="1.25" @click.stop="removeParticipatedChannel(item)")
 </template>
 
 <script>
@@ -53,6 +55,21 @@ export default {
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
+    },
+    removeParticipatedChannel (item) {
+      this.confirm(`刪除 ${item.id} / ${item.name} 頻道將一併移除所有歷史訊息，請確認是否執行？`).then((ans) => {
+        ans && this.confirm(`本操作不可復原，真的要執行？`).then((ans) => {
+          if (ans) {
+            this.$store.commit('removeParticipatedChannel', item)
+            // send system message to own channel
+            const jsonStr = this.packMessage({
+              action: 'remove_channel',
+              payload: item
+            }, { channel: this.userid, sender: 'system' })
+            this.websocket && this.websocket.send(jsonStr)
+          }
+        })
+      })
     }
   }
 };

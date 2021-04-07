@@ -47,6 +47,41 @@ Vue.mixin({
       'resetUnread',
       'plusUnread'
     ]),
+    date() {
+      const now = new Date()
+      return (
+        now.getFullYear() +
+        "-" +
+        ("0" + (now.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + now.getDate()).slice(-2)
+      )
+    },
+    time() {
+      const now = new Date()
+      const time =
+        ("0" + now.getHours()).slice(-2) +
+        ":" +
+        ("0" + now.getMinutes()).slice(-2) +
+        ":" +
+        ("0" + now.getSeconds()).slice(-2)
+      return time
+    },
+    packMessage(text, opts = {}) {
+      return JSON.stringify({
+        ...{
+          type: "mine",
+          sender: process.env["USERNAME"],
+          date: this.date(),
+          time: this.time(),
+          title: "dontcare",
+          from: this.ip,
+          message: text,
+          channel: this.currentChannel,
+        },
+        ...opts,
+      })
+    },
     getChannelName(channelId) {
       switch (channelId) {
         case 'announcement': return '公告'

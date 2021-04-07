@@ -105,8 +105,11 @@ const mutations = {
   },
   addParticipatedChannel (state, channelPayload) {
     if (channelPayload.id && channelPayload.name) {
-      state.participatedChannels = [ ... state.participatedChannels, channelPayload ]
-      // add to messages list as well
+      const found = state.participatedChannels.find(ch => ch.id === channelPayload.id)
+      if (!found) {
+        state.participatedChannels = [ ... state.participatedChannels, channelPayload ]
+      }
+      // add/reset to messages list as well
       state.messages = { ...state.messages, ...{ [channelPayload.id]: [] } }
     } else {
       this.$config.isDev && console.log(timestamp(), `[addParticipatedChannel] channelPayload is not correct`, channelPayload)
@@ -115,8 +118,8 @@ const mutations = {
   removeParticipatedChannel (state, channelPayload) {
     if (channelPayload.id) {
       state.participatedChannels = [ ...state.participatedChannels.filter(item => item.id !== channelPayload.id)]
-      // clean the channel
-      state.messages = { ...state.messages, ...{ [channelPayload.id]: [] } }
+      // remove the channel
+      !delete state.messages[[channelPayload.id]] && this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] delete ${channelPayload.id} failed`, channelPayload)
     } else {
       this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
