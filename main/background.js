@@ -79,6 +79,8 @@ if (isProd) {
 }
 
 app.on('window-all-closed', () => {
+  // send to renderer process
+  mainWindow.webContents.send('quit');
   app.quit();
 });
 
