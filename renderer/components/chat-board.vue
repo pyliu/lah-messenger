@@ -65,7 +65,7 @@ export default {
             const jsonStr = this.packMessage({
               action: 'remove_channel',
               payload: item
-            }, { channel: this.userid, sender: 'system' })
+            }, { channel: this.currentChannel, sender: this.userid })
             this.websocket && this.websocket.send(jsonStr)
           }
         })
