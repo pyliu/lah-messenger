@@ -38,6 +38,7 @@
           span 傳送
     .center.vh-100(v-else @click="delayConnect")
       div
+        h5.d-flex.justify-content-center {{ userid }} from {{ ip }}
         h5.d-flex.justify-content-center
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
           .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
@@ -46,7 +47,7 @@
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
           b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
-            b-icon(icon="arrow-clockwise" animation="spin" v-if="connecting")
+            b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
             span(v-else) 連線
 </template>
 
@@ -54,11 +55,10 @@
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
-import { ipv6, ipv4 } from '~/assets/js/ip.js'
 
 export default {
   head: {
-    title: `桃園地政事務所 - ${process.env['USERNAME']} ${ipv4} / ${ipv6}`
+    title: `桃園地政事務所`
   },
   asyncData ({ req, store, redirect, error }) {
     return {
@@ -198,7 +198,7 @@ export default {
           message: JSON.stringify({
             ip: this.ip,
             domain: process.env["USERDOMAIN"],
-            userid: process.env["USERNAME"],
+            userid: this.userid,
             username: this.$config.username,
             dept: this.$config.userdept,
           }),
@@ -211,7 +211,7 @@ export default {
           "尚未連線無法登錄客戶端資料", {
             ip: this.ip,
             domain: process.env["USERDOMAIN"],
-            userid: process.env["USERNAME"],
+            userid: this.userid,
             username: this.$config.username,
             dept: this.$config.userdept,
           }
@@ -406,6 +406,14 @@ export default {
     // this.estore.set({
     //   pyliu: 'awesome'
     // })
+    
+    // dynamic get userinfo from main process
+    const { ipcRenderer } = require('electron')
+    ipcRenderer.invoke('userinfo').then((userinfo) => {
+      this.$store.commit('userid', userinfo.userid)
+      this.$store.commit('ip', userinfo.ipv4)
+      this.$store.commit('address', userinfo.address)
+    })
   },
   beforeDestroy () {
     const cName = this.getChannelName(this.currentChannel)

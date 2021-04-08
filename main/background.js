@@ -81,3 +81,30 @@ if (isProd) {
 app.on('window-all-closed', () => {
   app.quit();
 });
+
+// ipc main process to handle renderer request 
+const { ipcMain } = require('electron')
+ipcMain.handle('userinfo', async (event, arg) => {
+  // console.log(arg)
+  const username = require('username')
+  const userinfo = {
+    address: [],
+    ipv4: '',
+    ipv6: '',
+    userid: username.sync()
+  }
+  // get all ip addresses by node.js os module 
+  const nets = require('os').networkInterfaces()
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      userinfo.address.push(net.address)
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        userinfo.ipv4 = net.address
+      } else if (net.family === 'IPv6' && !net.internal) {
+        userinfo.ipv6 = net.address
+      }
+    }
+  }
+  return userinfo
+})
