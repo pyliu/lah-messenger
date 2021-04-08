@@ -43,7 +43,7 @@
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
           .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
         b-input-group(prepend="伺服器")
-          b-input(v-model="wsHost")
+          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect")
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
           b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
@@ -384,7 +384,7 @@ export default {
         this.$store.commit('address', userinfo.address)
       })
       // receive main process quit event
-      ipcRenderer.on('quit', (event, args) => this.sendLeaveChannelActivity())
+      ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
   created() {
@@ -401,11 +401,10 @@ export default {
     this.wsPort = this.$config.websocketPort
   },
   mounted () {
-    // connect to ws server
-    this.connect()
-    this.$store.commit("resetUnread", this.userid)
-    this.resetReconnectTimer()
     this.ipcRendererSetup()
+    this.$store.commit("resetUnread", this.userid)
+    // auto connect to ws server
+    this.resetReconnectTimer()
 
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
