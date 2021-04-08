@@ -72,7 +72,7 @@ Vue.mixin({
       return JSON.stringify({
         ...{
           type: "mine",
-          sender: process.env["USERNAME"],
+          sender: this.userid,
           date: this.date(),
           time: this.time(),
           title: "dontcare",

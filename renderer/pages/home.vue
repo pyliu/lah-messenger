@@ -382,9 +382,10 @@ export default {
         this.$store.commit('currentChannel', userinfo.userid)
         this.$store.commit('ip', userinfo.ipv4)
         this.$store.commit('address', userinfo.address)
+      }).finally(() => {
+        // receive main process quit event
+        ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
       })
-      // receive main process quit event
-      ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
   created() {
