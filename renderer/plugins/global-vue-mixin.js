@@ -32,6 +32,7 @@ Vue.mixin({
       'websocket',
       'messages',
       'unread',
+      'userid',
       'ip',
       'address',
       'timer',
@@ -39,7 +40,6 @@ Vue.mixin({
       'participatedChannels'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    userid () { return process.env['USERNAME'] },
     username () { return this.$config ? this.$config.username : '' },
     userdept () { return this.$config ? this.$config.userdept : '' }
   },

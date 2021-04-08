@@ -27,7 +27,8 @@
     "markd": "^1.0.1",
     "md5": "^2.3.0",
     "nuxt": "^2.15.4",
-    "qs": "^6.9.4"
+    "qs": "^6.9.4",
+    "username": "^5.1.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",

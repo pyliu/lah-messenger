@@ -1,5 +1,3 @@
-import { ipv4, ips } from '~/assets/js/ip.js'
-
 const timestamp = (full = false) => {
   // e.g. 2020-12-03 10:23:00
   const now = new Date()
@@ -16,6 +14,7 @@ const timestamp = (full = false) => {
 }
 
 const state = () => ({
+  userid: '',
   websocket: undefined,
   timer: null,
   currentChannel: process.env['USERNAME'],
@@ -45,8 +44,8 @@ const state = () => ({
     'supervisor': 0,
     [process.env['USERNAME']]: 0
   },
-  address: [ ...ips ],
-  ip: ipv4,
+  address: [],
+  ip: '',
   participatedChannels: []
 })
 
@@ -55,6 +54,7 @@ const getters = {
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
+  userid: state => state.userid,
   ip: state => state.ip,
   address: state => state.address,
   currentChannel: state => state.currentChannel,
@@ -68,6 +68,9 @@ const mutations = {
   },
   timer (state, timer) {
     state.timer = timer
+  },
+  userid (state, userid) {
+    state.userid = userid
   },
   ip (state, ip) {
     state.ip = ip

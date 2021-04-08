@@ -9,7 +9,7 @@
         span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.participants.find(val => val !== userid) }}
         span
           b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
-          b-icon(icon="x-circle-fill" variant="danger" font-scale="1.25" @click.stop="removeParticipatedChannel(item)")
+          b-icon(icon="x-circle-fill" variant="danger" font-scale="1.25" @click.stop="removeParticipatedChannel(item)" title="刪除對話頻道")
 </template>
 
 <script>
