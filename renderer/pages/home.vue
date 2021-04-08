@@ -136,6 +136,12 @@ export default {
       // release from channel items
       this.messages[oVal].length = 0
       this.latestMessage()
+    },
+    wsHost(val) {
+      this.resetReconnectTimer()
+    },
+    wsPort(val) {
+      this.resetReconnectTimer()
     }
   },
   methods: {
