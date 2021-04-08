@@ -373,6 +373,18 @@ export default {
           this.connect()
         }, 20000))
       }
+    },
+    ipcRendererSetup () {
+      // dynamic get userinfo from main process
+      const { ipcRenderer } = require('electron')
+      ipcRenderer.invoke('userinfo').then((userinfo) => {
+        this.$store.commit('userid', userinfo.userid)
+        this.$store.commit('currentChannel', userinfo.userid)
+        this.$store.commit('ip', userinfo.ipv4)
+        this.$store.commit('address', userinfo.address)
+      })
+      // receive main process quit event
+      ipcRenderer.on('quit', (event, args) => this.sendLeaveChannelActivity())
     }
   },
   created() {
@@ -393,7 +405,7 @@ export default {
     this.connect()
     this.$store.commit("resetUnread", this.userid)
     this.resetReconnectTimer()
-
+    this.ipcRendererSetup()
 
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
@@ -411,16 +423,6 @@ export default {
     //   pyliu: 'awesome'
     // })
     
-    // dynamic get userinfo from main process
-    const { ipcRenderer } = require('electron')
-    ipcRenderer.invoke('userinfo').then((userinfo) => {
-      this.$store.commit('userid', userinfo.userid)
-      this.$store.commit('currentChannel', userinfo.userid)
-      this.$store.commit('ip', userinfo.ipv4)
-      this.$store.commit('address', userinfo.address)
-    })
-    // receive main process quit event
-    ipcRenderer.on('quit', (event, args) => this.sendLeaveChannelActivity())
   }
 }
 </script>
