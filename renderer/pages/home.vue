@@ -226,14 +226,16 @@ export default {
           this.$store.commit('addParticipatedChannel', {
             id: json.id,
             name: json.name,
-            participants: json.participants
+            participants: json.participants,
+            type: json.type // 0 => 1-1, 1 => group, 2 => dept
           })
           break
         case 'remove_channel':
           this.$store.commit('removeParticipatedChannel', {
             id: json.id,
             name: json.name,
-            participants: json.participants
+            participants: json.participants,
+            type: json.type
           })
           break
         default:

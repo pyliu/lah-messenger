@@ -96,8 +96,7 @@ Vue.mixin({
         case 'acc': return '會計室'
         case 'supervisor': return '主任祕書室'
         default:
-          console.log(this.participatedChannels)
-          // find channel name by query
+          // TODO: find channel name by query
           const found = this.participatedChannels.find(item => item.id === channelId)
           if (found) {
             return found.participants.find(val => val !== this.userid)
