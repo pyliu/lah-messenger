@@ -153,9 +153,9 @@ export default {
       !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
       !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
     },
-    sendLeaveChannelActivity() {
+    sendAppCloseActivity() {
       const cName = this.getChannelName(this.currentChannel)
-      !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道`, { sender: 'system', channel: this.currentChannel })
+      !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.currentChannel })
     },
     send () {
       if (this.sendTo(this.text, { channel: this.currentChannel })) {
@@ -373,8 +373,7 @@ export default {
           this.connect()
         }, 20000))
       }
-    },
-    sendLeave
+    }
   },
   created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
@@ -421,7 +420,7 @@ export default {
       this.$store.commit('address', userinfo.address)
     })
     // receive main process quit event
-    ipcRenderer.on('quit', (event, args) => this.sendLeaveChannelActivity)
+    ipcRenderer.on('quit', (event, args) => this.sendLeaveChannelActivity())
   }
 }
 </script>
