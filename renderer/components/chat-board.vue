@@ -6,7 +6,7 @@
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
     b-list-group.gray-bottom-border(flush)
       b-list-group-item(v-for="(item, idx) in participatedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.name }}
+        span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.participants.find(val => val !== userid) }}
         span
           b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
           b-icon(icon="x-circle-fill" variant="danger" font-scale="1.25" @click.stop="removeParticipatedChannel(item)")

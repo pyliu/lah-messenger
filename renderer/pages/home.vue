@@ -66,7 +66,6 @@ export default {
     }
   },
   data: () => ({
-    userid: process.env['USERNAME'],
     text: '',
     connectText: '連線中',
     wsHost: '127.0.0.1',
@@ -226,13 +225,15 @@ export default {
         case 'add_channel':
           this.$store.commit('addParticipatedChannel', {
             id: json.id,
-            name: json.name
+            name: json.name,
+            participants: json.participants
           })
           break
         case 'remove_channel':
           this.$store.commit('removeParticipatedChannel', {
             id: json.id,
-            name: json.name
+            name: json.name,
+            participants: json.participants
           })
           break
         default:
