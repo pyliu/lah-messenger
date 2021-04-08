@@ -193,7 +193,7 @@ export default {
       if (this.connected) {
         const jsonString = JSON.stringify({
           type: "register",
-          sender: "信差客戶端",
+          sender: this.userid,
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({
@@ -203,6 +203,7 @@ export default {
             username: this.$config.username,
             dept: this.$config.userdept,
           }),
+          channel: this.userid
         })
         this.websocket.send(jsonString)
       } else {
@@ -325,7 +326,8 @@ export default {
           sender: this.userid,
           date: this.date(),
           time: this.time(),
-          message: { channel: this.currentChannel, count: 20 }
+          message: { channel: this.currentChannel, count: 20 },
+          channel: this.currentChannel
         })
         this.websocket.send(jsonString)
       } else {
