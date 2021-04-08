@@ -17,7 +17,7 @@ const state = () => ({
   userid: '',
   websocket: undefined,
   timer: null,
-  currentChannel: process.env['USERNAME'],
+  currentChannel: '',
   messages: {
     'lds': [],
     'announcement': [],
@@ -28,8 +28,7 @@ const state = () => ({
     'sur': [],
     'acc': [],
     'hr': [],
-    'supervisor': [],
-    [process.env['USERNAME']]: []
+    'supervisor': []
   },
   unread: {
     'lds': 0,
@@ -41,8 +40,7 @@ const state = () => ({
     'sur': 0,
     'acc': 0,
     'hr': 0,
-    'supervisor': 0,
-    [process.env['USERNAME']]: 0
+    'supervisor': 0
   },
   address: [],
   ip: '',

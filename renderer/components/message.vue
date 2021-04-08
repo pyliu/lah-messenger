@@ -54,7 +54,7 @@ export default {
       return this.currentChannel === 'announcement'
     },
     mine() {
-      return this.raw ? process.env['USERNAME'] === this.sender : false;
+      return this.raw ? this.userid === this.sender : false;
     },
     system() {
       return this.raw ? 'system' === this.sender : false;

@@ -10,7 +10,7 @@ export default {
   },
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return process.env['USERNAME'] === this.currentChannel },
+    isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
     blockCss () {
       if (this.isAnnouncement) {

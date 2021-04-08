@@ -285,7 +285,7 @@ export default {
           }
           ws.onmessage = (e) => {
             const incoming = JSON.parse(e.data)
-            const channel = incoming['channel'] || process.env['USERNAME']
+            const channel = incoming['channel'] || this.userid
 
             this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel} [home::ws.onmessage]`)
             this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [home::ws.onmessage]`)
@@ -411,6 +411,7 @@ export default {
     const { ipcRenderer } = require('electron')
     ipcRenderer.invoke('userinfo').then((userinfo) => {
       this.$store.commit('userid', userinfo.userid)
+      this.$store.commit('currentChannel', userinfo.userid)
       this.$store.commit('ip', userinfo.ipv4)
       this.$store.commit('address', userinfo.address)
     })
