@@ -341,10 +341,7 @@ export default {
               // got system message
               this.handleSystemMessage(incoming.message)
             } else if (this.currentChannel == channel) {
-              if (!Array.isArray(this.messages[channel])) {
-                this.$store.commit("addChannel", channel)
-                this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
-              }
+              !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
               this.$nextTick(() => {
                 // add message to store channel list
                 !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
@@ -358,6 +355,7 @@ export default {
           }
         } catch (e) {
           console.error(e)
+          this.websocket.close()
           this.$store.commit('websocket', undefined)
         } finally {
           this.connecting = false
