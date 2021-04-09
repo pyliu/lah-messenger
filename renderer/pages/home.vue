@@ -195,18 +195,19 @@ export default {
     register() {
       if (this.connected) {
         const jsonString = JSON.stringify({
-          type: "register",
+          type: "command",
           sender: this.userid,
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({
+            command: 'register',
             ip: this.ip,
             domain: process.env["USERDOMAIN"],
             userid: this.userid,
             username: this.$config.username,
             dept: this.$config.userdept,
           }),
-          channel: this.userid
+          channel: 'system'
         })
         this.websocket.send(jsonString)
       } else {
@@ -222,26 +223,63 @@ export default {
         )
       }
     },
+    queryMyChannel () {
+      const jsonString = JSON.stringify({
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({ command: 'mychannel' }),
+        channel: 'system'
+      })
+      this.websocket.send(jsonString)
+    },
+    handleAckMessage (json) {
+      const cmd = json.command
+      this.$config.isDev && console.log(this.time(), `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`, json)
+      switch (cmd) {
+        case 'register':
+          json.success && this.queryMyChannel()
+          break;
+        case 'mychannel':
+          if (json.success) {
+            const payload = json.payload
+            switch (payload.action) {
+              case 'add':
+                this.addChatChannel(payload)
+                break;
+              case 'remove':
+                this.removeChatChannel(payload)
+                break;
+              default:
+                console.warn(`不支援的 mychannel ACK 動作 ${payload.action}`)
+            }
+          }
+          break;
+        default:
+          console.warn(`收到未支援指令 ${cmd} ACK`, json)
+      }
+    },
+    addChatChannel(payload) {
+      this.$store.commit('addParticipatedChannel', {
+        id: payload.id,
+        name: payload.name,
+        participants: payload.participants,
+        type: payload.type // 0 => 1-1, 1 => group, 2 => dept
+      })
+    },
+    removeChatChannel(payload) {
+      this.$store.commit('removeParticipatedChannel', {
+        id: payload.id,
+        name: payload.name,
+        participants: payload.participants,
+        type: payload.type
+      })
+    },
     handleSystemMessage (json) {
       const action = json.action
       this.$config.isDev && console.log(this.time(), `處理系統訊息 ${action} [home::handleSystemMessage]`, json)
       switch (action) {
-        case 'add_channel':
-          this.$store.commit('addParticipatedChannel', {
-            id: json.id,
-            name: json.name,
-            participants: json.participants,
-            type: json.type // 0 => 1-1, 1 => group, 2 => dept
-          })
-          break
-        case 'remove_channel':
-          this.$store.commit('removeParticipatedChannel', {
-            id: json.id,
-            name: json.name,
-            participants: json.participants,
-            type: json.type
-          })
-          break
         default:
           this.$config.isDev && console.log(this.time(), `未支援的命令 ${action}`, json)
       }
@@ -296,7 +334,9 @@ export default {
 
             this.$config.isDev && console.log(this.time(), incoming)
 
-            if (channel === 'system') {
+            if (incoming.type === 'ack') {
+              this.handleAckMessage(incoming.message)
+            } else if (channel === 'system') {
               // got system message
               this.handleSystemMessage(incoming.message)
             } else if (this.currentChannel == channel) {
@@ -329,12 +369,16 @@ export default {
     latestMessage() {
       if (this.connected) {
         const jsonString = JSON.stringify({
-          type: "latest",
+          type: "command",
           sender: this.userid,
           date: this.date(),
           time: this.time(),
-          message: { channel: this.currentChannel, count: 20 },
-          channel: this.currentChannel
+          message: JSON.stringify({
+            command: 'latest',
+            channel: this.currentChannel,
+            count: 30
+          }),
+          channel: 'system'
         })
         this.websocket.send(jsonString)
       } else {
