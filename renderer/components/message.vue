@@ -1,5 +1,5 @@
 <template lang="pug">
-  .mb-3
+  .mb-1
     //- show date if the message has previous days' message
     .d-flex.msg-item(
       v-if="showMdate"
@@ -105,10 +105,10 @@ export default {
   overflow: hidden;
   p {
     display: inline-block;
-    border-radius: 10px;
-    background: #dddde2;
-    color: rgb(37, 36, 36);
-    padding: 10px;
+    border-radius: 5px;
+    background: #17a2b8;
+    color: rgb(255, 239, 239);
+    padding: 5px;
     max-width: 90%;
     text-align: left;
     box-sizing: border-box;
@@ -117,6 +117,7 @@ export default {
 
   &.mine {
     p {
+      text-align: right;
       background: rgb(2, 182, 32);
       color: white;
       margin-bottom: 0rem !important;
