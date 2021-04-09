@@ -333,8 +333,7 @@ export default {
             const incoming = JSON.parse(e.data)
             const channel = incoming['channel']
 
-            this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel}`)
-            this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料`, incoming)
+            this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
             if (incoming.type === 'ack') {
               this.handleAckMessage(incoming.message)
@@ -347,7 +346,6 @@ export default {
                 this.$config.isDev && console.log(this.time(), `新增 ${channel} 頻道到 Vuex Store。 [messageMixin::ws.onmessage]`)
               }
               this.$nextTick(() => {
-                this.$config.isDev && console.log(this.time(), `${channel} 頻道新訊息 #${incoming['id']}`, this.messages[channel])
                 // add message to store channel list
                 !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
               })
