@@ -64,6 +64,7 @@ const getters = {
 // only sync operation
 const mutations = {
   websocket (state, ws) {
+    state.websocket && state.websocket.close()
     state.websocket = ws
   },
   timer (state, timer) {
