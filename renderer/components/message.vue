@@ -103,6 +103,7 @@ export default {
 .msg-item {
   position: relative;
   overflow: hidden;
+
   p {
     display: inline-block;
     border-radius: 5px;
@@ -128,11 +129,11 @@ export default {
       text-align: center;
       font-weight: bold;
       padding: 5px 10px 5px 10px;
-      border-radius: 5px;
+      border-radius: 10px;
       background: #e9ebec;
       color: #2e2e2e;
       font-size: .75rem;
-      max-width: 100%;
+      max-width: 95%;
     }
     margin-top: .5rem;
     margin-bottom: 0.5rem;
