@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import serve from 'electron-serve';
+const path = require('path');
 
 import {
   createWindow,
@@ -28,11 +29,11 @@ if (!gotTheLock) {
     (async () => {
       await app.whenReady();
 
-      mainWindow = createWindow('main', {
+      mainWindow = createWindow('main',  {
         width: isProd ? 490 : 960,
         height: 740,
         show: false,  // use 'ready-to-show' event to show the window
-        useContentSize: true,
+        useContentSize: true, // include window frame/menubar size
         center: true,
         resizable: false,
         maximizable: false,

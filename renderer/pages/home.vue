@@ -38,17 +38,20 @@
           span 傳送
     .center.vh-100(v-else @click="delayConnect")
       div
-        h5.d-flex.justify-content-center {{ userid }} from {{ ip }}
-        h5.d-flex.justify-content-center
-          b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.5")
-          .my-auto {{ connectText }} #[b-icon(icon="three-dots" /*animation="cylon"*/)] 
-        b-input-group(prepend="伺服器")
+        //- h5.d-flex.justify-content-center {{ userid }} from {{ ip }}
+        b-input-group(:prepend="`${userid}`")
+          b-input(v-model="nickname" placeholder="... 姓名 ...")
+          span.my-auto.mx-1 / {{ ip }}
+        b-input-group.my-2(prepend="伺服器")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect")
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
           b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
-            span(v-else) 連線
+            span 連線
+        h5.d-flex.justify-content-end.text-muted.s-75
+          //- b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
+          .my-auto {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")] 
 </template>
 
 <script>
@@ -70,6 +73,7 @@ export default {
     connectText: '連線中',
     wsHost: '127.0.0.1',
     wsPort: 8081,
+    nickname: '',
     connecting: false
   }),
   computed: {
@@ -133,7 +137,7 @@ export default {
         this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
       }
       // release from channel items
-      this.messages[oVal].length = 0
+      this.messages[oVal] && (this.messages[oVal].length = 0)
       this.latestMessage()
     },
     wsHost(val) {
@@ -327,12 +331,10 @@ export default {
           }
           ws.onmessage = (e) => {
             const incoming = JSON.parse(e.data)
-            const channel = incoming['channel'] || this.userid
+            const channel = incoming['channel']
 
-            this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel} [home::ws.onmessage]`)
-            this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料 [home::ws.onmessage]`)
-
-            this.$config.isDev && console.log(this.time(), incoming)
+            this.$config.isDev && console.log(this.time(), `目前頻道：${this.currentChannel}`)
+            this.$config.isDev && console.log(this.time(), `收到的 ${channel} 頻道的資料`, incoming)
 
             if (incoming.type === 'ack') {
               this.handleAckMessage(incoming.message)
