@@ -1,3 +1,5 @@
+import isEmpty from 'lodash/isEmpty'
+
 const timestamp = (full = false) => {
   // e.g. 2020-12-03 10:23:00
   const now = new Date()
@@ -80,25 +82,31 @@ const mutations = {
     state.currentChannel = currentChannel
   },
   addChannel (state, channel) {
-    state.messages = { ...state.messages, ...{ [channel]: [] } }
-    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
+    if (!isEmpty(channel)) {
+      state.messages = { ...state.messages, ...{ [channel]: [] } }
+      this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
+    }
   },
   resetUnread (state, channel) {
-    state.unread = { ...state.unread, ...{ [channel]: 0 } }
-    this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
+    if (!isEmpty(channel)) {
+      state.unread = { ...state.unread, ...{ [channel]: 0 } }
+      this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
+    }
   },
   plusUnread (state, channel) {
-    if (state.unread[channel] !== '99+') {
-      if (parseInt(state.unread[channel]) === NaN) {
-        state.unread = { ...state.unread, ...{ [channel]: 0 } }
-        this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+    if (!isEmpty(channel)) {
+      if (state.unread[channel] !== '99+') {
+        if (parseInt(state.unread[channel]) === NaN) {
+          state.unread = { ...state.unread, ...{ [channel]: 0 } }
+          this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+        }
+        state.unread[channel]++
+        // maximun is 99
+        state.unread[channel] > 99 && (state.unread[channel] = '99+')
+        this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
+      } else {
+        this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增加已達最大值 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
       }
-      state.unread[channel]++
-      // maximun is 99
-      state.unread[channel] > 99 && (state.unread[channel] = '99+')
-      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
-    } else {
-      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增加已達最大值 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
     }
   },
   resetParticipatedChannel (state) {
