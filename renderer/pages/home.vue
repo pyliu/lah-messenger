@@ -38,8 +38,8 @@
           span 傳送
 
     .center.vh-100(v-else @click="delayConnect")
-      div
-        .mt-n5.center: b-icon(icon="chat-left-dots" font-scale="7.5")
+      .w-75
+        .mt-n5.center: b-icon(icon="chat-left-dots" font-scale="10")
         b-input-group.my-2(prepend="登入姓名")
           b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim)
 
