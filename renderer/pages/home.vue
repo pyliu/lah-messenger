@@ -39,34 +39,22 @@
 
     .center.vh-100(v-else @click="delayConnect")
       div
-        b-row.my-1
-          b-col.align-middle(cols="3") 登入帳號:
-          b-col: b-form-input(
-            placeholder="... 登入帳號 ..."
-            trim
-            plaintext
-            :value="userid"
-          )
+        .mt-n5.center: b-icon(icon="chat-left-dots" font-scale="7.5")
+        b-input-group.my-2(prepend="登入姓名")
+          b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim)
 
-        b-row.my-1
-          b-col(.align-middlecols="3") 登入姓名:
-          b-col: b-form-input(
-            placeholder="... 姓名 ..."
-            v-model="nickname"
-            trim
-          )
-
-        b-input-group.my-2(prepend="伺服器")
-          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect")
+        b-input-group.my-2(prepend="　伺服器")
+          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" trim)
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
           b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
             span 連線
+        
         .bottom-left.d-flex.justify-content-end.text-muted.s-75
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
           .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
-        .bottom-right.text-muted.s-75 IP: {{ ip }}
+        .bottom-right.text-muted.s-75 {{ userid }} / {{ ip }}
 </template>
 
 <script>
