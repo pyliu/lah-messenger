@@ -39,22 +39,29 @@
 
     .center.vh-100(v-else @click="delayConnect")
       .w-75
-        .mt-n5.center: b-icon(icon="chat-left-dots" font-scale="10")
-        b-input-group.my-2(prepend="登入姓名")
-          b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim)
+        .logo.center
+          //- b-icon(icon="chat-left-dots" font-scale="10")
+          b-iconstack(font-scale="3")
+            b-icon(icon="chat-dots" flip-h shift-h="7" shift-v="3")
+            b-icon(icon="chat-text" shift-h="-16" shift-v="5")
 
-        b-input-group.my-2(prepend="　伺服器")
-          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" trim)
+        b-input-group.my-2
+          template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25")
+          b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+
+        b-input-group.my-2
+          template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25")
+          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
           span.my-auto.mx-1 :
-          b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" style="max-width: 75px;")
-          b-button(@click="manualConnect" variant="outline-primary" :disabled="connecting")
+          b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
+          b-button(@click="manualConnect" variant="outline-primary" :disabled="!validInformation")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
-            span 連線
+            span(v-else) 連線
         
         .bottom-left.d-flex.justify-content-end.text-muted.s-75
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
           .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
-        .bottom-right.text-muted.s-75 {{ userid }} / {{ ip }}
+        .bottom-right.text-muted.s-75 {{ userid }} / {{ ip }} / {{ platform }}
 </template>
 
 <script>
@@ -73,7 +80,7 @@ export default {
   },
   data: () => ({
     text: '',
-    connectText: '連線中',
+    connectText: '',
     wsHost: '127.0.0.1',
     wsPort: 8081,
     nickname: '',
@@ -120,13 +127,21 @@ export default {
       return isEmpty(this.websocket) || this.websocket.readyState === 3
     },
     valid() { return !isEmpty(trim(this.text)) },
+    validHost() { return isEmpty(trim(this.wsHost)) === false ? false : null },
+    validPort() {
+      const i = parseInt(trim(this.wsPort))
+      return i < 1024 || i > 65535 ? false : null
+    },
+    validNickname() { return !isEmpty(trim(this.nickname)) },
+    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validPort === null && this.validHost === null },
     list() {
       return this.messages[this.currentChannel]
     },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.currentChannel) }
+    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
 
+    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -153,12 +168,14 @@ export default {
   methods: {
     delaySendChannelActivity: function noop () {},
     sendChannelActivity(oVal, nVal) {
-      this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
-      // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
-      const oCName = this.getChannelName(oVal)
-      const nCName = this.getChannelName(nVal)
-      !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
-      !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+      if (this.connected) {
+        this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
+        // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
+        const oCName = this.getChannelName(oVal)
+        const nCName = this.getChannelName(nVal)
+        !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+        !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+      }
     },
     sendAppCloseActivity() {
       const cName = this.getChannelName(this.currentChannel)
@@ -211,7 +228,7 @@ export default {
             ip: this.ip,
             domain: process.env["USERDOMAIN"],
             userid: this.userid,
-            username: this.$config.username,
+            username: this.nickname || this.$config.username,
             dept: this.$config.userdept,
           }),
           channel: 'system'
@@ -301,67 +318,71 @@ export default {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
       } else {
-        this.connecting = true
-        try {
-          this.websocket && this.websocket.close()
-          this.connectText = '連線中'
-          const ws = new WebSocket(this.wsConnStr)
-          ws.onopen = (e) => {
-            // ws to Vuex store
-            this.$store.commit('websocket', ws)
-            this.$config.isDev && console.log(this.time(), "已連線", e)
-            // set client info to remote ws server
-            this.register()
+        if (this.validInformation) {
+          this.connecting = true
+          try {
+            this.websocket && this.websocket.close()
+            this.connectText = '連線中'
+            const ws = new WebSocket(this.wsConnStr)
+            ws.onopen = (e) => {
+              // ws to Vuex store
+              this.$store.commit('websocket', ws)
+              this.$config.isDev && console.log(this.time(), "已連線", e)
+              // set client info to remote ws server
+              this.register()
 
-            // query current channel latest messages
-            this.list.length = 0
-            this.delayLatestMessage()
+              // query current channel latest messages
+              this.list.length = 0
+              this.delayLatestMessage()
 
-            this.connectText = '已上線'
-          }
-          ws.onclose = (e) => {
-            this.connectText = 'WS伺服器連線已關閉'
-            this.$store.commit('websocket', undefined)
-            this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
-            setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
-            // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
-          }
-          ws.onerror = (e) => {
-            this.$store.commit('websocket', undefined)
-            this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
-            this.connectText = 'WS伺服器連線出錯'
-            // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
-          }
-          ws.onmessage = (e) => {
-            const incoming = JSON.parse(e.data)
-            const channel = incoming['channel']
-
-            this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
-
-            if (incoming.type === 'ack') {
-              this.handleAckMessage(incoming.message)
-            } else if (channel === 'system') {
-              // got system message
-              this.handleSystemMessage(incoming.message)
-            } else if (this.currentChannel == channel) {
-              !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
-              this.$nextTick(() => {
-                // add message to store channel list
-                !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
-              })
-            } else if (incoming.message && incoming.sender !== 'system') {
-              if (parseInt(this.unread[channel]) === NaN) {
-                this.$store.dispatch("resetUnread", channel)
-              }
-              this.$store.dispatch("plusUnread", channel)
+              this.connectText = '已上線'
             }
+            ws.onclose = (e) => {
+              this.connectText = 'WS伺服器連線已關閉'
+              this.$store.commit('websocket', undefined)
+              this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
+              setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
+              // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
+            }
+            ws.onerror = (e) => {
+              this.$store.commit('websocket', undefined)
+              this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
+              this.connectText = 'WS伺服器連線出錯'
+              // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
+            }
+            ws.onmessage = (e) => {
+              const incoming = JSON.parse(e.data)
+              const channel = incoming['channel']
+
+              this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
+
+              if (incoming.type === 'ack') {
+                this.handleAckMessage(incoming.message)
+              } else if (channel === 'system') {
+                // got system message
+                this.handleSystemMessage(incoming.message)
+              } else if (this.currentChannel == channel) {
+                !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
+                this.$nextTick(() => {
+                  // add message to store channel list
+                  !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
+                })
+              } else if (incoming.message && incoming.sender !== 'system') {
+                if (parseInt(this.unread[channel]) === NaN) {
+                  this.$store.dispatch("resetUnread", channel)
+                }
+                this.$store.dispatch("plusUnread", channel)
+              }
+            }
+          } catch (e) {
+            console.error(e)
+            this.websocket.close()
+            this.$store.commit('websocket', undefined)
+          } finally {
+            this.connecting = false
           }
-        } catch (e) {
-          console.error(e)
-          this.websocket.close()
-          this.$store.commit('websocket', undefined)
-        } finally {
-          this.connecting = false
+        } else {
+          this.notify('請輸入正確的連線資訊', { type: 'warning', pos: 'tf' })
         }
       }
     },
@@ -423,10 +444,8 @@ export default {
       // dynamic get userinfo from main process
       const { ipcRenderer } = require('electron')
       ipcRenderer.invoke('userinfo').then((userinfo) => {
-        this.$store.commit('userid', userinfo.userid)
         this.$store.commit('currentChannel', userinfo.userid)
-        this.$store.commit('ip', userinfo.ipv4)
-        this.$store.commit('address', userinfo.address)
+        this.$store.commit('userinfo', userinfo)
       }).finally(() => {
         // receive main process quit event
         ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
@@ -449,8 +468,8 @@ export default {
   mounted () {
     this.ipcRendererSetup()
     this.$store.commit("resetUnread", this.userid)
-    // auto connect to ws server
-    this.resetReconnectTimer()
+    // auto connect to ws server, delay 60s
+    setTimeout(this.resetReconnectTimer, 60 * 1000)
 
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
@@ -479,14 +498,18 @@ export default {
 .vh-100 {
   height: 100vh;
 }
+.logo {
+  margin-top: -15rem;
+  margin-bottom: 5.5rem;
+}
 .bottom-right {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
+  right: .5rem;
+  bottom: .5rem;
 }
 .bottom-left {
   position: absolute;
-  left: 1rem;
-  bottom: 1rem;
+  left: .5rem;
+  bottom: .5rem;
 }
 </style>

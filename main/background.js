@@ -89,12 +89,44 @@ app.on('window-all-closed', () => {
 const { ipcMain } = require('electron')
 ipcMain.handle('userinfo', async (event, arg) => {
   // console.log(arg)
-  const username = require('username')
+  const si = require('systeminformation')
+  /*
+    command: ""
+    date: ""
+    ip: ""
+    time: ""
+    tty: "console"
+    user: "0541"
+   */
+  const user = await si.users()
+  /*
+    arch: "x64"
+    build: "19042"
+    codename: ""
+    codepage: "950"
+    distro: "Microsoft Windows 10"
+    fqdn: "LAPTOP-LE2FFKSC"
+    hostname: "LAPTOP-LE2FFKSC"
+    hypervisor: false
+    kernel: "10.0.19042"
+    logofile: "windows"
+    platform: "win32"
+    release: "10.0.19042"
+    remoteSession: false
+    serial: "00000-00000-00000-xxxx"
+    servicepack: "0.0"
+    uefi: false
+   */
+  const os = await si.osInfo()
   const userinfo = {
     address: [],
     ipv4: '',
     ipv6: '',
-    userid: username.sync()
+    userid: user[0].user,
+    hostname: os.hostname,
+    domain: os.fqdn,
+    os: os,
+    user: user[0]
   }
   // get all ip addresses by node.js os module 
   const nets = require('os').networkInterfaces()

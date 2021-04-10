@@ -16,7 +16,16 @@ const timestamp = (full = false) => {
 }
 
 const state = () => ({
-  userid: '',
+  userinfo: {
+    address: [],
+    ipv4: '127.0.0.1',
+    ipv6: '',
+    userid: '',
+    doamin: '',
+    hostname: '',
+    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx' },
+    user: {}
+  },
   websocket: undefined,
   timer: null,
   currentChannel: '',
@@ -44,8 +53,6 @@ const state = () => ({
     'hr': 0,
     'supervisor': 0
   },
-  address: [],
-  ip: '',
   participatedChannels: []
 })
 
@@ -54,9 +61,14 @@ const getters = {
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
-  userid: state => state.userid,
-  ip: state => state.ip,
-  address: state => state.address,
+  userinfo: state => state.userinfo,
+  domain: state => state.userinfo.domain,
+  hostname: state => state.userinfo.hostname,
+  userid: state => state.userinfo.userid,
+  os: state => state.userinfo.os,
+  user: state => state.userinfo.user,
+  ip: state => state.userinfo.ipv4,
+  address: state => state.userinfo.address,
   currentChannel: state => state.currentChannel,
   participatedChannels: state => state.participatedChannels
 }
@@ -70,14 +82,8 @@ const mutations = {
   timer (state, timer) {
     state.timer = timer
   },
-  userid (state, userid) {
-    state.userid = userid
-  },
-  ip (state, ip) {
-    state.ip = ip
-  },
-  address (state, address) {
-    state.address = [ ...address ]
+  userinfo (state, userinfo) {
+    state.userinfo = { ...userinfo }
   },
   currentChannel(state, currentChannel) {
     state.currentChannel = currentChannel
