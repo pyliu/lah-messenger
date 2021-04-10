@@ -147,7 +147,7 @@ export default {
     validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
-      return i < 1024 || i > 65535 ? false : null
+      return i < 1025 || i > 65535 ? false : null
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return !isEmpty(trim(this.department)) },
