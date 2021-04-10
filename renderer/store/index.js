@@ -23,9 +23,11 @@ const state = () => ({
     userid: '',
     doamin: '',
     hostname: '',
-    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx' },
+    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx', domain: 'HBWEB' },
     user: {}
   },
+  username: '',
+  userdept: '',
   websocket: undefined,
   timer: null,
   currentChannel: '',
@@ -62,6 +64,8 @@ const getters = {
   messages: state => state.messages,
   unread: state => state.unread,
   userinfo: state => state.userinfo,
+  username: state => state.username,
+  userdept: state => state.userdept,
   domain: state => state.userinfo.domain,
   hostname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid,
@@ -84,6 +88,12 @@ const mutations = {
   },
   userinfo (state, userinfo) {
     state.userinfo = { ...userinfo }
+  },
+  username (state, username) {
+    state.username = username
+  },
+  userdept (state, userdept) {
+    state.userdept = userdept
   },
   currentChannel(state, currentChannel) {
     state.currentChannel = currentChannel

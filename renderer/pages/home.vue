@@ -37,30 +37,36 @@
           b-icon(icon="cursor" v-if="valid")
           span 傳送
 
-    .center.vh-100(v-else @click="delayConnect")
+    .center.vh-100(v-else)
       .w-75
-        .center.logo: b-img(src="tyland.jpg" width="192")
-        .center(style="margin-top:5rem;"): b-iconstack(font-scale="7.5")
+        .center.logo: b-img(src="taoyuan_logo.png")
+        .center(style="margin-top:3rem;"): b-iconstack(font-scale="7.5")
           b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
           b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
 
-        b-input-group.my-2
-          template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25")
-          b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+        .center.d-flex.my-2
+          b-input-group
+            template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
+            b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+          b-input-group.ml-1
+            template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+            b-select(v-model="department" :options="departmentOpts")
 
         b-input-group.my-2
-          template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25")
+          template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
-          b-button(@click="manualConnect" variant="outline-primary" :disabled="!validInformation")
+          b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
             span(v-else) 連線
         
         .bottom-left.d-flex.justify-content-end.text-muted.s-75
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
           .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
-        .bottom-right.text-muted.s-75 {{ userid }} / {{ ip }} / {{ platform }}
+        .bottom-right.text-muted.s-75.text-right
+          div {{ domain }}\{{ userid }}
+          div {{ ip }} / {{ platform }}
 </template>
 
 <script>
@@ -83,6 +89,18 @@ export default {
     wsHost: '127.0.0.1',
     wsPort: 8081,
     nickname: '',
+    department: '',
+    departmentOpts: [
+      { value: '', text: '請選擇部門' },
+      { value: 'inf', text: '資訊課' },
+      { value: 'adm', text: '行政課' },
+      { value: 'reg', text: '登記課' },
+      { value: 'sur', text: '測量課' },
+      { value: 'val', text: '地價課' },
+      { value: 'hr', text: '人事室' },
+      { value: 'acc', text: '會計室' },
+      { value: 'supervisor', text: '主任秘書室' },
+    ],
     connecting: false
   }),
   computed: {
@@ -132,7 +150,8 @@ export default {
       return i < 1024 || i > 65535 ? false : null
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
-    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validPort === null && this.validHost === null },
+    validDepartment() { return !isEmpty(trim(this.department)) },
+    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
     list() {
       return this.messages[this.currentChannel]
     },
@@ -140,7 +159,8 @@ export default {
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
 
-    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
+    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`},
+    domain() { return this.userinfo.domain }
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -159,9 +179,19 @@ export default {
     },
     wsHost(val) {
       this.resetReconnectTimer()
+      this.$localForage.setItem('wsHost', val)
     },
     wsPort(val) {
       this.resetReconnectTimer()
+      this.$localForage.setItem('wsPort', val)
+    },
+    nickname(val) {
+      this.$store.commit('username', val)
+      this.$localForage.setItem('nickname', val)
+    },
+    department(val) {
+      this.$store.commit('userdept', val)
+      this.$localForage.setItem('department', val)
     }
   },
   methods: {
@@ -225,10 +255,10 @@ export default {
           message: JSON.stringify({
             command: 'register',
             ip: this.ip,
-            domain: process.env["USERDOMAIN"],
+            domain: this.domain,
             userid: this.userid,
-            username: this.nickname || this.$config.username,
-            dept: this.$config.userdept,
+            username: this.nickname,
+            dept: this.department,
           }),
           channel: 'system'
         })
@@ -445,10 +475,10 @@ export default {
       ipcRenderer.invoke('userinfo').then((userinfo) => {
         this.$store.commit('currentChannel', userinfo.userid)
         this.$store.commit('userinfo', userinfo)
-      }).finally(() => {
-        // receive main process quit event
-        ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
+        this.register()
       })
+      // receive main process quit event
+      ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
   created() {
@@ -461,14 +491,18 @@ export default {
     this.delayConnect = debounce(this.connect, 1500)
     this.delayLatestMessage = debounce(this.latestMessage, 400)
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
-    this.wsHost = this.$config.websocketHost
-    this.wsPort = this.$config.websocketPort
   },
-  mounted () {
+  async mounted () {
     this.ipcRendererSetup()
     this.$store.commit("resetUnread", this.userid)
-    // auto connect to ws server, delay 60s
-    setTimeout(this.resetReconnectTimer, 60 * 1000)
+    // auto connect to ws server, delay 40s
+    setTimeout(this.resetReconnectTimer, 40 * 1000)
+
+    // restore last settings
+    this.nickname = await this.$localForage.getItem('nickname')
+    this.department = await this.$localForage.getItem('department')
+    this.wsHost = await this.$localForage.getItem('wsHost')
+    this.wsPort = await this.$localForage.getItem('wsPort')
 
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
@@ -499,8 +533,8 @@ export default {
 }
 .logo {
   position: absolute;
-  left: 150px;
-  top: 50px;
+  left: 80px;
+  top: 100px;
 }
 .bottom-right {
   position: absolute;

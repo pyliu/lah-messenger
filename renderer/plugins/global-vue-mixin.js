@@ -33,6 +33,8 @@ Vue.mixin({
       'messages',
       'unread',
       'userinfo',
+      'username',
+      'userdept',
       'ip',
       'domain',
       'hostname',
@@ -44,9 +46,7 @@ Vue.mixin({
       'currentChannel',
       'participatedChannels'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    username () { return this.$config ? this.$config.username : '' },
-    userdept () { return this.$config ? this.$config.userdept : '' }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
   },
   methods: {
     ...mapActions([
