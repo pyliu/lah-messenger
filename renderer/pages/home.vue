@@ -39,11 +39,10 @@
 
     .center.vh-100(v-else @click="delayConnect")
       .w-75
-        .logo.center
-          //- b-icon(icon="chat-left-dots" font-scale="10")
-          b-iconstack(font-scale="3")
-            b-icon(icon="chat-dots" variant="success" flip-h shift-h="6" shift-v="3")
-            b-icon(icon="chat-text" variant="primary" shift-h="-16" shift-v="5")
+        .center.logo: b-img(src="tyland.jpg" width="192")
+        .center(style="margin-top:5rem;"): b-iconstack(font-scale="7.5")
+          b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
+          b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
 
         b-input-group.my-2
           template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25")
@@ -499,8 +498,9 @@ export default {
   height: 100vh;
 }
 .logo {
-  margin-top: -5rem;
-  margin-bottom: 8.5rem;
+  position: absolute;
+  left: 150px;
+  top: 50px;
 }
 .bottom-right {
   position: absolute;
