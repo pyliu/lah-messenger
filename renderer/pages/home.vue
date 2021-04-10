@@ -50,7 +50,7 @@
             b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts")
+            b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
 
         b-input-group.my-2
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
@@ -186,10 +186,12 @@ export default {
       this.$localForage.setItem('wsPort', val)
     },
     nickname(val) {
+      this.resetReconnectTimer()
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
     },
     department(val) {
+      this.resetReconnectTimer()
       this.$store.commit('userdept', val)
       this.$localForage.setItem('department', val)
     }
