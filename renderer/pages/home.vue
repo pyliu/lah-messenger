@@ -42,8 +42,8 @@
         .logo.center
           //- b-icon(icon="chat-left-dots" font-scale="10")
           b-iconstack(font-scale="3")
-            b-icon(icon="chat-dots" flip-h shift-h="7" shift-v="3")
-            b-icon(icon="chat-text" shift-h="-16" shift-v="5")
+            b-icon(icon="chat-dots" variant="success" flip-h shift-h="6" shift-v="3")
+            b-icon(icon="chat-text" variant="primary" shift-h="-16" shift-v="5")
 
         b-input-group.my-2
           template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25")
@@ -127,7 +127,7 @@ export default {
       return isEmpty(this.websocket) || this.websocket.readyState === 3
     },
     valid() { return !isEmpty(trim(this.text)) },
-    validHost() { return isEmpty(trim(this.wsHost)) === false ? false : null },
+    validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
       return i < 1024 || i > 65535 ? false : null
@@ -499,8 +499,8 @@ export default {
   height: 100vh;
 }
 .logo {
-  margin-top: -15rem;
-  margin-bottom: 5.5rem;
+  margin-top: -5rem;
+  margin-bottom: 8.5rem;
 }
 .bottom-right {
   position: absolute;
