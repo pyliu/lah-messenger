@@ -100,10 +100,6 @@ export default {
   // should hold all env variables that are public as these will be exposed on the frontend.
   // available using $config in both server and client.
   publicRuntimeConfig: {
-    websocketHost: process.env.WEBSOCKET_HOST,
-    websocketPort: process.env.WEBSOCKET_PORT,
-    username: process.env.WEBAD_USERNAME,
-    userdept: process.env.WEBAD_USERDEPT,
     isDev: process.env.NODE_ENV !== 'production',
     axios: {
       // Default: baseURL; when the proxy option is true, it will become PREFIX instead of baseURL
