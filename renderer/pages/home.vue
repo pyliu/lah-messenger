@@ -311,6 +311,11 @@ export default {
             }
           }
           break;
+        case 'remove_channel':
+          const item = json.payload
+          json.success && this.$store.commit('removeParticipatedChannel', item)
+          this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
+          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
       }
@@ -463,7 +468,7 @@ export default {
       // reset timer if it already settled
       if (this.timer !== null) {
         this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
-        clearTimeout(this.timer)
+        clearInterval(this.timer)
         this.$store.commit('timer', null)
       }
       // check connection every 20s

@@ -58,17 +58,26 @@ export default {
     },
     removeParticipatedChannel (item) {
       this.confirm(`刪除 ${item.id} / ${item.name} 頻道將一併移除所有歷史訊息，請確認是否執行？`).then((ans) => {
-        ans && this.confirm(`本操作不可復原，真的要執行？`).then((ans) => {
-          if (ans) {
-            this.$store.commit('removeParticipatedChannel', item)
-            // send system message to own channel
-            const jsonStr = this.packMessage({
-              action: 'remove_channel',
-              payload: item
-            }, { channel: this.currentChannel, sender: this.userid })
-            this.websocket && this.websocket.send(jsonStr)
-          }
-        })
+        if (ans) {
+          // send command message to system channel
+          /*
+            item example: {
+              id: 10,
+              name: 'DONTCARE',
+              participants: [ '0541', 'HB0542' ],
+              type: 0
+            }
+          */
+          const jsonStr = this.packMessage({
+            command: 'remove_channel',
+            ...item
+          }, {
+            type: 'command',
+            channel: 'system',
+            sender: this.userid
+          })
+          this.websocket && this.websocket.send(jsonStr)
+        }
       })
     }
   }
