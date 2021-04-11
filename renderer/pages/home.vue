@@ -57,7 +57,7 @@
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
-          b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation")
+          b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
             span(v-else) 連線
         
@@ -367,18 +367,20 @@ export default {
               this.delayLatestMessage()
 
               this.connectText = '已上線'
+              this.connecting = false
             }
             ws.onclose = (e) => {
-              this.connectText = 'WS伺服器連線已關閉'
               this.$store.commit('websocket', undefined)
               this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
-              setTimeout(() => this.connectText = `等待重新連線中(${this.wsConnStr})`, 3000)
+              this.connecting = false
+              this.connectText = `等待重新連線中(${this.wsConnStr})`
               // this.notify('無法傳送訊息', { type: 'danger', pos: 'bf', subtitle: this.wsConnStr })
             }
             ws.onerror = (e) => {
               this.$store.commit('websocket', undefined)
               this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
-              this.connectText = 'WS伺服器連線出錯'
+              this.connectText = `'WS伺服器連線出錯'`
+              this.connecting = false
               // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
             }
             ws.onmessage = (e) => {
@@ -404,13 +406,15 @@ export default {
                 }
                 this.$store.dispatch("plusUnread", channel)
               }
+              
+              this.connecting = false
             }
           } catch (e) {
+            this.connectText = '連線錯誤'
             console.error(e)
             this.websocket.close()
             this.$store.commit('websocket', undefined)
           } finally {
-            this.connecting = false
           }
         } else {
           this.notify('請輸入正確的連線資訊', { type: 'warning', pos: 'tf' })
@@ -467,6 +471,7 @@ export default {
         this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
         this.$store.commit('timer', setInterval(() => {
           this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
+          this.connectText = '開始檢查連線狀態'
           this.connect()
         }, 20000))
       }
