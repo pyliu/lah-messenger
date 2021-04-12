@@ -65,7 +65,7 @@
           b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
           .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
         .bottom-right.text-muted.s-75.text-right
-          div {{ domain }}\{{ userid }}
+          div {{ domain }} \ {{ userid }}
           div {{ ip }} / {{ platform }}
 </template>
 
@@ -159,8 +159,7 @@ export default {
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
 
-    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`},
-    domain() { return this.userinfo.domain }
+    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },
   watch: {
     currentChannel(nVal, oVal) {

@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty'
+import trimStart from 'lodash/trimStart'
 
 const timestamp = (full = false) => {
   // e.g. 2020-12-03 10:23:00
@@ -23,7 +24,7 @@ const state = () => ({
     userid: '',
     doamin: '',
     hostname: '',
-    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx', domain: 'HBWEB' },
+    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx' },
     user: {}
   },
   username: '',
@@ -66,9 +67,11 @@ const getters = {
   userinfo: state => state.userinfo,
   username: state => state.username,
   userdept: state => state.userdept,
-  domain: state => state.userinfo.domain,
+  domain: (state) => {
+    return trimStart(state.userinfo.domain, `${state.userinfo.hostname}.`)
+  },
   hostname: state => state.userinfo.hostname,
-  userid: state => state.userinfo.userid,
+  userid: state => state.userinfo.userid.toUpperCase(),
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
   ip: state => state.userinfo.ipv4,
