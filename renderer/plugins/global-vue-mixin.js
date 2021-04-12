@@ -30,6 +30,8 @@ Vue.mixin({
   computed: {
     ...mapGetters([
       'websocket',
+      'connected',
+      'disconnected',
       'messages',
       'unread',
       'userinfo',

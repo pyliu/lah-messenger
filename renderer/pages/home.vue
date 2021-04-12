@@ -133,16 +133,6 @@ export default {
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
-    connected() {
-      /**
-       * readyState attr
-       * CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3
-       */
-      return this.websocket && this.websocket.readyState === 1
-    },
-    disconnected() {
-      return isEmpty(this.websocket) || this.websocket.readyState === 3
-    },
     valid() { return !isEmpty(trim(this.text)) },
     validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
     validPort() {
@@ -212,6 +202,16 @@ export default {
       !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.currentChannel })
     },
     send () {
+      // detect local commands
+      const text = trim(this.text)
+      if (text === '@clearCache') {
+        this.$localForage.clear().then((params) => {
+          this.notify(`本機記憶資料已清除`, { type: 'success' })
+        })
+      } else if (text === '@settings') {
+        this.$router.push('/settings')
+      }
+
       if (this.sendTo(this.text, { channel: this.currentChannel })) {
         this.text = ''
       }

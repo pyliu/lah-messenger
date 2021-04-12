@@ -61,6 +61,8 @@ const state = () => ({
 
 const getters = {
   websocket: state => state.websocket,
+  connected: state => state.websocket && state.websocket.readyState === 1,
+  disconnected: state => isEmpty(state.websocket) || state.websocket.readyState === 3,
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
