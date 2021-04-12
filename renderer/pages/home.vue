@@ -537,9 +537,6 @@ export default {
 .color-primary {
   color: #007bff;
 }
-.vh-100 {
-  height: 100vh;
-}
 .logo {
   position: absolute;
   left: 80px;
