@@ -484,8 +484,8 @@ export default {
       // dynamic get userinfo from main process
       const { ipcRenderer } = require('electron')
       ipcRenderer.invoke('userinfo').then((userinfo) => {
-        this.$store.commit('currentChannel', userinfo.userid)
         this.$store.commit('userinfo', userinfo)
+        this.$store.commit('currentChannel', this.userid)
         this.register()
       })
       // receive main process quit event

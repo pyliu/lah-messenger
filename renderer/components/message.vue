@@ -118,7 +118,6 @@ export default {
 
   &.mine {
     p {
-      text-align: right;
       background: rgb(2, 182, 32);
       color: white;
       margin-bottom: 0rem !important;
