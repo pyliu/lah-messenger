@@ -79,7 +79,8 @@ const getters = {
   ip: state => state.userinfo.ipv4,
   address: state => state.userinfo.address,
   currentChannel: state => state.currentChannel,
-  participatedChannels: state => state.participatedChannels
+  participatedChannels: state => state.participatedChannels,
+  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`
 }
 
 // only sync operation

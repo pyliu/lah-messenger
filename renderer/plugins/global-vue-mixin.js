@@ -46,7 +46,8 @@ Vue.mixin({
       'user',
       'timer',
       'currentChannel',
-      'participatedChannels'
+      'participatedChannels',
+      'platform'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
   },

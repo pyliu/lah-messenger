@@ -1,72 +1,23 @@
 <template lang="pug">
-  div(v-cloak)
-    transition(v-if="connected" name="list"): div
-      b-card.m-1(no-body header-tag="nav")
-        template(#header): client-only: b-nav(card-header tabs fill)
-          b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
-            b-icon.mr-1(icon="bookmarks")
-            span 公告
-            b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-          b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)" title="進入個人通知列表")
-            b-icon.mr-1(icon="person")
-            span 個人通知
-            b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-          b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')" title="進入會話選單")
-            b-icon.mr-1(icon="chat-text")
-            span 交談頻道
+  div(v-cloak): .w-75
+    .center.d-flex.my-2
+      b-input-group
+        template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
+        b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+      b-input-group.ml-1
+        template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+        b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
 
-        transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
-          b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
-          span {{ getChannelName(currentChannel) }} 
-
-        transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
-        transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
-        
-      transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
-        b-textarea.mr-1(
-          v-model="text"
-          debounce="200"
-          placeholder="... Ctrl + Enter 直接送出 ..."
-          @keyup.ctrl.enter="send"
-          @keydown="delayConnect"
-          no-resize
-          no-auto-shrink
-          autofocus
-        )
-        b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
-          b-icon(icon="cursor" v-if="valid")
-          span 傳送
-
-    .center.vh-100(v-else)
-      .w-75
-        .center.logo: b-img(src="taoyuan_logo.png")
-        .center(style="margin-top:3rem;"): b-iconstack(font-scale="7.5")
-          b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
-          b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
-
-        .center.d-flex.my-2
-          b-input-group
-            template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
-          b-input-group.ml-1
-            template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
-
-        b-input-group.my-2
-          template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
-          span.my-auto.mx-1 :
-          b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
-          b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
-            b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
-            span(v-else) 連線
-        
-        .bottom-left.d-flex.justify-content-end.text-muted.s-75
-          b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
-          .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
-        .bottom-right.text-muted.s-75.text-right
-          div {{ domain }} \ {{ userid }}
-          div {{ ip }} / {{ platform }}
+    b-input-group.my-2
+      template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
+      b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
+      span.my-auto.mx-1 :
+      b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
+    
+    .bottom-left.d-flex.justify-content-end.text-muted.s-75
+      div {{ domain }} \ {{ userid }}
+    .bottom-right.text-muted.s-75.text-right
+      div {{ ip }} / {{ platform }}
 </template>
 
 <script>
@@ -76,16 +27,14 @@ import debounce from 'lodash/debounce'
 
 export default {
   head: {
-    title: `桃園地政事務所`
+    title: `信差即時通-設定`
   },
   asyncData ({ req, store, redirect, error }) {
     return {
-      name: process.static ? 'static' : (process.server ? 'server' : 'client')
+      
     }
   },
   data: () => ({
-    text: '',
-    connectText: '',
     wsHost: '127.0.0.1',
     wsPort: 8081,
     nickname: '',
@@ -100,40 +49,12 @@ export default {
       { value: 'hr', text: '人事室' },
       { value: 'acc', text: '會計室' },
       { value: 'supervisor', text: '主任秘書室' },
-    ],
-    connecting: false
+    ]
   }),
   computed: {
-    showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
-    showMessageBoard () { return this.currentChannel !== 'chat' },
-    showChatBoard () { return this.isChat },
-
-    isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return this.userid === this.currentChannel },
-    isAnnouncement () { return this.currentChannel === 'announcement' },
-    isInf () { return this.currentChannel === 'inf' },
-    isAdm () { return this.currentChannel === 'adm' },
-    isVal () { return this.currentChannel === 'val' },
-    isReg () { return this.currentChannel === 'reg' },
-    isSur () { return this.currentChannel === 'sur' },
-    isAcc () { return this.currentChannel === 'acc' },
-    isHr () { return this.currentChannel === 'hr' },
-    isSupervisor () { return this.currentChannel === 'supervisor' },
-    isLds () { return this.currentChannel === 'lds' },
-    
-    belongToInf () { return this.userdept === 'inf' },
-    belongToAdm () { return this.userdept === 'adm' },
-    belongToVal () { return this.userdept === 'val' },
-    belongToReg () { return this.userdept === 'reg' },
-    belongToSur () { return this.userdept === 'sur' },
-    belongToAcc () { return this.userdept === 'acc' },
-    belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' },
-
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
-    valid() { return !isEmpty(trim(this.text)) },
     validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
@@ -148,6 +69,8 @@ export default {
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
+
+    platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },
   watch: {
     currentChannel(nVal, oVal) {
