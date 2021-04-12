@@ -1,12 +1,18 @@
 <template lang="pug">
-  div(v-cloak): .w-75
-    .center.d-flex.my-2
-      b-input-group
-        template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-        b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
-      b-input-group.ml-1
-        template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-        b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+  .p-2(v-cloak)
+    .ml-1: b-link.d-flex.justify-content-start.align-items-center(to="/home")
+      b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2" title="返回主畫面")
+      span(style="font-size: 1.5rem;") 返回
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
+        span.my-auto 顯示名稱
+      b-input.ml-2(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+        span.my-auto 所屬部門
+      b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment")
 
     b-input-group.my-2
       template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
