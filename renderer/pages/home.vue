@@ -19,7 +19,7 @@
 
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
           b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
-          span {{ getChannelName(currentChannel) }} 
+          span {{ getChannelName($store.getters.currentChannel) }} 
 
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
@@ -77,6 +77,7 @@ import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 
 export default {
+  transition: 'list',
   head: {
     title: `桃園地政事務所`
   },
@@ -106,22 +107,22 @@ export default {
     connecting: false
   }),
   computed: {
-    showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
-    showMessageBoard () { return this.currentChannel !== 'chat' },
+    showInputGroup () { return !this.isAnnouncement && (this.$store.getters.currentChannel === this.userid || this.$store.getters.currentChannel !== 'chat') },
+    showMessageBoard () { return this.$store.getters.currentChannel !== 'chat' },
     showChatBoard () { return this.isChat },
 
     isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return this.userid === this.currentChannel },
-    isAnnouncement () { return this.currentChannel === 'announcement' },
-    isInf () { return this.currentChannel === 'inf' },
-    isAdm () { return this.currentChannel === 'adm' },
-    isVal () { return this.currentChannel === 'val' },
-    isReg () { return this.currentChannel === 'reg' },
-    isSur () { return this.currentChannel === 'sur' },
-    isAcc () { return this.currentChannel === 'acc' },
-    isHr () { return this.currentChannel === 'hr' },
-    isSupervisor () { return this.currentChannel === 'supervisor' },
-    isLds () { return this.currentChannel === 'lds' },
+    isPersonal () { return this.userid === this.$store.getters.currentChannel },
+    isAnnouncement () { return this.$store.getters.currentChannel === 'announcement' },
+    isInf () { return this.$store.getters.currentChannel === 'inf' },
+    isAdm () { return this.$store.getters.currentChannel === 'adm' },
+    isVal () { return this.$store.getters.currentChannel === 'val' },
+    isReg () { return this.$store.getters.currentChannel === 'reg' },
+    isSur () { return this.$store.getters.currentChannel === 'sur' },
+    isAcc () { return this.$store.getters.currentChannel === 'acc' },
+    isHr () { return this.$store.getters.currentChannel === 'hr' },
+    isSupervisor () { return this.$store.getters.currentChannel === 'supervisor' },
+    isLds () { return this.$store.getters.currentChannel === 'lds' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -145,14 +146,16 @@ export default {
     validDepartment() { return !isEmpty(trim(this.department)) },
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
     list() {
-      return this.messages[this.currentChannel]
+      return this.messages[this.$store.getters.currentChannel] || []
     },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
+    inChatting() { return !this.stickyChannels.includes(this.$store.getters.currentChannel) },
+
+    channel() { return this.$store.getters.currentChannel }
   },
   watch: {
-    currentChannel(nVal, oVal) {
+    channel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
       this.delaySendChannelActivity(oVal, nVal)
 
@@ -193,13 +196,13 @@ export default {
         // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
         const oCName = this.getChannelName(oVal)
         const nCName = this.getChannelName(nVal)
-        !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
-        !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+        !this.stickyChannels.includes(oVal) && this.$store.getters.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+        !this.stickyChannels.includes(nVal) && this.$store.getters.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
       }
     },
     sendAppCloseActivity() {
-      const cName = this.getChannelName(this.currentChannel)
-      !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.currentChannel })
+      const cName = this.getChannelName(this.$store.getters.currentChannel)
+      !this.stickyChannels.includes(this.$store.getters.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.$store.getters.currentChannel })
     },
     send () {
       // detect local commands
@@ -212,7 +215,7 @@ export default {
         this.$router.push('/settings')
       }
 
-      if (this.sendTo(this.text, { channel: this.currentChannel })) {
+      if (this.sendTo(this.text, { channel: this.$store.getters.currentChannel })) {
         this.text = ''
       }
     },
@@ -221,7 +224,7 @@ export default {
       !this.connected && this.connect()
       if (!isEmpty(message)) {
         if (this.connected) {
-          const jsonStr = this.packMessage(message, { channel: this.currentChannel, ...opts })
+          const jsonStr = this.packMessage(message, { channel: this.$store.getters.currentChannel, ...opts })
           this.websocket.send(jsonStr)
           return true
         } else {
@@ -269,10 +272,10 @@ export default {
           this.time(),
           "尚未連線無法登錄客戶端資料", {
             ip: this.ip,
-            domain: process.env["USERDOMAIN"],
+            domain: this.domain,
             userid: this.userid,
-            username: this.$config.username,
-            dept: this.$config.userdept,
+            username: this.nickname,
+            dept: this.department,
           }
         )
       }
@@ -391,14 +394,14 @@ export default {
               const incoming = JSON.parse(e.data)
               const channel = incoming['channel']
 
-              this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
+              this.$config.isDev && console.log(this.time(), `現在 ${this.$store.getters.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
               if (incoming.type === 'ack') {
                 this.handleAckMessage(incoming.message)
               } else if (channel === 'system') {
                 // got system message
                 this.handleSystemMessage(incoming.message)
-              } else if (this.currentChannel == channel) {
+              } else if (this.$store.getters.currentChannel == channel) {
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
                   // add message to store channel list
@@ -408,7 +411,7 @@ export default {
                 if (parseInt(this.unread[channel]) === NaN) {
                   this.$store.dispatch("resetUnread", channel)
                 }
-                this.$store.dispatch("plusUnread", channel)
+                this.$store.getters.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
               }
               
               this.connecting = false
@@ -428,6 +431,7 @@ export default {
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
     latestMessage() {
+      const channel = this.$store.getters.currentChannel
       if (this.connected) {
         const jsonString = JSON.stringify({
           type: "command",
@@ -436,7 +440,7 @@ export default {
           time: this.time(),
           message: JSON.stringify({
             command: 'latest',
-            channel: this.currentChannel,
+            channel: channel,
             count: 30
           }),
           channel: 'system'
@@ -445,14 +449,9 @@ export default {
       } else {
         this.$config.isDev && console.log(
           this.time(),
-          `尚未連線無法取得 ${this.currentChannel} 最新訊息資料`
+          `尚未連線無法取得 ${channel} 最新訊息資料`
         )
       }
-    },
-    setCurrentChannel (channel) {
-      this.$store.commit('currentChannel', channel)
-      // switch to new channel reset the unread number
-      this.$store.commit("resetUnread", channel)
     },
     showUnread (channel) {
       return this.getUnread(channel) > 0 || this.getUnread(channel) === '99+'
@@ -485,7 +484,6 @@ export default {
       const { ipcRenderer } = require('electron')
       ipcRenderer.invoke('userinfo').then((userinfo) => {
         this.$store.commit('userinfo', userinfo)
-        this.$store.commit('currentChannel', this.userid)
         this.register()
       })
       // receive main process quit event
@@ -493,37 +491,36 @@ export default {
     }
   },
   created() {
-    if (!(this.currentChannel in this.messages) && !this.$isServer) {
-      this.$store.commit("addChannel", this.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
-      this.$store.commit("resetUnread", this.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
+    if (!(this.$store.getters.currentChannel in this.messages) && !this.$isServer) {
+      this.$store.commit("addChannel", this.$store.getters.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add channel ${this.$store.getters.currentChannel} to $store! [messageMixin::created]`)
+      this.$store.commit("resetUnread", this.$store.getters.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add unread ${this.$store.getters.currentChannel} to $store! [messageMixin::created]`)
     }
-    this.delayConnect = debounce(this.connect, 1500)
-    this.delayLatestMessage = debounce(this.latestMessage, 400)
-    this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
   },
   async mounted () {
-    this.ipcRendererSetup()
-    this.$store.commit("resetUnread", this.userid)
-    // auto connect to ws server, delay 40s
-    setTimeout(this.resetReconnectTimer, 40 * 1000)
+    if (!this.initialized) {
+      this.delayConnect = debounce(this.connect, 1500)
+      this.delayLatestMessage = debounce(this.latestMessage, 400)
+      this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
-    // restore last settings
-    this.nickname = await this.$localForage.getItem('nickname')
-    this.department = await this.$localForage.getItem('department')
-    this.wsHost = await this.$localForage.getItem('wsHost')
-    this.wsPort = await this.$localForage.getItem('wsPort')
+      this.ipcRendererSetup()
+      this.$store.commit("resetUnread", this.userid)
+      // auto connect to ws server, delay 40s
+      setTimeout(this.resetReconnectTimer, 40 * 1000)
 
+      // restore last settings
+      this.nickname = await this.$localForage.getItem('nickname')
+      this.department = await this.$localForage.getItem('department')
+      this.wsHost = await this.$localForage.getItem('wsHost')
+      this.wsPort = await this.$localForage.getItem('wsPort')
+
+      // to prevent page changed re-initializing
+      this.$store.commit('initialized', true)
+    }
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
     // win.loadURL('https://github.com')
-    // move scroll bar to the bottom
-    // this.$nextTick(() => {
-    //   if (this.$refs.box) {
-    //     this.$refs.box.scrollTop = this.$refs.box.scrollHeight
-    //   }
-    // })
 
     // testing
     // console.log(this.$config, Electron, this.estore, this.messages)

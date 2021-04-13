@@ -36,7 +36,7 @@ export default {
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' },
-    isChat () { return this.currentChannel === 'chat'}
+    isChat () { return this.$store.getters.currentChannel === 'chat'}
   },
   watch: {
     
@@ -50,11 +50,6 @@ export default {
          return this.unread[channel] || 0
       }
       return 0
-    },
-    setCurrentChannel (channel) {
-      this.$store.commit('currentChannel', channel)
-      // switch to new channel reset the unread number
-      this.$store.commit("resetUnread", channel)
     },
     removeParticipatedChannel (item) {
       this.confirm(`刪除 ${item.id} / ${item.name} 頻道將一併移除所有歷史訊息，請確認是否執行？`).then((ans) => {

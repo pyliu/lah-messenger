@@ -31,7 +31,7 @@ const state = () => ({
   userdept: '',
   websocket: undefined,
   timer: null,
-  currentChannel: '',
+  currentChannel: 'announcement',
   messages: {
     'lds': [],
     'announcement': [],
@@ -56,7 +56,8 @@ const state = () => ({
     'hr': 0,
     'supervisor': 0
   },
-  participatedChannels: []
+  participatedChannels: [],
+  initialized: false
 })
 
 const getters = {
@@ -80,7 +81,8 @@ const getters = {
   address: state => state.userinfo.address,
   currentChannel: state => state.currentChannel,
   participatedChannels: state => state.participatedChannels,
-  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`
+  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
+  initialized: state => state.initialized
 }
 
 // only sync operation
@@ -119,7 +121,7 @@ const mutations = {
   plusUnread (state, channel) {
     if (!isEmpty(channel)) {
       if (state.unread[channel] !== '99+') {
-        if (parseInt(state.unread[channel]) === NaN) {
+        if (typeof state.unread[channel] !== 'number') {
           state.unread = { ...state.unread, ...{ [channel]: 0 } }
           this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
         }
@@ -155,6 +157,9 @@ const mutations = {
     } else {
       this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
+  },
+  initialized (state, flag) {
+    state.initialized = flag
   }
 }
 

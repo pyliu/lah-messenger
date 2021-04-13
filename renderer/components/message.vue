@@ -51,7 +51,7 @@ export default {
       return this.prevMdate !== this.mdate
     },
     isAnnouncement() {
-      return this.currentChannel === 'announcement'
+      return this.$store.getters.currentChannel === 'announcement'
     },
     mine() {
       return this.raw ? this.userid === this.sender : false;

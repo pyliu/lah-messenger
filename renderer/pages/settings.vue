@@ -1,7 +1,7 @@
 <template lang="pug">
   .vh-100.p-2(v-cloak)
-    .mt-2: b-link.d-flex.justify-content-start.align-items-center(to="/home")
-      b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2" title="返回主畫面")
+    .mt-2: b-link.d-flex.justify-content-start.align-items-center(to="/home" title="返回主畫面")
+      b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
       span(style="font-size: 1.5rem;") 返回
     hr
     b-input-group.my-2
@@ -16,10 +16,12 @@
       b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment")
 
     b-input-group.my-2
-      template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-      b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
+        span.my-auto 　伺服器
+      b-input.ml-2(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
       span.my-auto.mx-1 :
-      b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
+      b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
     
     b-button(variant="outline-danger" block @click="clear") 清除所有設定
     
@@ -35,6 +37,7 @@ import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 
 export default {
+  transition: 'list',
   head: {
     title: `信差即時通-設定`
   },
@@ -64,20 +67,17 @@ export default {
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
-    validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
+    validHost() { return !isEmpty(trim(this.wsHost)) },
     validPort() {
       const i = parseInt(trim(this.wsPort))
-      return i < 1025 || i > 65535 ? false : null
+      return i > 1024 && i < 65536
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return !isEmpty(trim(this.department)) },
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
-    list() {
-      return this.messages[this.currentChannel]
-    },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
+    inChatting() { return !this.stickyChannels.includes(this.$store.getters.currentChannel) },
 
     platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },

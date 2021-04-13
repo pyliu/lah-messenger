@@ -45,17 +45,23 @@ Vue.mixin({
       'os',
       'user',
       'timer',
-      'currentChannel',
       'participatedChannels',
-      'platform'
+      'platform',
+      'initialized'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
+    channel () { return this.$store.getters.currentChannel }
   },
   methods: {
     ...mapActions([
       'resetUnread',
       'plusUnread'
     ]),
+    setCurrentChannel (channel) {
+      this.$store.commit('currentChannel', channel)
+      // switch to new channel reset the unread number
+      this.$store.commit("resetUnread", channel)
+    },
     date() {
       const now = new Date()
       return (
@@ -86,7 +92,7 @@ Vue.mixin({
           title: "dontcare",
           from: this.ip,
           message: text,
-          channel: this.currentChannel,
+          channel: this.$store.getters.currentChannel,
         },
         ...opts,
       })
