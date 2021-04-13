@@ -23,7 +23,7 @@
       span.my-auto.mx-1 :
       b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
     
-    b-button(variant="outline-danger" block @click="clear") 清除所有設定
+    b-button.mx-auto.clear(variant="outline-danger" block @click="clear") 清除所有設定
     
     .bottom-left.d-flex.justify-content-end.text-muted.s-75
       div {{ domain }} \ {{ userid }}
@@ -129,6 +129,12 @@ export default {
   position: absolute;
   left: 80px;
   top: 100px;
+}
+.clear {
+  position: absolute;
+  left: 5px;
+  bottom: 2rem;
+  max-width: 98%;
 }
 .bottom-right {
   position: absolute;
