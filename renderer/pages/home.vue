@@ -62,13 +62,7 @@
           b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
             b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
             span(v-else) 連線
-        
-        .bottom-left.d-flex.justify-content-end.text-muted.s-75
-          b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
-          .my-auto.mr-2 {{ connectText }} #[b-icon(icon="three-dots" animation="cylon")]
-        .bottom-right.text-muted.s-75.text-right
-          transition(name="listY" mode="out-in"): div(v-if="!empty(userid)") #[span(v-if="!empty(domain)") {{ domain }} \ ]{{ userid }}
-          div {{ ip }} / {{ platform }}
+    status(:status-text="connectText")
 </template>
 
 <script>
@@ -355,6 +349,7 @@ export default {
     connect() {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
+        this.connectText = ''
       } else {
         if (this.validInformation) {
           this.connecting = true
@@ -393,6 +388,8 @@ export default {
             ws.onmessage = (e) => {
               const incoming = JSON.parse(e.data)
               const channel = incoming['channel']
+
+              this.connectText = `收到 ${channel} 訊息`
 
               this.$config.isDev && console.log(this.time(), `現在 ${this.$store.getters.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
@@ -486,7 +483,9 @@ export default {
         this.$store.commit('userinfo', userinfo)
         this.register()
       })
-      // receive main process quit event
+      // remvoe main process 'quit' all listeners
+      ipcRenderer.removeAllListeners('quit')
+      // register main process quit event listener
       ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
@@ -513,6 +512,19 @@ export default {
     this.department = await this.$localForage.getItem('department')
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
+
+    // back from settings page
+    this.$route.query.reconnect === 'true' && this.connect()
+  },
+  beforeDestroy () {
+    // reset timer if it already settled
+    if (this.timer !== null) {
+      this.$config.isDev && console.log(this.time(), "頁面即將刪除清除重新連線檢查定時器")
+      clearInterval(this.timer)
+      this.$store.commit('timer', null)
+    }
+    this.websocket && this.websocket.close()
+    this.$store.commit('websocket', undefined)
   }
 }
 </script>
@@ -525,15 +537,5 @@ export default {
   position: absolute;
   left: 80px;
   top: 100px;
-}
-.bottom-right {
-  position: absolute;
-  right: .5rem;
-  bottom: .5rem;
-}
-.bottom-left {
-  position: absolute;
-  left: .5rem;
-  bottom: .5rem;
 }
 </style>

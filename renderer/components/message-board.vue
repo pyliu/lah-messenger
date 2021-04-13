@@ -40,17 +40,17 @@ export default {
 <style lang="scss" scoped>
 .personal-container {
   margin: 5px;
-  height: 81.5vh;
+  height: calc(81.5vh - 24px);
 }
 
 .announcement-container {
   margin: 5px;
-  height: 89.5vh;
+  height: calc(89.5vh - 24px);
 }
 
 .chat-container {
   margin: 5px;
-  height: 73.25vh;
+  height: calc(73.25vh - 24px);
 }
 
 .msg {

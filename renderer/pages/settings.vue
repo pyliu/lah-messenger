@@ -1,6 +1,6 @@
 <template lang="pug">
   .vh-100.p-2(v-cloak)
-    .mt-2: b-link.d-flex.justify-content-start.align-items-center(to="/home" title="返回主畫面")
+    .mt-2: b-link.d-flex.justify-content-start.align-items-center(to="/home?reconnect=true" title="返回主畫面")
       b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
       span(style="font-size: 1.5rem;") 返回
     hr
@@ -27,10 +27,7 @@
       b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
       span.my-auto 清除所有設定
     
-    .bottom-left.d-flex.justify-content-end.text-muted.s-75
-      div {{ domain }} \ {{ userid }}
-    .bottom-right.text-muted.s-75.text-right
-      div {{ ip }} / {{ platform }}
+    status
 </template>
 
 <script>
@@ -119,7 +116,7 @@ export default {
       })
     }
   },
-  created() {
+  mounted() {
     this.restore()
   }
 }
@@ -140,17 +137,7 @@ export default {
 .clear {
   position: absolute;
   left: 5px;
-  bottom: 2rem;
+  bottom: calc(2rem);
   max-width: 98%;
-}
-.bottom-right {
-  position: absolute;
-  right: .5rem;
-  bottom: .5rem;
-}
-.bottom-left {
-  position: absolute;
-  left: .5rem;
-  bottom: .5rem;
 }
 </style>
