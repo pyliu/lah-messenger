@@ -5,7 +5,7 @@ import * as EStore from 'electron-store'
 import trim from 'lodash/trim'
 
 const empty = function(value) {
-  return value === undefined || value === null || value === NaN ||
+  return value === undefined || value === null || value === NaN || value === 0 ||
          (typeof value === 'object' && Object.keys(value).length === 0) ||
          (typeof value === 'string' && trim(value).length === 0)
 }

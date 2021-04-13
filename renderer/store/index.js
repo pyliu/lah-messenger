@@ -2,7 +2,7 @@ import trimStart from 'lodash/trimStart'
 import trim from 'lodash/trim'
 
 const empty = function(value) {
-  return value === undefined || value === null || value === NaN ||
+  return value === undefined || value === null || value === NaN || value === 0 ||
          (typeof value === 'object' && Object.keys(value).length === 0) ||
          (typeof value === 'string' && trim(value).length === 0)
 }
@@ -30,7 +30,7 @@ const state = () => ({
     userid: '',
     doamin: '',
     hostname: '',
-    os: { logofile: 'XXXXXX', kernel: 'xx.x.xxxxx' },
+    os: { logofile: 'Windows', kernel: '10.0.16299' },
     user: {}
   },
   username: '',
