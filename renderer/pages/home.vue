@@ -513,17 +513,6 @@ export default {
     this.department = await this.$localForage.getItem('department')
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
-
-    // const { BrowserWindow } = require('electron').remote
-    // const win = new BrowserWindow({ width: 800, height: 600 })
-    // win.loadURL('https://github.com')
-
-    // testing
-    // console.log(this.$config, Electron, this.estore, this.messages)
-    // this.estore.set({
-    //   pyliu: 'awesome'
-    // })
-    
   }
 }
 </script>
