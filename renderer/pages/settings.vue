@@ -109,8 +109,13 @@ export default {
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
-        answer && this.$localForage.clear()
-        this.restore()
+        if (answer) {
+          this.$localForage.removeItem('nickname')
+          this.$localForage.removeItem('department')
+          this.restore()
+          this.websocket.close()
+          this.$router.back()
+        }
       })
     }
   },
