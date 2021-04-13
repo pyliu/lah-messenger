@@ -3,15 +3,15 @@
     transition(v-if="connected" name="list"): div
       b-card.m-1(no-body header-tag="nav")
         template(#header): client-only: b-nav(card-header tabs fill)
-          b-nav-item(:active="isAnnouncement" title="公告訊息"): a.mr-1(@click="setCurrentChannel('announcement')")
+          b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             b-icon.mr-1(icon="bookmarks")
             span 公告
             b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-          b-nav-item(:active="isPersonal" title="進入個人通知列表"): a.mr-1(@click="setCurrentChannel(userid)")
+          b-nav-item(:active="isPersonal" title="進入個人通知列表" @click="setCurrentChannel(userid)"): a.mr-1
             b-icon.mr-1(icon="person")
             span 個人
             b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-          b-nav-item(:active="isChat" title="進入會話選單"): a.mr-1(@click="setCurrentChannel('chat')")
+          b-nav-item(:active="isChat" title="進入會話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 交談
           b-nav-item(title="進入設定頁面"): b-link(to="/settings")
