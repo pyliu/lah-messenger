@@ -20,10 +20,11 @@ export default {
         return 'personal-container'
       }
       return 'chat-container'
-    }
+    },
+    messageCount () { return this.list.length }
   },
   watch: {
-    list (dontcare) {
+    messageCount (dontcare) {
       // watch list to display the latest message
       // Vue VDOM workaround ... to display the last message
       this.$nextTick(() => {
