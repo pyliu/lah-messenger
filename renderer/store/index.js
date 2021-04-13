@@ -1,5 +1,11 @@
-import isEmpty from 'lodash/isEmpty'
 import trimStart from 'lodash/trimStart'
+import trim from 'lodash/trim'
+
+const empty = function(value) {
+  return value === undefined || value === null || value === NaN ||
+         (typeof value === 'object' && Object.keys(value).length === 0) ||
+         (typeof value === 'string' && trim(value).length === 0)
+}
 
 const timestamp = (full = false) => {
   // e.g. 2020-12-03 10:23:00
@@ -56,14 +62,13 @@ const state = () => ({
     'hr': 0,
     'supervisor': 0
   },
-  participatedChannels: [],
-  initialized: false
+  participatedChannels: []
 })
 
 const getters = {
   websocket: state => state.websocket,
   connected: state => state.websocket && state.websocket.readyState === 1,
-  disconnected: state => isEmpty(state.websocket) || state.websocket.readyState === 3,
+  disconnected: state => empty(state.websocket) || state.websocket.readyState === 3,
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
@@ -81,8 +86,7 @@ const getters = {
   address: state => state.userinfo.address,
   currentChannel: state => state.currentChannel,
   participatedChannels: state => state.participatedChannels,
-  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
-  initialized: state => state.initialized
+  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`
 }
 
 // only sync operation
@@ -107,19 +111,19 @@ const mutations = {
     state.currentChannel = currentChannel
   },
   addChannel (state, channel) {
-    if (!isEmpty(channel)) {
+    if (!empty(channel)) {
       state.messages = { ...state.messages, ...{ [channel]: [] } }
       this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
     }
   },
   resetUnread (state, channel) {
-    if (!isEmpty(channel)) {
+    if (!empty(channel)) {
       state.unread = { ...state.unread, ...{ [channel]: 0 } }
       this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
     }
   },
   plusUnread (state, channel) {
-    if (!isEmpty(channel)) {
+    if (!empty(channel)) {
       if (state.unread[channel] !== '99+') {
         if (typeof state.unread[channel] !== 'number') {
           state.unread = { ...state.unread, ...{ [channel]: 0 } }
@@ -157,9 +161,6 @@ const mutations = {
     } else {
       this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
-  },
-  initialized (state, flag) {
-    state.initialized = flag
   }
 }
 

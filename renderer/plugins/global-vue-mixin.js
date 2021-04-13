@@ -1,8 +1,14 @@
 import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
-import isEmpty from 'lodash/isEmpty'
 import $ from 'jquery'
 import * as EStore from 'electron-store'
+import trim from 'lodash/trim'
+
+const empty = function(value) {
+  return value === undefined || value === null || value === NaN ||
+         (typeof value === 'object' && Object.keys(value).length === 0) ||
+         (typeof value === 'string' && trim(value).length === 0)
+}
 
 // inject to all Vue instances
 Vue.mixin({
@@ -46,8 +52,7 @@ Vue.mixin({
       'user',
       'timer',
       'participatedChannels',
-      'platform',
-      'initialized'
+      'platform'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     channel () { return this.$store.getters.currentChannel }
@@ -62,6 +67,7 @@ Vue.mixin({
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
     },
+    empty,
     date() {
       const now = new Date()
       return (
@@ -322,7 +328,7 @@ Vue.mixin({
       })
     },
     warning (message, opts = {}) {
-      if (!isEmpty(message)) {
+      if (!empty(message)) {
         const merged = Object.assign({
           title: '警示',
           autoHideDelay: 7500,
@@ -333,7 +339,7 @@ Vue.mixin({
       }
     },
     alert (message, opts = {}) {
-      if (!isEmpty(message)) {
+      if (!empty(message)) {
         if (opts && opts.pos === 'bottom') {
           opts.pos = 'bf'
         } else if (opts && opts.pos === 'top') {
@@ -450,7 +456,7 @@ Vue.mixin({
       }
     },
     async setCache (key, val, expire_timeout = 0) {
-      if (isEmpty(key) || this.$localForage === undefined) { return false }
+      if (empty(key) || this.$localForage === undefined) { return false }
       try {
         const item = {
           key,
@@ -471,10 +477,10 @@ Vue.mixin({
       return true
     },
     async getCache (key) {
-      if (isEmpty(key) || this.$localForage === undefined) { return false }
+      if (empty(key) || this.$localForage === undefined) { return false }
       try {
         const item = await this.$localForage.getItem(key)
-        if (isEmpty(item)) { return false }
+        if (empty(item)) { return false }
         const ts = item.timestamp
         const expireTime = item.expire_ms || 0
         const now = +new Date()
@@ -492,10 +498,10 @@ Vue.mixin({
       return false
     },
     async getCacheExpireRemainingTime (key) {
-      if (isEmpty(key) || this.$localForage === undefined) { return false }
+      if (empty(key) || this.$localForage === undefined) { return false }
       try {
         const item = await this.$localForage.getItem(key)
-        if (isEmpty(item)) { return false }
+        if (empty(item)) { return false }
         const ts = item.timestamp
         const expireTime = item.expire_ms || 0
         const now = +new Date()
@@ -511,7 +517,7 @@ Vue.mixin({
       return false
     },
     async removeCache (key) {
-      if (isEmpty(key) || this.$localForage === undefined) { return false }
+      if (empty(key) || this.$localForage === undefined) { return false }
       try {
         await this.$localForage.removeItem(key)
       } catch (err) {

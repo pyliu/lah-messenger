@@ -499,25 +499,21 @@ export default {
     }
   },
   async mounted () {
-    if (!this.initialized) {
-      this.delayConnect = debounce(this.connect, 1500)
-      this.delayLatestMessage = debounce(this.latestMessage, 400)
-      this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
+    this.delayConnect = debounce(this.connect, 1500)
+    this.delayLatestMessage = debounce(this.latestMessage, 400)
+    this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
-      this.ipcRendererSetup()
-      this.$store.commit("resetUnread", this.userid)
-      // auto connect to ws server, delay 40s
-      setTimeout(this.resetReconnectTimer, 40 * 1000)
+    this.ipcRendererSetup()
+    this.$store.commit("resetUnread", this.userid)
+    // auto connect to ws server, delay 40s
+    setTimeout(this.resetReconnectTimer, 40 * 1000)
 
-      // restore last settings
-      this.nickname = await this.$localForage.getItem('nickname')
-      this.department = await this.$localForage.getItem('department')
-      this.wsHost = await this.$localForage.getItem('wsHost')
-      this.wsPort = await this.$localForage.getItem('wsPort')
+    // restore last settings
+    this.nickname = await this.$localForage.getItem('nickname')
+    this.department = await this.$localForage.getItem('department')
+    this.wsHost = await this.$localForage.getItem('wsHost')
+    this.wsPort = await this.$localForage.getItem('wsPort')
 
-      // to prevent page changed re-initializing
-      this.$store.commit('initialized', true)
-    }
     // const { BrowserWindow } = require('electron').remote
     // const win = new BrowserWindow({ width: 800, height: 600 })
     // win.loadURL('https://github.com')
