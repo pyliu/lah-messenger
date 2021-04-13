@@ -36,7 +36,7 @@ export default {
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' },
-    isChat () { return this.$store.getters.currentChannel === 'chat'}
+    isChat () { return this.currentChannel === 'chat'}
   },
   watch: {
     

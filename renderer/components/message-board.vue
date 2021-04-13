@@ -10,8 +10,8 @@ export default {
   },
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return this.userid === this.$store.getters.currentChannel },
-    isAnnouncement () { return this.$store.getters.currentChannel === 'announcement' },
+    isPersonal () { return this.userid === this.currentChannel },
+    isAnnouncement () { return this.currentChannel === 'announcement' },
     blockCss () {
       if (this.isAnnouncement) {
         return 'announcement-container'

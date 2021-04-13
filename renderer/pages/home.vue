@@ -23,9 +23,10 @@
 
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
-        
+      //- 輸入訊息UI
       transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
         b-textarea.mr-1(
+          ref="textarea"
           v-model="text"
           debounce="200"
           placeholder="... Ctrl + Enter 直接送出 ..."
@@ -38,7 +39,7 @@
         b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
-
+    //- 連線主畫面
     .center.vh-100(v-else)
       .w-75
         .center.logo: b-img(src="taoyuan_logo.png")
@@ -101,22 +102,22 @@ export default {
     connecting: false
   }),
   computed: {
-    showInputGroup () { return !this.isAnnouncement && (this.$store.getters.currentChannel === this.userid || this.$store.getters.currentChannel !== 'chat') },
-    showMessageBoard () { return this.$store.getters.currentChannel !== 'chat' },
+    showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
+    showMessageBoard () { return this.currentChannel !== 'chat' },
     showChatBoard () { return this.isChat },
 
     isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return this.userid === this.$store.getters.currentChannel },
-    isAnnouncement () { return this.$store.getters.currentChannel === 'announcement' },
-    isInf () { return this.$store.getters.currentChannel === 'inf' },
-    isAdm () { return this.$store.getters.currentChannel === 'adm' },
-    isVal () { return this.$store.getters.currentChannel === 'val' },
-    isReg () { return this.$store.getters.currentChannel === 'reg' },
-    isSur () { return this.$store.getters.currentChannel === 'sur' },
-    isAcc () { return this.$store.getters.currentChannel === 'acc' },
-    isHr () { return this.$store.getters.currentChannel === 'hr' },
-    isSupervisor () { return this.$store.getters.currentChannel === 'supervisor' },
-    isLds () { return this.$store.getters.currentChannel === 'lds' },
+    isPersonal () { return this.userid === this.currentChannel },
+    isAnnouncement () { return this.currentChannel === 'announcement' },
+    isInf () { return this.currentChannel === 'inf' },
+    isAdm () { return this.currentChannel === 'adm' },
+    isVal () { return this.currentChannel === 'val' },
+    isReg () { return this.currentChannel === 'reg' },
+    isSur () { return this.currentChannel === 'sur' },
+    isAcc () { return this.currentChannel === 'acc' },
+    isHr () { return this.currentChannel === 'hr' },
+    isSupervisor () { return this.currentChannel === 'supervisor' },
+    isLds () { return this.currentChannel === 'lds' },
     
     belongToInf () { return this.userdept === 'inf' },
     belongToAdm () { return this.userdept === 'adm' },
@@ -140,13 +141,11 @@ export default {
     validDepartment() { return !isEmpty(trim(this.department)) },
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
     list() {
-      return this.messages[this.$store.getters.currentChannel] || []
+      return this.messages[this.currentChannel] || []
     },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.$store.getters.currentChannel) },
-
-    channel() { return this.$store.getters.currentChannel }
+    inChatting() { return !this.stickyChannels.includes(this.currentChannel) }
   },
   watch: {
     channel(nVal, oVal) {
@@ -190,13 +189,13 @@ export default {
         // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
         const oCName = this.getChannelName(oVal)
         const nCName = this.getChannelName(nVal)
-        !this.stickyChannels.includes(oVal) && this.$store.getters.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
-        !this.stickyChannels.includes(nVal) && this.$store.getters.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
+        !this.stickyChannels.includes(oVal) && this.currentChannel !== oVal && this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, { sender: 'system', channel: oVal })
+        !this.stickyChannels.includes(nVal) && this.currentChannel === nVal && this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, { sender: 'system', channel: nVal })
       }
     },
     sendAppCloseActivity() {
-      const cName = this.getChannelName(this.$store.getters.currentChannel)
-      !this.stickyChannels.includes(this.$store.getters.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.$store.getters.currentChannel })
+      const cName = this.getChannelName(this.currentChannel)
+      !this.stickyChannels.includes(this.currentChannel) && this.sendTo(`${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`, { sender: 'system', channel: this.currentChannel })
     },
     send () {
       // detect local commands
@@ -209,16 +208,17 @@ export default {
         this.$router.push('/settings')
       }
 
-      if (this.sendTo(this.text, { channel: this.$store.getters.currentChannel })) {
+      if (this.sendTo(this.text, { channel: this.currentChannel })) {
         this.text = ''
       }
+      this.$refs.textarea && this.$refs.textarea.focus()
     },
     sendTo(message, opts = {}) {
       message = trim(message)
       !this.connected && this.connect()
       if (!isEmpty(message)) {
         if (this.connected) {
-          const jsonStr = this.packMessage(message, { channel: this.$store.getters.currentChannel, ...opts })
+          const jsonStr = this.packMessage(message, { channel: this.currentChannel, ...opts })
           this.websocket.send(jsonStr)
           return true
         } else {
@@ -391,14 +391,14 @@ export default {
 
               this.connectText = `收到 ${channel} 訊息`
 
-              this.$config.isDev && console.log(this.time(), `現在 ${this.$store.getters.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
+              this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
               if (incoming.type === 'ack') {
                 this.handleAckMessage(incoming.message)
               } else if (channel === 'system') {
                 // got system message
                 this.handleSystemMessage(incoming.message)
-              } else if (this.$store.getters.currentChannel == channel) {
+              } else if (this.currentChannel == channel) {
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
                   // add message to store channel list
@@ -408,7 +408,7 @@ export default {
                 if (parseInt(this.unread[channel]) === NaN) {
                   this.$store.dispatch("resetUnread", channel)
                 }
-                this.$store.getters.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
+                this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
               }
               
               this.connecting = false
@@ -416,19 +416,19 @@ export default {
           } catch (e) {
             this.connectText = '連線錯誤'
             console.error(e)
-            this.websocket.close()
-            this.$store.commit('websocket', undefined)
+            this.closeWebsocket()
           } finally {
           }
         } else {
-          this.notify('請輸入正確的連線資訊', { type: 'warning', pos: 'tf' })
+          const IDReady = !this.empty(this.userid)
+          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
         }
       }
     },
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
     latestMessage() {
-      const channel = this.$store.getters.currentChannel
+      const channel = this.currentChannel
       if (this.connected) {
         const jsonString = JSON.stringify({
           type: "command",
@@ -461,11 +461,7 @@ export default {
     },
     resetReconnectTimer () {
       // reset timer if it already settled
-      if (this.timer !== null) {
-        this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
-        clearInterval(this.timer)
-        this.$store.commit('timer', null)
-      }
+      this.clearReconnectTimer()
       // check connection every 20s
       if (this.timer === null) {
         this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
@@ -490,11 +486,11 @@ export default {
     }
   },
   created() {
-    if (!(this.$store.getters.currentChannel in this.messages) && !this.$isServer) {
-      this.$store.commit("addChannel", this.$store.getters.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add channel ${this.$store.getters.currentChannel} to $store! [messageMixin::created]`)
-      this.$store.commit("resetUnread", this.$store.getters.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add unread ${this.$store.getters.currentChannel} to $store! [messageMixin::created]`)
+    if (!(this.currentChannel in this.messages) && !this.$isServer) {
+      this.$store.commit("addChannel", this.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
+      this.$store.commit("resetUnread", this.currentChannel)
+      this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
   },
   async mounted () {
@@ -517,14 +513,9 @@ export default {
     this.$route.query.reconnect === 'true' && this.connect()
   },
   beforeDestroy () {
-    // reset timer if it already settled
-    if (this.timer !== null) {
-      this.$config.isDev && console.log(this.time(), "頁面即將刪除清除重新連線檢查定時器")
-      clearInterval(this.timer)
-      this.$store.commit('timer', null)
-    }
-    this.websocket && this.websocket.close()
-    this.$store.commit('websocket', undefined)
+    // remove timer if user is going to leave the page
+    this.clearReconnectTimer()
+    this.closeWebsocket()
   }
 }
 </script>

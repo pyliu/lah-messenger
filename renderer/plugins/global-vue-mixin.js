@@ -52,10 +52,10 @@ Vue.mixin({
       'user',
       'timer',
       'participatedChannels',
-      'platform'
+      'platform',
+      'currentChannel'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
-    channel () { return this.$store.getters.currentChannel }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
   },
   methods: {
     ...mapActions([
@@ -66,6 +66,18 @@ Vue.mixin({
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
+    },
+    clearReconnectTimer() {
+      if (this.timer !== null) {
+        this.$config.isDev && console.log(this.time(), "頁面即將刪除清除重新連線檢查定時器")
+        clearInterval(this.timer)
+        this.$store.commit('timer', null)
+      }
+    },
+    closeWebsocket() {
+      // close the socket since the events only attach to this page
+      this.websocket && this.websocket.close()
+      this.$store.commit('websocket', undefined)
     },
     empty,
     date() {
@@ -98,7 +110,7 @@ Vue.mixin({
           title: "dontcare",
           from: this.ip,
           message: text,
-          channel: this.$store.getters.currentChannel,
+          channel: this.currentChannel,
         },
         ...opts,
       })

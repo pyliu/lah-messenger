@@ -76,7 +76,7 @@ export default {
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.$store.getters.currentChannel) },
+    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
 
     platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },
@@ -110,14 +110,15 @@ export default {
           this.$localForage.removeItem('nickname')
           this.$localForage.removeItem('department')
           this.restore()
-          this.websocket.close()
-          this.$router.back()
         }
       })
     }
   },
   mounted() {
     this.restore()
+  },
+  destroyed() {
+    this.closeWebsocket()
   }
 }
 </script>
