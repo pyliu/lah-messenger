@@ -3,17 +3,19 @@
     transition(v-if="connected" name="list"): div
       b-card.m-1(no-body header-tag="nav")
         template(#header): client-only: b-nav(card-header tabs fill)
-          b-nav-item(:active="isAnnouncement"): a.mr-1(@click="setCurrentChannel('announcement')")
+          b-nav-item(:active="isAnnouncement" title="公告訊息"): a.mr-1(@click="setCurrentChannel('announcement')")
             b-icon.mr-1(icon="bookmarks")
             span 公告
             b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
-          b-nav-item(:active="isPersonal"): a.mr-1(@click="setCurrentChannel(userid)" title="進入個人通知列表")
+          b-nav-item(:active="isPersonal" title="進入個人通知列表"): a.mr-1(@click="setCurrentChannel(userid)")
             b-icon.mr-1(icon="person")
-            span 個人通知
+            span 個人
             b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
-          b-nav-item(:active="isChat"): a.mr-1(@click="setCurrentChannel('chat')" title="進入會話選單")
+          b-nav-item(:active="isChat" title="進入會話選單"): a.mr-1(@click="setCurrentChannel('chat')")
             b-icon.mr-1(icon="chat-text")
-            span 交談頻道
+            span 交談
+          b-nav-item(title="進入設定頁面"): b-link(to="/settings")
+            b-icon.mr-1(icon="tools")
 
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
           b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")

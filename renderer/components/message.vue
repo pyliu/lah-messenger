@@ -110,7 +110,7 @@ export default {
     background: #17a2b8;
     color: rgb(255, 239, 239);
     padding: 5px;
-    max-width: 90%;
+    max-width: 85%;
     text-align: left;
     box-sizing: border-box;
     margin-bottom: 0rem !important;
@@ -134,7 +134,7 @@ export default {
       font-size: .75rem;
       max-width: 95%;
     }
-    margin-top: .5rem;
+    margin-top: .25rem;
     margin-bottom: 0.5rem;
   }
   &.date {
