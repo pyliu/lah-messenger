@@ -1,7 +1,7 @@
 <template lang="pug">
   .bottom.d-flex.justify-content-between.text-muted.s-75
     .d-flex.justify-content-start
-      b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
+      b-icon.mr-1.my-auto(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
       .my-auto.mr-2 #[span(v-html="text")] #[b-icon(icon="three-dots" animation="cylon")]
     .text-right
       transition(name="list" mode="out-in"): div(v-if="!empty(domain)") {{ domain }} / {{ platform }}
