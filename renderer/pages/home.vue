@@ -261,6 +261,8 @@ export default {
           channel: 'system'
         })
         this.websocket.send(jsonString)
+        // update electron window title
+        this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.userid} / ${this.ip}`)
       } else {
         this.$config.isDev && console.log(
           this.time(),

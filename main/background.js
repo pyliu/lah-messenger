@@ -87,11 +87,13 @@ app.on('window-all-closed', () => {
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
+ipcMain.handle('title', async (event, str) => {
+  mainWindow.setTitle(str)
+})
 ipcMain.handle('unread', async (event, arg) => {
   mainWindow.restore()
-  mainWindow.setAlwaysOnTop(true)
-  // delay timer to set the ontop flag to false
-  setTimeout(() => mainWindow.setAlwaysOnTop(false), 400)
+  // mainWindow.center()
+  mainWindow.moveTop()
 })
 ipcMain.handle('userinfo', async (event, arg) => {
   // console.log(arg)
