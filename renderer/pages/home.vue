@@ -521,6 +521,8 @@ export default {
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
+
+    this.ipcRenderer.invoke('home-ready')
   },
   beforeDestroy () {
     // remove timer if user is going to leave the page

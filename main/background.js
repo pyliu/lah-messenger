@@ -45,7 +45,7 @@ if (!gotTheLock) {
       // disable the menu bar since menuBarVisible flag does not work properly
       mainWindow.setMenuBarVisibility(false);
       mainWindow.once('ready-to-show', function(e) {
-        this.show();
+        setTimeout(() => this.show(), 5000)
       })
 
       if (isProd) {
@@ -87,6 +87,9 @@ app.on('window-all-closed', () => {
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
+ipcMain.handle('home-ready', async (event, arg) => {
+  mainWindow.show()
+})
 ipcMain.handle('title', async (event, str) => {
   mainWindow.setTitle(str)
 })
