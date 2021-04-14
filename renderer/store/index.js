@@ -79,6 +79,7 @@ const getters = {
     return trimStart(state.userinfo.domain, `${state.userinfo.hostname}.`)
   },
   hostname: state => state.userinfo.hostname,
+  pcname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid.toUpperCase(),
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
