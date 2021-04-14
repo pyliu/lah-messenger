@@ -93,10 +93,15 @@ ipcMain.handle('home-ready', async (event, arg) => {
 ipcMain.handle('title', async (event, str) => {
   mainWindow.setTitle(str)
 })
-ipcMain.handle('unread', async (event, arg) => {
+ipcMain.handle('unread', async (event, channel) => {
   mainWindow.restore()
-  // mainWindow.center()
-  mainWindow.moveTop()
+  // important notification
+  if (['announcement', mainWindow.userinfo.userid].includes(channel)) {
+    mainWindow.center()
+    // mainWindow.moveTop()
+    mainWindow.setAlwaysOnTop(true)
+    setTimeout(() => mainWindow.setAlwaysOnTop(false), 400)
+  }
 })
 ipcMain.handle('userinfo', async (event, arg) => {
   // console.log(arg)
@@ -152,5 +157,9 @@ ipcMain.handle('userinfo', async (event, arg) => {
       }
     }
   }
+
+  // inject userinfo to main window
+  mainWindow.userinfo = userinfo
+
   return userinfo
 })

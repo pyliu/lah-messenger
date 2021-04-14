@@ -407,7 +407,7 @@ export default {
                   !isEmpty(incoming['message']) && this.messages[channel].push(incoming)
                 })
                 // tell electron window got a unread message
-                this.ipcRenderer.invoke('unread')
+                this.ipcRenderer.invoke('unread', channel)
               } else if (incoming.message && incoming.sender !== 'system') {
                 if (parseInt(this.unread[channel]) === NaN) {
                   this.$store.dispatch("resetUnread", channel)
@@ -415,7 +415,8 @@ export default {
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
                 if (['announcement', this.userid].includes(channel)) {
                   // tell electron window [ 'announcement', myowned ] channels got unread message
-                  this.ipcRenderer.invoke('unread')
+                  this.ipcRenderer.invoke('unread', channel)
+                  this.setCurrentChannel(channel)
                 }
               }
               
