@@ -148,7 +148,7 @@ export default {
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) }
   },
   watch: {
-    channel(nVal, oVal) {
+    currentChannel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
       this.delaySendChannelActivity(oVal, nVal)
 
