@@ -4,7 +4,7 @@
       b-icon.mr-1(icon="info-circle-fill" animation="fade" variant="info" font-scale="1.25")
       .my-auto.mr-2 #[span(v-html="text")] #[b-icon(icon="three-dots" animation="cylon")]
     .text-right
-      transition(name="list" mode="out-in"): div(v-if="!empty(userid)") {{ userid }} / {{ ip }}
+      transition(name="list" mode="out-in"): div(v-if="!empty(domain)") {{ domain }} / {{ platform }}
 </template>
 
 <script>
