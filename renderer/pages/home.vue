@@ -417,7 +417,6 @@ export default {
                 if (!this.$config.isDev && ['announcement', this.userid].includes(channel)) {
                   // tell electron window [ 'announcement', myowned ] channels got unread message
                   this.ipcRenderer.invoke('unread', channel)
-                  this.setCurrentChannel(channel)
                 }
               }
               
