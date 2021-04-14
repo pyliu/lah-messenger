@@ -87,6 +87,12 @@ app.on('window-all-closed', () => {
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
+ipcMain.handle('unread', async (event, arg) => {
+  mainWindow.restore()
+  mainWindow.setAlwaysOnTop(true)
+  // delay timer to set the ontop flag to false
+  setTimeout(() => mainWindow.setAlwaysOnTop(false), 400)
+})
 ipcMain.handle('userinfo', async (event, arg) => {
   // console.log(arg)
   const si = require('systeminformation')

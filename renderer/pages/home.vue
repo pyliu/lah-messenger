@@ -409,6 +409,8 @@ export default {
                   this.$store.dispatch("resetUnread", channel)
                 }
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
+                // tell electron window got a unread message
+                this.ipcRenderer.invoke('unread')
               }
               
               this.connecting = false
@@ -451,7 +453,7 @@ export default {
       }
     },
     showUnread (channel) {
-      return this.getUnread(channel) > 0 || this.getUnread(channel) === '99+'
+      return this.getUnread(channel) > 0 || this.getUnread(channel) === '9+'
     },
     getUnread (channel) {
       if (this.unread) {
@@ -474,15 +476,14 @@ export default {
     },
     ipcRendererSetup () {
       // dynamic get userinfo from main process
-      const { ipcRenderer } = require('electron')
-      ipcRenderer.invoke('userinfo').then((userinfo) => {
+      this.ipcRenderer.invoke('userinfo').then((userinfo) => {
         this.$store.commit('userinfo', userinfo)
         this.register()
       })
       // remvoe main process 'quit' all listeners
-      ipcRenderer.removeAllListeners('quit')
+      this.ipcRenderer.removeAllListeners('quit')
       // register main process quit event listener
-      ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
+      this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
   created() {
@@ -492,6 +493,9 @@ export default {
       this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
+    // ipc to electron main process
+    const { ipcRenderer } = require('electron')
+    this.ipcRenderer = ipcRenderer
   },
   async mounted () {
     this.delayConnect = debounce(this.connect, 1500)

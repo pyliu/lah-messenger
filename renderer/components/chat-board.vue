@@ -43,7 +43,8 @@ export default {
   },
   methods: {
     showUnread (channel) {
-      return this.getUnread(channel) > 0
+      const val = this.getUnread(channel)
+      return parseInt(val) > 0 || val === '9+'
     },
     getUnread (channel) {
       if (this.unread) {
