@@ -4,7 +4,8 @@
       b-icon.mr-1.my-auto(icon="info-circle-fill" :animation="empty(displayText) ? '' : 'fade'" :variant="empty(displayText) ? 'light' : 'info'" font-scale="1.25")
       transition(name="list" mode="out-in"): .my-auto.mr-2(v-if="!empty(displayText)") #[span {{ displayText }}] #[b-icon(icon="three-dots" animation="cylon")]
     .text-right
-      transition(name="list" mode="out-in"): div(v-if="!empty(domain)") {{ domain }} / {{ platform }}
+      transition(name="list" mode="out-in"): span(v-if="!empty(domain)") {{ domain }} / 
+      span {{ platform }}
 </template>
 
 <script>

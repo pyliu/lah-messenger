@@ -48,6 +48,11 @@ if (!gotTheLock) {
         setTimeout(() => this.show(), 5000)
       })
 
+      mainWindow.on('focus', () => {
+        // when browser window focused, set always on top attr to false
+        mainWindow.setAlwaysOnTop(false)
+      });
+
       if (isProd) {
         await mainWindow.loadURL('app://./home');
       } else {
@@ -98,9 +103,7 @@ ipcMain.handle('unread', async (event, channel) => {
   // important notification
   if (['announcement', mainWindow.userinfo.userid].includes(channel)) {
     mainWindow.center()
-    // mainWindow.moveTop()
     mainWindow.setAlwaysOnTop(true)
-    setTimeout(() => mainWindow.setAlwaysOnTop(false), 400)
   }
 })
 ipcMain.handle('userinfo', async (event, arg) => {

@@ -413,8 +413,7 @@ export default {
                   this.$store.dispatch("resetUnread", channel)
                 }
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
-                // too annoying during development ... so skip it
-                if (!this.$config.isDev && ['announcement', this.userid].includes(channel)) {
+                if (['announcement', this.userid].includes(channel)) {
                   // tell electron window [ 'announcement', myowned ] channels got unread message
                   this.ipcRenderer.invoke('unread', channel)
                 }
