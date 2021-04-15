@@ -70,7 +70,7 @@ Vue.mixin({
     },
     clearReconnectTimer() {
       if (this.timer !== null) {
-        this.$config.isDev && console.log(this.time(), "頁面即將刪除清除重新連線檢查定時器")
+        this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
         clearInterval(this.timer)
         this.$store.commit('timer', null)
       }
