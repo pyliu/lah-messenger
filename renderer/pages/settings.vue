@@ -19,7 +19,7 @@
       template(#prepend)
         b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
         span.my-auto 　伺服器
-      b-input.ml-2(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim)
       span.my-auto.mx-1 :
       b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
     
