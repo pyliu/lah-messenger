@@ -470,8 +470,8 @@ export default {
     resetReconnectTimer () {
       // reset timer if it already settled
       this.clearReconnectTimer()
-      // check connection every 20s
-      if (this.timer === null) {
+      // in home.vue, checks connection every 20s
+      if (this.timer === null && this.$route.name === 'home') {
         this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
         this.$store.commit('timer', setInterval(() => {
           this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
