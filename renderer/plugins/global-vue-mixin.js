@@ -128,6 +128,7 @@ Vue.mixin({
         case 'hr': return '人事室'
         case 'acc': return '會計室'
         case 'supervisor': return '主任祕書室'
+        case 'system': return '系統'
         default:
           // TODO: find channel name by query
           const found = this.participatedChannels.find(item => item.id === channelId)
