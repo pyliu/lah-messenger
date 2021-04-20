@@ -14,6 +14,7 @@
           b-nav-item(:active="isChat" title="進入會話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 交談
+            //- b-badge.ml-1(variant="secondary" pill v-if="chatUnread > 0") {{ chatUnread }}
           b-nav-item(title="進入設定頁面"): b-link(to="/settings")
             b-icon.mr-1(icon="tools")
 
@@ -391,7 +392,7 @@ export default {
               const incoming = JSON.parse(e.data)
               const channel = incoming['channel']
 
-              this.connectText = `收到 ${channel} 訊息`
+              this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
 
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
