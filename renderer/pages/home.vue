@@ -14,7 +14,7 @@
           b-nav-item(:active="isChat" title="進入會話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 交談
-            //- b-badge.ml-1(variant="secondary" pill v-if="chatUnread > 0") {{ chatUnread }}
+            b-badge.ml-1(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
           b-nav-item(title="進入設定頁面"): b-link(to="/settings")
             b-icon.mr-1(icon="tools")
 
@@ -146,7 +146,19 @@ export default {
     },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
-    inChatting() { return !this.stickyChannels.includes(this.currentChannel) }
+    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
+    
+    showChatUnread () {
+      return this.chatUnread > 0
+    },
+    chatUnread () {
+      return Object.entries(this.unread).reduce((acc, curr) => {
+        if (parseInt(curr[0]) > 0 || ['lds', 'adm', 'sur', 'inf', 'reg', 'val', 'acc', 'hr', 'supervisor'].includes(curr[0])) {
+          return acc + curr[1]
+        }
+        return acc
+      }, 0)
+    },
   },
   watch: {
     currentChannel(nVal, oVal) {
