@@ -42,16 +42,6 @@ export default {
     
   },
   methods: {
-    showUnread (channel) {
-      const val = this.getUnread(channel)
-      return parseInt(val) > 0 || val === '9+'
-    },
-    getUnread (channel) {
-      if (this.unread) {
-         return this.unread[channel] || 0
-      }
-      return 0
-    },
     removeParticipatedChannel (item) {
       this.confirm(`刪除 ${item.id} / ${item.name} 頻道將一併移除所有歷史訊息，請確認是否執行？`).then((ans) => {
         if (ans) {

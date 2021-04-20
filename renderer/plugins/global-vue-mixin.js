@@ -63,6 +63,17 @@ Vue.mixin({
       'resetUnread',
       'plusUnread'
     ]),
+    showUnread (channel) {
+      const val = this.getUnread(channel)
+      return parseInt(val) > 0 || val === '9+'
+    },
+    getUnread (channel) {
+      if (this.unread) {
+        let val = this.unread[channel] || 0
+        return val > 9 ? '9+' : val
+      }
+      return 0
+    },
     setCurrentChannel (channel) {
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number

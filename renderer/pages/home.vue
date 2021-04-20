@@ -149,15 +149,16 @@ export default {
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
     
     showChatUnread () {
-      return this.chatUnread > 0
+      return this.chatUnread > 0 || this.chatUnread === '9+'
     },
     chatUnread () {
-      return Object.entries(this.unread).reduce((acc, curr) => {
+      const result =  Object.entries(this.unread).reduce((acc, curr) => {
         if (parseInt(curr[0]) > 0 || ['lds', 'adm', 'sur', 'inf', 'reg', 'val', 'acc', 'hr', 'supervisor'].includes(curr[0])) {
           return acc + curr[1]
         }
         return acc
       }, 0)
+      return result > 9 ? '9+' : result
     },
   },
   watch: {
@@ -470,15 +471,6 @@ export default {
           `尚未連線無法取得 ${channel} 最新訊息資料`
         )
       }
-    },
-    showUnread (channel) {
-      return this.getUnread(channel) > 0 || this.getUnread(channel) === '9+'
-    },
-    getUnread (channel) {
-      if (this.unread) {
-         return this.unread[channel] || 0
-      }
-      return 0
     },
     resetReconnectTimer () {
       // reset timer if it already settled
