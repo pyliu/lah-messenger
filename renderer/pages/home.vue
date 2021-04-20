@@ -158,7 +158,7 @@ export default {
         }
         return acc
       }, 0)
-      return result > 9 ? '9+' : result
+      return result > 99 ? '99+' : result
     },
   },
   watch: {
