@@ -33,7 +33,6 @@
 <script>
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
-import debounce from 'lodash/debounce'
 
 export default {
   transition: 'list',
