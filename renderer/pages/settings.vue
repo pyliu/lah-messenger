@@ -13,7 +13,7 @@
       template(#prepend)
         b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
         span.my-auto 網域密碼
-      b-input.ml-2(type="password" v-model="adpw" :placeholder="`${userid}的網域密碼`" trim)
+      b-input.ml-2(type="password" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -23,10 +23,16 @@
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-        span.my-auto 　伺服器
+        span.my-auto 連線主機
       b-input.ml-2(v-model="wsHost" :state="validHost" trim)
       span.my-auto.mx-1 :
       b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
+
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
+        span.my-auto ＡＤ主機
+      b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
     
     b-button.mx-auto.clear(variant="outline-danger" block @click="clear")
       b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
@@ -50,9 +56,10 @@ export default {
     }
   },
   data: () => ({
+    adHost: '220.1.35.30',
     wsHost: '127.0.0.1',
     wsPort: 8081,
-    adpw: '',
+    adPassword: '',
     nickname: '',
     department: '',
     departmentOpts: [
@@ -71,6 +78,7 @@ export default {
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
+    validAdHost() { return !isEmpty(trim(this.adHost)) },
     validHost() { return !isEmpty(trim(this.wsHost)) },
     validPort() {
       const i = parseInt(trim(this.wsPort))
@@ -86,14 +94,19 @@ export default {
     platform() { return `${this.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${this.os.kernel}`}
   },
   watch: {
+    adHost(val) {
+      this.$localForage.setItem('adHost', val)
+      this.$store.commit('ad', val)
+    },
+    adPassword(val) {
+      this.$localForage.setItem('adPassword', val)
+      this.$store.commit('password', val)
+    },
     wsHost(val) {
       this.$localForage.setItem('wsHost', val)
     },
     wsPort(val) {
       this.$localForage.setItem('wsPort', val)
-    },
-    adpw(val) {
-      this.$localForage.setItem('password', val)
     },
     nickname(val) {
       this.$store.commit('username', val)
@@ -110,16 +123,17 @@ export default {
       this.nickname = await this.$localForage.getItem('nickname')
       this.empty(this.nickname) && (this.nickname = this.userid)
       this.department = await this.$localForage.getItem('department')
+      this.adHost = await this.$localForage.getItem('adHost')
+      this.adPassword = await this.$localForage.getItem('adPassword')
       this.wsHost = await this.$localForage.getItem('wsHost')
       this.wsPort = await this.$localForage.getItem('wsPort')
-      this.adpw = await this.$localForage.getItem('password')
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
         if (answer) {
           this.$localForage.removeItem('nickname')
           this.$localForage.removeItem('department')
-          this.$localForage.removeItem('password')
+          this.$localForage.removeItem('adPassword')
           this.restore()
         }
       })

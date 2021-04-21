@@ -33,6 +33,7 @@ const state = () => ({
     os: { logofile: 'Windows', kernel: '10.0.16299' },
     user: {}
   },
+  ad: '',
   password: '',
   username: '',
   userdept: '',
@@ -80,6 +81,7 @@ const getters = {
   hostname: state => state.userinfo.hostname,
   pcname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid.toUpperCase(),
+  ad: state => state.ad,
   password: state => state.password,  // used for activedirectory query
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
@@ -107,6 +109,9 @@ const mutations = {
   },
   userdept (state, userdept) {
     state.userdept = userdept
+  },
+  ad (state, ip) {
+    state.ad = ip
   },
   password (state, password) {
     state.password = password

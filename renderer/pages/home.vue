@@ -58,16 +58,22 @@
         
         b-input-group.my-2(:title="`${userid}的網域密碼`")
           template(#prepend): b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
-          b-input(type="password" v-model="adpw" :placeholder="`${userid}的網域密碼`" trim)
+          b-input(type="password" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
 
-        b-input-group.my-2(title="連線伺服器資訊")
+        b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
-          b-button(@click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
-            b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
-            span(v-else) 連線
+
+        b-input-group.my-2(title="AD伺服器IP")
+          template(#prepend): b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
+          b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+
+        
+        b-button(block @click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
+          b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
+          span(v-else) 連線
     status(:status-text="connectText")
 </template>
 
@@ -89,10 +95,11 @@ export default {
   data: () => ({
     text: '',
     connectText: '',
+    adHost: '220.1.35.30',
+    adPassword: '',
     wsHost: '127.0.0.1',
     wsPort: 8081,
     nickname: '',
-    adpw: '',
     department: '',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
@@ -138,6 +145,7 @@ export default {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
     valid() { return !isEmpty(trim(this.text)) },
+    validAdHost() { return isEmpty(trim(this.adHost)) === true ? false : null },
     validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
@@ -181,6 +189,11 @@ export default {
       this.messages[oVal] && (this.messages[oVal].length = 0)
       this.latestMessage()
     },
+    adHost(val) {
+      this.resetReconnectTimer()
+      this.$store.commit('ad', val)
+      this.$localForage.setItem('adHost', val)
+    },
     wsHost(val) {
       this.resetReconnectTimer()
       this.$localForage.setItem('wsHost', val)
@@ -193,8 +206,9 @@ export default {
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
     },
-    adpw(val) {
-      this.$localForage.setItem('password', val)
+    adPassword(val) {
+      this.$store.commit('password', val)
+      this.$localForage.setItem('adPassword', val)
     },
     department(val) {
       this.resetReconnectTimer()
@@ -450,7 +464,7 @@ export default {
           }
         } else {
           const IDReady = !this.empty(this.userid)
-          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
+          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'bf', delay: 3000 })
         }
       }
     },
@@ -531,7 +545,7 @@ export default {
     this.department = await this.$localForage.getItem('department')
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
-    this.adpw = await this.$localForage.getItem('password')
+    this.adPassword = await this.$localForage.getItem('adPassword')
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
@@ -553,6 +567,6 @@ export default {
 .logo {
   position: absolute;
   left: 80px;
-  top: 100px;
+  top: 50px;
 }
 </style>

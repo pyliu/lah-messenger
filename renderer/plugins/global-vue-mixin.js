@@ -48,6 +48,7 @@ Vue.mixin({
       'hostname',
       'pcname',
       'userid',
+      'ad',
       'password',
       'address',
       'os',
