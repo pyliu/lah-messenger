@@ -149,7 +149,7 @@ export default {
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
     
     showChatUnread () {
-      return this.chatUnread > 0 || this.chatUnread === '9+'
+      return this.chatUnread > 0 || this.chatUnread === '99+'
     },
     chatUnread () {
       const result =  Object.entries(this.unread).reduce((acc, curr) => {
