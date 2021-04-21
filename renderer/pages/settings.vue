@@ -7,8 +7,13 @@
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-        span.my-auto 顯示名稱
-      b-input.ml-2(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+        span.my-auto 網域名稱
+      b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim readonly)
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
+        span.my-auto 網域密碼
+      b-input.ml-2(type="password" v-model="adpw" :placeholder="`${userid}的網域密碼`" trim)
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -47,6 +52,7 @@ export default {
   data: () => ({
     wsHost: '127.0.0.1',
     wsPort: 8081,
+    adpw: '',
     nickname: '',
     department: '',
     departmentOpts: [
@@ -86,6 +92,9 @@ export default {
     wsPort(val) {
       this.$localForage.setItem('wsPort', val)
     },
+    adpw(val) {
+      this.$localForage.setItem('password', val)
+    },
     nickname(val) {
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
@@ -99,15 +108,18 @@ export default {
     async restore() {
       // restore last settings
       this.nickname = await this.$localForage.getItem('nickname')
+      this.empty(this.nickname) && (this.nickname = this.userid)
       this.department = await this.$localForage.getItem('department')
       this.wsHost = await this.$localForage.getItem('wsHost')
       this.wsPort = await this.$localForage.getItem('wsPort')
+      this.adpw = await this.$localForage.getItem('password')
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
         if (answer) {
           this.$localForage.removeItem('nickname')
           this.$localForage.removeItem('department')
+          this.$localForage.removeItem('password')
           this.restore()
         }
       })

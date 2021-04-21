@@ -48,15 +48,19 @@
           b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
           b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
 
-        .center.d-flex.my-2
+        .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim :state="validNickname")
+            b-input(v-model="nickname" placeholder="... 網域姓名 ..." trim readonly)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+        
+        b-input-group.my-2(:title="`${userid}的網域密碼`")
+          template(#prepend): b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
+          b-input(type="password" v-model="adpw" :placeholder="`${userid}的網域密碼`" trim)
 
-        b-input-group.my-2
+        b-input-group.my-2(title="連線伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
           span.my-auto.mx-1 :
@@ -88,6 +92,7 @@ export default {
     wsHost: '127.0.0.1',
     wsPort: 8081,
     nickname: '',
+    adpw: '',
     department: '',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
@@ -185,9 +190,11 @@ export default {
       this.$localForage.setItem('wsPort', val)
     },
     nickname(val) {
-      this.resetReconnectTimer()
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
+    },
+    adpw(val) {
+      this.$localForage.setItem('password', val)
     },
     department(val) {
       this.resetReconnectTimer()
@@ -520,9 +527,11 @@ export default {
 
     // restore last settings
     this.nickname = await this.$localForage.getItem('nickname')
+    this.empty(this.nickname) && (this.nickname = this.userid)
     this.department = await this.$localForage.getItem('department')
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
+    this.adpw = await this.$localForage.getItem('password')
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()

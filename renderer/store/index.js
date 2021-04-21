@@ -33,6 +33,7 @@ const state = () => ({
     os: { logofile: 'Windows', kernel: '10.0.16299' },
     user: {}
   },
+  password: '',
   username: '',
   userdept: '',
   websocket: undefined,
@@ -75,12 +76,11 @@ const getters = {
   userinfo: state => state.userinfo,
   username: state => state.username,
   userdept: state => state.userdept,
-  domain: (state) => {
-    return trimStart(state.userinfo.domain, `${state.userinfo.hostname}.`)
-  },
+  domain: state => { return trimStart(state.userinfo.domain, `${state.userinfo.hostname}.`) },
   hostname: state => state.userinfo.hostname,
   pcname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid.toUpperCase(),
+  password: state => state.password,  // used for activedirectory query
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
   ip: state => state.userinfo.ipv4,
@@ -107,6 +107,9 @@ const mutations = {
   },
   userdept (state, userdept) {
     state.userdept = userdept
+  },
+  password (state, password) {
+    state.password = password
   },
   currentChannel(state, currentChannel) {
     state.currentChannel = currentChannel
