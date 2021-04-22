@@ -56,8 +56,8 @@ export default {
     }
   },
   data: () => ({
-    adHost: '220.1.35.30',
-    wsHost: '127.0.0.1',
+    adHost: '',
+    wsHost: '',
     wsPort: 8081,
     adPassword: '',
     nickname: '',

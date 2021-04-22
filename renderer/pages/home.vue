@@ -62,11 +62,11 @@
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim)
+          b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim placeholder="... 信差伺服器IP ...")
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
 
-        b-input-group.my-2(title="AD伺服器IP")
+        b-input-group.my-2(title="AD伺服器IP" v-show="!empty(domain)")
           template(#prepend): b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
           b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
@@ -95,9 +95,9 @@ export default {
   data: () => ({
     text: '',
     connectText: '',
-    adHost: '220.1.35.30',
+    adHost: '',
     adPassword: '',
-    wsHost: '127.0.0.1',
+    wsHost: '',
     wsPort: 8081,
     nickname: '',
     department: '',
@@ -509,6 +509,13 @@ export default {
     ipcRendererSetup () {
       // dynamic get userinfo from main process
       this.ipcRenderer.invoke('userinfo').then((userinfo) => {
+        if (this.empty(this.adHost)) {
+          const firstDns = [...userinfo.dns].find(ip => {
+            return ip.startsWith('220.1.')
+          })
+          this.adHost = firstDns
+        }
+        console.log(userinfo.dns)
         this.$store.commit('userinfo', userinfo)
         this.register()
       })
@@ -543,6 +550,7 @@ export default {
     this.nickname = await this.$localForage.getItem('nickname')
     this.empty(this.nickname) && (this.nickname = this.userid)
     this.department = await this.$localForage.getItem('department')
+    this.adHost = await this.$localForage.getItem('adHost')
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
     this.adPassword = await this.$localForage.getItem('adPassword')

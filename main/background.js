@@ -145,7 +145,8 @@ ipcMain.handle('userinfo', async (event, arg) => {
     hostname: os.hostname,
     domain: os.fqdn,
     os: os,
-    user: user[0]
+    user: user[0],
+    dns: require('dns').getServers()
   }
   // get all ip addresses by node.js os module 
   const nets = require('os').networkInterfaces()
