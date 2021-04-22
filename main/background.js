@@ -107,17 +107,9 @@ ipcMain.handle('unread', async (event, channel) => {
   }
 })
 ipcMain.handle('userinfo', async (event, arg) => {
-  // console.log(arg)
   const si = require('systeminformation')
-  /*
-    command: ""
-    date: ""
-    ip: ""
-    time: ""
-    tty: "console"
-    user: "0541"
-   */
   const user = await si.users()
+  const os = await si.osInfo()
   /*
     arch: "x64"
     build: "19042"
@@ -136,7 +128,6 @@ ipcMain.handle('userinfo', async (event, arg) => {
     servicepack: "0.0"
     uefi: false
    */
-  const os = await si.osInfo()
   const userinfo = {
     address: [],
     ipv4: '',

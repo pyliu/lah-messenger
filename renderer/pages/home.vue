@@ -51,7 +51,7 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-input(v-model="nickname" placeholder="... 網域姓名 ..." trim readonly)
+            b-input(v-model="nickname" placeholder="... 網域姓名 ..." trim)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
