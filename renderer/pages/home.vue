@@ -525,7 +525,10 @@ export default {
               password: this.adPassword
             }).then((desc) => {
               this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-              this.nickname = desc || this.userid
+              const name = desc || this.userid
+              this.$store.commit('username', name)
+              this.$localForage.setItem('nickname', name)
+              this.nickname = name
             }).catch((err) => {
               console.error(err)
             }).finally(() =>{
