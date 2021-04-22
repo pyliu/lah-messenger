@@ -515,7 +515,7 @@ export default {
           if (this.empty(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
-          if (!this.empty(this.domain) && this.ipFilter.test(this.adHost) && this.nickname === this.userid) {
+          if (!this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
             this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
             const sAMAccountName = `${this.userid}@${this.domain}`
             this.ipcRenderer.invoke('ad-user-desc', {

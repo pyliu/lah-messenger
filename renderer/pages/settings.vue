@@ -7,8 +7,8 @@
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-        span.my-auto 網域姓名
-      b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim readonly)
+        span.my-auto 顯示姓名
+      b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim)
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")

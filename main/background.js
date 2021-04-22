@@ -108,35 +108,48 @@ ipcMain.handle('unread', async (event, channel) => {
 })
 ipcMain.handle('userinfo', async (event, arg) => {
   const si = require('systeminformation')
-  const user = await si.users()
+  const found = [ ...await si.users() ].find(thisuser => !thisuser.user.startsWith('Admin') && !thisuser.user.startsWith('admin'))
+  console.log(found)
+  /*
+    found e.g. => {
+      user: 'HB0000',
+      tty: 'console',
+      date: '',
+      time: '',
+      ip: '',
+      command: ''
+    }
+   */
   const os = await si.osInfo()
   /*
-    arch: "x64"
-    build: "19042"
-    codename: ""
-    codepage: "950"
-    distro: "Microsoft Windows 10"
-    fqdn: "LAPTOP-LE2FFKSC"
-    hostname: "LAPTOP-LE2FFKSC"
-    hypervisor: false
-    kernel: "10.0.19042"
-    logofile: "windows"
-    platform: "win32"
-    release: "10.0.19042"
-    remoteSession: false
-    serial: "00000-00000-00000-xxxx"
-    servicepack: "0.0"
-    uefi: false
+    os e.g. => {
+      arch: "x64"
+      build: "19042"
+      codename: ""
+      codepage: "950"
+      distro: "Microsoft Windows 10"
+      fqdn: "LAPTOP-LE2FFKSC"
+      hostname: "LAPTOP-LE2FFKSC"
+      hypervisor: false
+      kernel: "10.0.19042"
+      logofile: "windows"
+      platform: "win32"
+      release: "10.0.19042"
+      remoteSession: false
+      serial: "00000-00000-00000-xxxx"
+      servicepack: "0.0"
+      uefi: false
+    }
    */
   const userinfo = {
     address: [],
     ipv4: '',
     ipv6: '',
-    userid: user[0].user,
+    userid: found.user,
     hostname: os.hostname,
     domain: os.fqdn,
     os: os,
-    user: user[0],
+    user: found,
     dns: require('dns').getServers()
   }
   // get all ip addresses by node.js os module 
