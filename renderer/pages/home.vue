@@ -511,10 +511,29 @@ export default {
       // dynamic get userinfo from main process
       this.ipcRenderer.invoke('userinfo').then((userinfo) => {
         this.$store.commit('userinfo', userinfo)
-        if (this.empty(this.adHost)) {
-          this.adHost = this.getFirstDNSIp()
-        }
-        this.register()
+        this.$nextTick(() => {
+          if (this.empty(this.adHost)) {
+            this.adHost = this.getFirstDNSIp()
+          }
+          if (!this.empty(this.domain) && this.ipFilter.test(this.adHost) && this.nickname === this.userid) {
+            this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
+            const sAMAccountName = `${this.userid}@${this.domain}`
+            this.ipcRenderer.invoke('ad-user-desc', {
+              url: `ldap://${this.adHost}`,
+              baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+              username: sAMAccountName,
+              password: this.adPassword
+            }).then((desc) => {
+              this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+              this.nickname = desc || this.userid
+            }).catch((err) => {
+              console.error(err)
+            }).finally(() =>{
+              this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+            })
+          }
+          this.register()
+        })
       })
       // remvoe main process 'quit' all listeners
       this.ipcRenderer.removeAllListeners('quit')

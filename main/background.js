@@ -167,3 +167,21 @@ ipcMain.handle('userinfo', async (event, arg) => {
 
   return userinfo
 })
+ipcMain.handle('ad-user-desc', async (event, config) => {
+  const ActiveDirectory = require('activedirectory2').promiseWrapper
+  // expect config: {
+  //     url: `ldap://${this.adHost}`,
+  //     baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+  //     username: sAMAccountName,
+  //     password: 'XXXXXXXXXXX'
+  // }
+  const ad = new ActiveDirectory(config)
+  console.log(`查詢AD ${config.url}`, config)
+  const user = await ad.findUser(config.username)
+  if (user) {
+    console.log(`找到使用者`, user)
+  } else {
+    console.error('AD查詢失敗', user)
+  }
+  return user ? user.description : undefined
+})
