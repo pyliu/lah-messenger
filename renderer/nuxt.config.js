@@ -1,6 +1,6 @@
 export default {
   head: {
-    title: '信差服務客戶端-桃園市地政局',
+    title: '信差服務即時通-桃園市桃園地政事務所',
     meta: [{
       charset: 'utf-8'
     },
@@ -11,7 +11,7 @@ export default {
     {
       hid: 'description',
       name: 'description',
-      content: '桃園市地政智慧控管系統'
+      content: '信差服務即時通-桃園市桃園地政事務所'
     }
     ],
     link: [{

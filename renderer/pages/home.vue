@@ -51,7 +51,8 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-input(v-model="nickname" placeholder="... 網域姓名 ..." trim)
+            b-button.w-75(:title="`點擊重新查詢查詢 ${userid}`" @click="askADUsername" :variant="asking ? 'primary' : empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
+            //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
@@ -113,7 +114,8 @@ export default {
       { value: 'acc', text: '會計室' },
       { value: 'supervisor', text: '主任秘書室' },
     ],
-    connecting: false
+    connecting: false,
+    asking: false
   }),
   computed: {
     showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -507,6 +509,31 @@ export default {
         }, 20000))
       }
     },
+    askADUsername () {
+      if (this.asking === false && !this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
+        this.asking = true
+        this.nickname = this.userid
+        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
+        const sAMAccountName = `${this.userid}@${this.domain}`
+        this.ipcRenderer.invoke('ad-user-desc', {
+          url: `ldap://${this.adHost}`,
+          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+          username: sAMAccountName,
+          password: this.adPassword
+        }).then((desc) => {
+          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+          const name = desc || this.userid
+          this.$store.commit('username', name)
+          this.$localForage.setItem('nickname', name)
+          this.nickname = name
+        }).catch((err) => {
+          console.error(err)
+        }).finally(() =>{
+          this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+          this.asking = false
+        })
+      }
+    },
     ipcRendererSetup () {
       // dynamic get userinfo from main process
       this.ipcRenderer.invoke('userinfo').then((userinfo) => {
@@ -515,26 +542,7 @@ export default {
           if (this.empty(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
-          if (!this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
-            this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
-            const sAMAccountName = `${this.userid}@${this.domain}`
-            this.ipcRenderer.invoke('ad-user-desc', {
-              url: `ldap://${this.adHost}`,
-              baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
-              username: sAMAccountName,
-              password: this.adPassword
-            }).then((desc) => {
-              this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-              const name = desc || this.userid
-              this.$store.commit('username', name)
-              this.$localForage.setItem('nickname', name)
-              this.nickname = name
-            }).catch((err) => {
-              console.error(err)
-            }).finally(() =>{
-              this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
-            })
-          }
+          this.askADUsername()
           this.register()
         })
       })
