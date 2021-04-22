@@ -51,7 +51,7 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button.w-75(:title="`點擊重新查詢查詢 ${userid}`" @click="askADUsername" :variant="asking ? 'primary' : empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
+            b-button.w-75(:title="`點擊重新查詢查詢 ${userid}`" @click="askADUsername" :variant="asking ? (empty(nickname) ? 'outline-danger' : 'outline-primary') : 'primary'" :disabled="validAdHost === false || asking") {{ nickname }}
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")

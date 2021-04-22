@@ -181,7 +181,7 @@ ipcMain.handle('ad-user-desc', async (event, config) => {
   // }
   const ad = new ActiveDirectory(config)
   console.log(`查詢AD ${config.url}`, config)
-  const user = await ad.findUser(config.username)
+  const user = await ad.findUser(config.username.split('@')[0])
   if (user) {
     console.log(`找到使用者`, user)
   } else {
