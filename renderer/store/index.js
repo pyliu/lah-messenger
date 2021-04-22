@@ -31,7 +31,8 @@ const state = () => ({
     doamin: '',
     hostname: '',
     os: { logofile: 'Windows', kernel: '10.0.16299' },
-    user: {}
+    user: {},
+    dns: []
   },
   ad: '',
   password: '',

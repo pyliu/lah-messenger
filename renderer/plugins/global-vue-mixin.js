@@ -65,6 +65,14 @@ Vue.mixin({
       'resetUnread',
       'plusUnread'
     ]),
+    getFirstDNSIp () {
+      if (!empty(this.userinfo.dns)) {
+        return [...this.userinfo.dns].find(ip => {
+          return ip.startsWith('220.1.')
+        })
+      }
+      return ''
+    },
     showUnread (channel) {
       const val = this.getUnread(channel)
       return parseInt(val) > 0 || val === '9+'

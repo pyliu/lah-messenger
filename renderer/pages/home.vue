@@ -66,7 +66,7 @@
           span.my-auto.mx-1 :
           b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
 
-        b-input-group.my-2(title="AD伺服器IP" v-show="!empty(domain)")
+        b-input-group.my-2(title="AD伺服器IP" v-show="!empty(adHost)")
           template(#prepend): b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
           b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
@@ -509,14 +509,10 @@ export default {
     ipcRendererSetup () {
       // dynamic get userinfo from main process
       this.ipcRenderer.invoke('userinfo').then((userinfo) => {
-        if (this.empty(this.adHost)) {
-          const firstDns = [...userinfo.dns].find(ip => {
-            return ip.startsWith('220.1.')
-          })
-          this.adHost = firstDns
-        }
-        console.log(userinfo.dns)
         this.$store.commit('userinfo', userinfo)
+        if (this.empty(this.adHost)) {
+          this.adHost = this.getFirstDNSIp()
+        }
         this.register()
       })
       // remvoe main process 'quit' all listeners
