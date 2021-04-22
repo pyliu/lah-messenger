@@ -57,7 +57,7 @@
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
         
         b-input-group.my-2(:title="`${userid}的網域密碼`")
-          template(#prepend): b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
+          template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="90")
           b-input(type="password" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
 
         b-input-group.my-2(title="信差伺服器資訊")
