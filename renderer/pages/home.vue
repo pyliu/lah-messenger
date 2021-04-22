@@ -95,6 +95,7 @@ export default {
   data: () => ({
     text: '',
     connectText: '',
+    ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
     adPassword: '',
     wsHost: '',
@@ -145,15 +146,15 @@ export default {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
     valid() { return !isEmpty(trim(this.text)) },
-    validAdHost() { return isEmpty(trim(this.adHost)) === true ? false : null },
-    validHost() { return isEmpty(trim(this.wsHost)) === true ? false : null },
+    validAdHost() { return this.ipFilter.test(this.adHost) === false ? false : null },
+    validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
       return i < 1025 || i > 65535 ? false : null
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
-    validDepartment() { return !isEmpty(trim(this.department)) },
-    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
+    validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
+    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
     list() {
       return this.messages[this.currentChannel] || []
     },

@@ -56,6 +56,7 @@ export default {
     }
   },
   data: () => ({
+    ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
     wsHost: '',
     wsPort: 8081,
@@ -78,15 +79,15 @@ export default {
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
-    validAdHost() { return !isEmpty(trim(this.adHost)) },
-    validHost() { return !isEmpty(trim(this.wsHost)) },
+    validAdHost() { return this.ipFilter.test(this.adHost) === false ? false : null },
+    validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
-      return i > 1024 && i < 65536
+      return (i > 1024 && i < 65536) === false ? false : null
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
-    validDepartment() { return !isEmpty(trim(this.department)) },
-    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment && this.validPort === null && this.validHost === null },
+    validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
+    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
