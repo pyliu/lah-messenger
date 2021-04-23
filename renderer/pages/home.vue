@@ -53,14 +53,14 @@
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
             b-button.w-75(id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
-          b-input-group.ml-1
-            template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+          b-input-group.ml-1(:title="`${userid}的網域密碼`")
+            template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="135")
+            b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+            b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
         
-        b-input-group.my-2(:title="`${userid}的網域密碼`")
-          template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="135")
-          b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
-          b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
+        b-input-group.my-2
+          template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+          b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
