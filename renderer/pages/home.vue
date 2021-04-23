@@ -58,8 +58,9 @@
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
         
         b-input-group.my-2(:title="`${userid}的網域密碼`")
-          template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="90")
-          b-input(type="password" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+          template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="135")
+          b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+          b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
@@ -99,6 +100,8 @@ export default {
     ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
     adPassword: '',
+    adPasswordIcon: 'eye-slash',
+    adPasswordType: 'password',
     wsHost: '',
     wsPort: 8081,
     nickname: '',
@@ -220,6 +223,15 @@ export default {
     }
   },
   methods: {
+    switchAdPasswordIcon() {
+      if (this.adPasswordIcon === 'eye') {
+        this.adPasswordIcon = 'eye-slash'
+        this.adPasswordType = 'password'
+      } else {
+        this.adPasswordIcon = 'eye'
+        this.adPasswordType = 'text'
+      }
+    },
     delaySendChannelActivity: function noop () {},
     sendChannelActivity(oVal, nVal) {
       if (this.connected) {
@@ -603,5 +615,8 @@ export default {
   position: absolute;
   left: 80px;
   top: 50px;
+}
+.eye {
+  cursor: pointer;
 }
 </style>

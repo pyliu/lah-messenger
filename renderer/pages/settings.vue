@@ -13,7 +13,8 @@
       template(#prepend)
         b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
         span.my-auto 網域密碼
-      b-input.ml-2(type="password" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+      b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+      b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -61,6 +62,8 @@ export default {
     wsHost: '',
     wsPort: 8081,
     adPassword: '',
+    adPasswordType: 'password',
+    adPasswordIcon: 'eye-slash',
     nickname: '',
     department: '',
     departmentOpts: [
@@ -119,6 +122,15 @@ export default {
     }
   },
   methods: {
+    switchAdPasswordIcon() {
+      if (this.adPasswordIcon === 'eye') {
+        this.adPasswordIcon = 'eye-slash'
+        this.adPasswordType = 'password'
+      } else {
+        this.adPasswordIcon = 'eye'
+        this.adPasswordType = 'text'
+      }
+    },
     async restore() {
       // restore last settings
       this.nickname = await this.$localForage.getItem('nickname')
@@ -167,5 +179,8 @@ export default {
   left: 5px;
   bottom: calc(2rem);
   max-width: 98%;
+}
+.eye {
+  cursor: pointer;
 }
 </style>
