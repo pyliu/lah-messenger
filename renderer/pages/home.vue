@@ -55,7 +55,7 @@
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1(:title="`${userid}的網域密碼`")
             template(#prepend): b-icon.my-auto.mr-1(icon="key" font-scale="2.25" variant="secondary" rotate="135")
-            b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+            b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`網域密碼`" trim)
             b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
         
         .center.d-flex.my-2
