@@ -182,5 +182,8 @@ export default {
 }
 .eye {
   cursor: pointer;
+  position: absolute;
+  right: .55rem;
+  top: .55rem;
 }
 </style>

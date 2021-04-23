@@ -50,30 +50,29 @@
 
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
-            template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button.w-75(id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
+            template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
+            b-button(style="width:142.75px" id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1(:title="`${userid}的網域密碼`")
-            template(#prepend): b-icon.my-auto.mr-2(icon="key" font-scale="2.25" variant="secondary" rotate="135")
+            template(#prepend): b-icon.my-auto.mr-1(icon="key" font-scale="2.25" variant="secondary" rotate="135")
             b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
             b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
         
-        b-input-group.my-2
-          template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-          b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+        .center.d-flex.my-2
+          b-input-group
+            template(#prepend): b-icon.my-auto.mr-1(icon="building" font-scale="2.25" variant="secondary")
+            b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+          b-input-group.ml-1(title="AD伺服器IP")
+            template(#prepend): b-icon.my-auto.mr-1(icon="card-list" font-scale="2.25" variant="secondary")
+            b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
         b-input-group.my-2(title="信差伺服器資訊")
-          template(#prepend): b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
+          template(#prepend): b-icon.my-auto.mr-1(icon="server" font-scale="2.25" variant="secondary")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim placeholder="... 信差伺服器IP ...")
           span.my-auto.mx-1 :
-          b-input.mr-1(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
+          b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
 
-        b-input-group.my-2(title="AD伺服器IP" v-show="!empty(adHost)")
-          template(#prepend): b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
-          b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
-
-        
-        .text-center: b-button(block @click="manualConnect" variant="success" v-if="validInformation" :disabled="connecting")
+        transition.text-center(name="listY"): b-button(block @click="manualConnect" variant="success" v-if="validInformation" :disabled="connecting")
           b-icon(v-if="connecting" icon="arrow-clockwise" animation="spin-pulse")
           span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right" font-scale="1")] 連線
     status(:status-text="connectText")
@@ -513,8 +512,8 @@ export default {
       if (this.timer === null && this.$route.name === 'home') {
         this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
         this.$store.commit('timer', setInterval(() => {
-          this.$config.isDev && console.log(this.time(), "開始檢查連線狀態 ... ")
-          this.connectText = '開始檢查連線狀態'
+          this.$config.isDev && console.log(this.time(), "檢查連線狀態 ... ")
+          this.connectText = '檢查連線狀態'
           this.connect()
         }, 20000))
       }
@@ -555,11 +554,11 @@ export default {
       this.ipcRenderer.invoke('userinfo').then((userinfo) => {
         this.$store.commit('userinfo', userinfo)
         this.$nextTick(() => {
-          if (this.empty(this.adHost)) {
+          if (!this.ipFilter.test(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
           this.invokeADUsernameQuery()
-          this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.ip}`)
+          this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.username} / ${this.ip}`)
           this.register()
         })
       })
@@ -619,9 +618,12 @@ export default {
 .logo {
   position: absolute;
   left: 80px;
-  top: 50px;
+  top: 75px;
 }
 .eye {
   cursor: pointer;
+  position: absolute;
+  right: .55rem;
+  top: .55rem;
 }
 </style>

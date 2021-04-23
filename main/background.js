@@ -93,23 +93,26 @@ app.on('window-all-closed', () => {
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
 ipcMain.handle('home-ready', async (event, arg) => {
+  !isProd && console.log(`home.vue ready`, arg)
   mainWindow.show()
 })
 ipcMain.handle('title', async (event, str) => {
+  !isProd && console.log(`Set Title`, str)
   mainWindow.setTitle(str)
 })
 ipcMain.handle('unread', async (event, channel) => {
+  !isProd && console.log(`Set channel Unread`, channel)
   mainWindow.restore()
   // important notification
   if (['announcement', mainWindow.userinfo.userid].includes(channel)) {
-    mainWindow.center()
+    // mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
   }
 })
 ipcMain.handle('userinfo', async (event, arg) => {
   const si = require('systeminformation')
   const found = [ ...await si.users() ].find(thisuser => !thisuser.user.startsWith('Admin') && !thisuser.user.startsWith('admin'))
-  console.log(found)
+  !isProd && console.log(`Found User`, found)
   /*
     found e.g. => {
       user: 'HB0000',
@@ -180,12 +183,12 @@ ipcMain.handle('ad-user-desc', async (event, config) => {
   //     password: 'XXXXXXXXXXX'
   // }
   const ad = new ActiveDirectory(config)
-  console.log(`查詢AD ${config.url}`, config)
+  !isProd && console.log(`Query AD Config`, config)
   const user = await ad.findUser(config.username.split('@')[0])
   if (user) {
-    console.log(`找到使用者`, user)
+    !isProd && console.log(`found user`, user)
   } else {
-    console.error('AD查詢失敗', user)
+    !isProd && console.error('AD query failed', user)
   }
   return user ? user.description : undefined
 })
