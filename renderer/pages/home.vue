@@ -51,7 +51,7 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button.w-75(id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="queryAD(true)" :variant="asking ? (empty(nickname) ? 'outline-danger' : 'outline-primary') : 'primary'" :disabled="validAdHost === false || asking") {{ nickname }}
+            b-button.w-75(id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -311,8 +311,6 @@ export default {
           channel: 'system'
         })
         this.websocket.send(jsonString)
-        // update electron window title
-        this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.ip}`)
       } else {
         this.$config.isDev && console.log(
           this.time(),
@@ -521,41 +519,36 @@ export default {
         }, 20000))
       }
     },
-    queryAD (force = false) {
-      if (this.asking === false) {
+    invokeADUsernameQuery (force = false) {
+      if (this.asking === true) {
         this.connectText = `AD查詢中`
         return
       }
-      if (force) {
-        this.invokeADUsernameQuery()
-      } else if (this.nickname === this.userid && !this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
-        this.invokeADUsernameQuery()
+      if (force || (this.nickname === this.userid && !this.empty(this.domain) && this.ipFilter.test(this.adHost))) {
+        this.asking = true
+        this.nickname = this.userid
+        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
+        const sAMAccountName = `${this.userid}@${this.domain}`
+        this.ipcRenderer.invoke('ad-user-desc', {
+          url: `ldap://${this.adHost}`,
+          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+          username: sAMAccountName,
+          password: this.adPassword
+        }).then((desc) => {
+          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+          const name = desc || this.userid
+          this.$store.commit('username', name)
+          this.$localForage.setItem('nickname', name)
+          this.nickname = name
+          this.connectText = `AD: ${this.userid} ${name}`
+        }).catch((err) => {
+          this.connectText = err.toString()
+          console.error(err)
+        }).finally(() =>{
+          this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+          this.asking = false
+        })
       }
-    },
-    invokeADUsernameQuery() {
-      this.asking = true
-      this.nickname = this.userid
-      this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
-      const sAMAccountName = `${this.userid}@${this.domain}`
-      this.ipcRenderer.invoke('ad-user-desc', {
-        url: `ldap://${this.adHost}`,
-        baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
-        username: sAMAccountName,
-        password: this.adPassword
-      }).then((desc) => {
-        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-        const name = desc || this.userid
-        this.$store.commit('username', name)
-        this.$localForage.setItem('nickname', name)
-        this.nickname = name
-        this.connectText = `AD: ${this.userid} ${name}`
-      }).catch((err) => {
-        this.connectText = err.toString()
-        console.error(err)
-      }).finally(() =>{
-        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
-        this.asking = false
-      })
     },
     ipcRendererSetup () {
       // dynamic get userinfo from main process
@@ -565,7 +558,8 @@ export default {
           if (this.empty(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
-          this.queryAD()
+          this.invokeADUsernameQuery()
+          this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.ip}`)
           this.register()
         })
       })
