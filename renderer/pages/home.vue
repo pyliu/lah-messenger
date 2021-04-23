@@ -51,7 +51,7 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button.w-75(:title="`點擊重新查詢查詢 ${userid}`" @click="askADUsername" :variant="asking ? (empty(nickname) ? 'outline-danger' : 'outline-primary') : 'primary'" :disabled="validAdHost === false || asking") {{ nickname }}
+            b-button.w-75(id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="queryAD(true)" :variant="asking ? (empty(nickname) ? 'outline-danger' : 'outline-primary') : 'primary'" :disabled="validAdHost === false || asking") {{ nickname }}
             //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
           b-input-group.ml-1
             template(#prepend): b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -73,9 +73,9 @@
           b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
         
-        b-button(block @click="manualConnect" :variant="validInformation ? 'primary' : 'outline-primary'" :disabled="!validInformation || connecting")
-          b-icon(icon="arrow-clockwise" animation="spin-pulse" v-if="connecting")
-          span(v-else) 連線
+        .text-center: b-button(block @click="manualConnect" variant="success" v-if="validInformation" :disabled="connecting")
+          b-icon(v-if="connecting" icon="arrow-clockwise" animation="spin-pulse")
+          span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right" font-scale="1")] 連線
     status(:status-text="connectText")
 </template>
 
@@ -107,7 +107,7 @@ export default {
     nickname: '',
     department: '',
     departmentOpts: [
-      { value: '', text: '請選擇部門' },
+      { value: '', text: '選擇部門' },
       { value: 'inf', text: '資訊課' },
       { value: 'adm', text: '行政課' },
       { value: 'reg', text: '登記課' },
@@ -479,7 +479,7 @@ export default {
           }
         } else {
           const IDReady = !this.empty(this.userid)
-          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'bf', delay: 3000 })
+          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
         }
       }
     },
@@ -521,30 +521,41 @@ export default {
         }, 20000))
       }
     },
-    askADUsername () {
-      if (this.asking === false && !this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
-        this.asking = true
-        this.nickname = this.userid
-        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
-        const sAMAccountName = `${this.userid}@${this.domain}`
-        this.ipcRenderer.invoke('ad-user-desc', {
-          url: `ldap://${this.adHost}`,
-          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
-          username: sAMAccountName,
-          password: this.adPassword
-        }).then((desc) => {
-          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-          const name = desc || this.userid
-          this.$store.commit('username', name)
-          this.$localForage.setItem('nickname', name)
-          this.nickname = name
-        }).catch((err) => {
-          console.error(err)
-        }).finally(() =>{
-          this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
-          this.asking = false
-        })
+    queryAD (force = false) {
+      if (this.asking === false) {
+        this.connectText = `AD查詢中`
+        return
       }
+      if (force) {
+        this.invokeADUsernameQuery()
+      } else if (this.nickname === this.userid && !this.empty(this.domain) && this.ipFilter.test(this.adHost)) {
+        this.invokeADUsernameQuery()
+      }
+    },
+    invokeADUsernameQuery() {
+      this.asking = true
+      this.nickname = this.userid
+      this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
+      const sAMAccountName = `${this.userid}@${this.domain}`
+      this.ipcRenderer.invoke('ad-user-desc', {
+        url: `ldap://${this.adHost}`,
+        baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+        username: sAMAccountName,
+        password: this.adPassword
+      }).then((desc) => {
+        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+        const name = desc || this.userid
+        this.$store.commit('username', name)
+        this.$localForage.setItem('nickname', name)
+        this.nickname = name
+        this.connectText = `AD: ${this.userid} ${name}`
+      }).catch((err) => {
+        this.connectText = err.toString()
+        console.error(err)
+      }).finally(() =>{
+        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+        this.asking = false
+      })
     },
     ipcRendererSetup () {
       // dynamic get userinfo from main process
@@ -554,7 +565,7 @@ export default {
           if (this.empty(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
-          this.askADUsername()
+          this.queryAD()
           this.register()
         })
       })
