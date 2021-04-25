@@ -8,7 +8,14 @@
             span 公告
             b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
 
-          b-nav-item(v-for="(deptChannel, idx) in departmentChannels" :key="`ann_dept_${idx}`" v-if="deptChannel.value === `announcement_${userdept}`" :active="deptChannel.value === currentChannel" title="進入部門通知列表" @click="setCurrentChannel(deptChannel.value)"): a.mr-1
+          b-nav-item(
+            v-for="(deptChannel, idx) in departmentChannels"
+            v-if="deptChannel.value === `announcement_${userdept}`"
+            :key="`ann_dept_${idx}`"
+            :active="deptChannel.value === currentChannel"
+            title="進入部門通知列表"
+            @click="setCurrentChannel(deptChannel.value)"
+          ): a.mr-1
             b-icon.mr-1(icon="building")
             span {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
@@ -636,24 +643,28 @@ export default {
   right: .55rem;
   top: .55rem;
 }
-.notify-announcement {
+@mixin notify() {
   position: absolute;
+  top: 15px;
+  opacity: 0.75;
+  &:hover {
+    opacity: 1.0;
+  }
+}
+.notify-announcement {
+  @include notify();
   left: 80px;
-  top: 10px;
 }
 .notify-dept {
-  position: absolute;
+  @include notify();
   left: 180px;
-  top: 10px;
 }
 .notify-personal {
-  position: absolute;
+  @include notify();
   left: 280px;
-  top: 10px;
 }
 .notify-chat {
-  position: absolute;
+  @include notify();
   left: 380px;
-  top: 10px;
 }
 </style>
