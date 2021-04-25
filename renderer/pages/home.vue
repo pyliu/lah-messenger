@@ -510,7 +510,7 @@ export default {
           message: JSON.stringify({
             command: 'latest',
             channel: channel,
-            count: 30
+            count: 10
           }),
           channel: 'system'
         })
