@@ -1,6 +1,6 @@
 <template lang="pug">
-  div(:class="blockCss"): .msg(ref="box")
-    transition(name="listY" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
+  div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
+    transition(name="list" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
     transition-group(name="listY" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
 </template>
@@ -12,8 +12,9 @@ export default {
     list: { type: Array, required: true },
   },
   data: () => ({
-    showOldMessageArrow: false,
+    ready: false,
     loadHistoryCount: 10,
+    scrollTop: 0
   }),
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
@@ -28,7 +29,8 @@ export default {
       }
       return 'chat-container'
     },
-    messageCount () { return this.list.length }
+    messageCount () { return this.list.length },
+    showOldMessageArrow () { return this.ready && this.scrollTop < 50 }
   },
   watch: {
     messageCount (dontcare) {
@@ -56,7 +58,7 @@ export default {
     this.delayLoadHistoryMessage = debounce(this.loadHistoryMessage, 400)
   },
   mounted () {
-    setTimeout(() => this.showOldMessageArrow = true, 800)
+    setTimeout(() => this.ready = true, 800)
   }
 };
 </script>
