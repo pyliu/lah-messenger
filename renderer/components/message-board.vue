@@ -1,13 +1,20 @@
 <template lang="pug">
-  div(:class="blockCss"): .msg(ref="box"): transition-group(name="listY" mode="out-in")
-    message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
+  div(:class="blockCss"): .msg(ref="box")
+    transition(name="listY" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
+    transition-group(name="listY" mode="out-in")
+      message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
 </template>
 
 <script>
+import debounce from 'lodash/debounce'
 export default {
   props: {
     list: { type: Array, required: true },
   },
+  data: () => ({
+    showOldMessageArrow: false,
+    loadHistoryCount: 10,
+  }),
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
     isPersonal () { return this.userid === this.currentChannel },
@@ -39,6 +46,18 @@ export default {
       })
     }
   },
+  methods: {
+    delayLoadHistoryMessage () {},  // placeholder for loadHistoryMessage
+    loadHistoryMessage () {
+      this.notify(`ready to load history message for ${this.currentChannel}`)
+    }
+  },
+  created () {
+    this.delayLoadHistoryMessage = debounce(this.loadHistoryMessage, 400)
+  },
+  mounted () {
+    setTimeout(() => this.showOldMessageArrow = true, 800)
+  }
 };
 </script>
 
@@ -63,5 +82,18 @@ export default {
   height: 100%;
   overflow: auto;
   display: inline-block;
+}
+
+.old-message-arrow {
+  z-index: 1001;
+  cursor: pointer;
+  position: fixed;
+  opacity: 0.3;
+  right: 30px;
+  top: 67px;
+  &:hover {
+    opacity: 1.0;
+    color: #007bff !important;
+  }
 }
 </style>
