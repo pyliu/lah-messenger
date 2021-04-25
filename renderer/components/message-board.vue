@@ -13,7 +13,7 @@ export default {
     isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
     blockCss () {
-      if (this.isAnnouncement) {
+      if (this.currentChannel.startsWith('announcement')) {
         return 'announcement-container'
       }
       if (this.isPersonal) {

@@ -6,15 +6,23 @@
           b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             b-icon.mr-1(icon="bookmarks")
             span 公告
-            b-badge.ml-1(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
+            b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
+
+          b-nav-item(v-for="(deptChannel, idx) in departmentChannels" :key="`ann_dept_${idx}`" v-if="deptChannel.value === `announcement_${userdept}`" :active="deptChannel.value === currentChannel" title="進入部門通知列表" @click="setCurrentChannel(deptChannel.value)"): a.mr-1
+            b-icon.mr-1(icon="building")
+            span {{ deptChannel.text }}
+            b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
+          
           b-nav-item(:active="isPersonal" title="進入個人通知列表" @click="setCurrentChannel(userid)"): a.mr-1
             b-icon.mr-1(icon="person")
             span 個人
-            b-badge.ml-1(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+            b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
+
           b-nav-item(:active="isChat" title="進入會話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 交談
-            b-badge.ml-1(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
+            b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
+
           b-nav-item(title="進入設定頁面"): b-link(to="/settings")
             b-icon.mr-1(icon="tools")
 
@@ -116,15 +124,25 @@ export default {
       { value: 'acc', text: '會計室' },
       { value: 'supervisor', text: '主任秘書室' },
     ],
+    departmentChannels: [
+      { value: 'announcement_inf', text: '資訊' },
+      { value: 'announcement_adm', text: '行政' },
+      { value: 'announcement_reg', text: '登記' },
+      { value: 'announcement_sur', text: '測量' },
+      { value: 'announcement_val', text: '地價' },
+      { value: 'announcement_hr', text: '人事' },
+      { value: 'announcement_acc', text: '會計' },
+      { value: 'announcement_supervisor', text: '主任秘書' },
+    ],
     connecting: false,
     asking: false
   }),
   computed: {
-    showInputGroup () { return !this.isAnnouncement && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
+    showInputGroup () { return !this.currentChannel.startsWith('announcement') && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
     showMessageBoard () { return this.currentChannel !== 'chat' },
     showChatBoard () { return this.isChat },
 
-    isChat () { return !this.isAnnouncement && !this.isPersonal },
+    isChat () { return !this.currentChannel.startsWith('announcement') && !this.isPersonal },
     isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
     isInf () { return this.currentChannel === 'inf' },
@@ -136,15 +154,6 @@ export default {
     isHr () { return this.currentChannel === 'hr' },
     isSupervisor () { return this.currentChannel === 'supervisor' },
     isLds () { return this.currentChannel === 'lds' },
-    
-    belongToInf () { return this.userdept === 'inf' },
-    belongToAdm () { return this.userdept === 'adm' },
-    belongToVal () { return this.userdept === 'val' },
-    belongToReg () { return this.userdept === 'reg' },
-    belongToSur () { return this.userdept === 'sur' },
-    belongToAcc () { return this.userdept === 'acc' },
-    belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' },
 
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
@@ -163,7 +172,8 @@ export default {
       return this.messages[this.currentChannel] || []
     },
 
-    stickyChannels() { return ['announcement', this.userid, 'chat'] },
+    stickyChannels() { return ['announcement', this.userid, 'chat', ...this.departmentChannels.map(item => item.value) ] },
+    showUnreadChannels() { return ['announcement', this.userid, , ...this.departmentChannels.map(item => item.value)] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
     
     showChatUnread () {
@@ -425,7 +435,6 @@ export default {
               this.$config.isDev && console.warn(this.time(), "WS伺服器連線已關閉", e)
               this.connecting = false
               this.connectText = `等待重新連線中(${this.wsConnStr})`
-              this.notify('無法連線伺服器', { type: 'warning', pos: 'tf', subtitle: this.wsConnStr })
             }
             ws.onerror = (e) => {
               this.$store.commit('websocket', undefined)
@@ -456,12 +465,13 @@ export default {
                 // tell electron window got a unread message
                 this.ipcRenderer.invoke('unread', channel)
               } else if (incoming.message && incoming.sender !== 'system') {
+                // add unread stats
                 if (parseInt(this.unread[channel]) === NaN) {
                   this.$store.dispatch("resetUnread", channel)
                 }
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
-                if (['announcement', this.userid].includes(channel)) {
-                  // tell electron window [ 'announcement', myowned ] channels got unread message
+                if (this.showUnreadChannels.includes(channel)) {
+                  // tell electron window the channels got unread message
                   this.ipcRenderer.invoke('unread', channel)
                 }
               }
@@ -625,5 +635,25 @@ export default {
   position: absolute;
   right: .55rem;
   top: .55rem;
+}
+.notify-announcement {
+  position: absolute;
+  left: 80px;
+  top: 10px;
+}
+.notify-dept {
+  position: absolute;
+  left: 180px;
+  top: 10px;
+}
+.notify-personal {
+  position: absolute;
+  left: 280px;
+  top: 10px;
+}
+.notify-chat {
+  position: absolute;
+  left: 380px;
+  top: 10px;
 }
 </style>

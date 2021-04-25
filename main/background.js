@@ -104,7 +104,7 @@ ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   mainWindow.restore()
   // important notification
-  if (['announcement', mainWindow.userinfo.userid].includes(channel)) {
+  if (mainWindow.userinfo.userid === channel || channel.startsWith('announcement')) {
     // mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
   }

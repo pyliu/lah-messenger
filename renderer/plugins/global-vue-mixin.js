@@ -58,7 +58,15 @@ Vue.mixin({
       'platform',
       'currentChannel'
     ]),
-    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) }
+    viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
+    belongToInf () { return this.userdept === 'inf' },
+    belongToAdm () { return this.userdept === 'adm' },
+    belongToVal () { return this.userdept === 'val' },
+    belongToReg () { return this.userdept === 'reg' },
+    belongToSur () { return this.userdept === 'sur' },
+    belongToAcc () { return this.userdept === 'acc' },
+    belongToHr () { return this.userdept === 'hr' },
+    belongToSupervisor () { return this.userdept === 'supervisor' }
   },
   methods: {
     ...mapActions([
