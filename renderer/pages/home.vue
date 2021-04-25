@@ -13,19 +13,19 @@
             v-if="deptChannel.value === `announcement_${userdept}`"
             :key="`ann_dept_${idx}`"
             :active="deptChannel.value === currentChannel"
-            title="進入部門通知列表"
+            title="部門訊息"
             @click="setCurrentChannel(deptChannel.value)"
           ): a.mr-1
             b-icon.mr-1(icon="building")
             span {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
           
-          b-nav-item(:active="isPersonal" title="進入個人通知列表" @click="setCurrentChannel(userid)"): a.mr-1
+          b-nav-item(:active="isPersonal" title="個人通知" @click="setCurrentChannel(userid)"): a.mr-1
             b-icon.mr-1(icon="person")
             span 個人
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
-          b-nav-item(:active="isChat" title="進入會話選單" @click="setCurrentChannel('chat')"): a.mr-1
+          b-nav-item(:active="isChat" title="對話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 交談
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
@@ -646,10 +646,7 @@ export default {
 @mixin notify() {
   position: absolute;
   top: 15px;
-  opacity: 0.75;
-  &:hover {
-    opacity: 1.0;
-  }
+  opacity: 0.65;
 }
 .notify-announcement {
   @include notify();
@@ -666,5 +663,9 @@ export default {
 .notify-chat {
   @include notify();
   left: 380px;
+}
+.nav-link:hover .badge {
+  opacity: 1.0;
+  font-size: .9rem;
 }
 </style>

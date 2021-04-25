@@ -71,4 +71,8 @@ export default {
 .gray-bottom-border {
   border-bottom: 1px solid rgb(199, 199, 199)
 }
+
+.list-group-item:hover .badge {
+  font-size: .9rem;
+}
 </style>
