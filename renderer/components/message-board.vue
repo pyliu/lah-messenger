@@ -14,7 +14,8 @@ export default {
   data: () => ({
     ready: false,
     loadHistoryCount: 10,
-    scrollTop: 0
+    scrollTop: 0,
+    scrollBehavior: 'last'
   }),
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
@@ -34,28 +35,56 @@ export default {
   },
   watch: {
     messageCount (dontcare) {
-      // watch list to display the latest message
-      // Vue VDOM workaround ... to display the last message
+      // watch list to display the first/last message
       this.$nextTick(() => {
-        if (this.$refs.box && this.$refs[`msg-${this.list.length - 1}`]) {
-          const latest = this.$refs[`msg-${this.list.length - 1}`][0]
-          latest.$el.scrollIntoView && latest.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
-          !latest.$el.scrollIntoView && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
+        const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
+        if (this.$refs.box && target) {
+          const message = target[0]
+          if (message.$el.scrollIntoView) {
+            message.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+          } else {
+            this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
+          }
           // 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble'
-          (this.isPersonal || this.isAnnouncement) && setTimeout(() => this.attention(latest.$el, { name: 'tada', speed: 'slow' }), 400)
-          // this.$refs.box.scrollTop = this.$refs.box.scrollHeight
+          this.delayAttention(message.$el, { name: 'headShake', speed: 'faster' })
         }
       })
     }
   },
   methods: {
+    delayAttention () {}, // placeholder for attention
     delayLoadHistoryMessage () {},  // placeholder for loadHistoryMessage
     loadHistoryMessage () {
-      this.notify(`ready to load history message for ${this.currentChannel}`)
+      if (this.connected) {
+        const jsonString = JSON.stringify({
+          type: "command",
+          sender: this.userid,
+          date: this.date(),
+          time: this.time(),
+          message: JSON.stringify({
+            command: 'previous',
+            channel: this.currentChannel,
+            headId: this.list[0].id,
+            count: this.loadHistoryCount
+          }),
+          channel: 'system'
+        })
+        this.websocket.send(jsonString)
+        this.scrollBehavior = 'first'
+        // reset the scroll behavior to default
+        setTimeout(() => { this.scrollBehavior = 'last' }, 400)
+      } else {
+        this.$config.isDev && console.log(
+          this.time(),
+          `尚未連線無法取得 ${this.currentChannel} 之前訊息資料`,
+          this.list[0]
+        )
+      }
     }
   },
   created () {
     this.delayLoadHistoryMessage = debounce(this.loadHistoryMessage, 400)
+    this.delayAttention = debounce(this.attention, 600)
   },
   mounted () {
     setTimeout(() => this.ready = true, 800)
@@ -94,6 +123,7 @@ export default {
   right: 30px;
   top: 72px;
   &:hover {
+    transition: all .5s;
     opacity: 1.0;
     color: #007bff !important;
   }
