@@ -107,8 +107,8 @@ export default {
   p {
     display: inline-block;
     border-radius: 5px;
-    background: #17a2b8;
-    color: rgb(255, 239, 239);
+    background: #d3d4d4;
+    color: rgb(10, 10, 10);
     padding: 5px;
     max-width: 85%;
     text-align: left;
