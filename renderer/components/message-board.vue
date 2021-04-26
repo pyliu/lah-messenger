@@ -30,7 +30,7 @@ export default {
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.ready && this.scrollTop < 50 }
+    showOldMessageArrow () { return this.ready && this.scrollTop < 50 && this.list.length > 0 }
   },
   watch: {
     messageCount (dontcare) {
