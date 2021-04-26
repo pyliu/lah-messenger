@@ -88,7 +88,7 @@ const getters = {
   user: state => state.userinfo.user,
   ip: state => state.userinfo.ipv4,
   address: state => state.userinfo.address,
-  currentChannel: state => state.currentChannel,
+  currentChannel: state => String(state.currentChannel),
   participatedChannels: state => state.participatedChannels,
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`
 }

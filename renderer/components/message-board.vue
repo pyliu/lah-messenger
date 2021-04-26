@@ -1,6 +1,6 @@
 <template lang="pug">
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
-    transition(name="bg" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
+    transition(name="bg" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
     transition-group(name="listY" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
 </template>
@@ -92,7 +92,7 @@ export default {
   position: fixed;
   opacity: 0.3;
   right: 30px;
-  top: 67px;
+  top: 72px;
   &:hover {
     opacity: 1.0;
     color: #007bff !important;
