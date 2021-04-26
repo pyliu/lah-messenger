@@ -84,7 +84,7 @@ export default {
       { value: 'acc', text: '會計室' },
       { value: 'supervisor', text: '主任秘書室' },
     ],
-    effectVal: 'flash',
+    effectVal: '',
     effectOpts: [ '', 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble' ],
   }),
   computed: {
