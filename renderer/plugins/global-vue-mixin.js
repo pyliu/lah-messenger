@@ -43,6 +43,7 @@ Vue.mixin({
       'userinfo',
       'username',
       'userdept',
+      'effect',
       'ip',
       'domain',
       'hostname',

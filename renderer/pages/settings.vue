@@ -23,6 +23,13 @@
 
     b-input-group.my-2
       template(#prepend)
+        b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
+        span.my-auto 提示效果
+      b-select.ml-2(v-model="effectVal" :options="effectOpts")
+
+
+    b-input-group.my-2
+      template(#prepend)
         b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
         span.my-auto 連線主機
       b-input.ml-2(v-model="wsHost" :state="validHost" trim)
@@ -76,7 +83,9 @@ export default {
       { value: 'hr', text: '人事室' },
       { value: 'acc', text: '會計室' },
       { value: 'supervisor', text: '主任秘書室' },
-    ]
+    ],
+    effectVal: 'flash',
+    effectOpts: [ '', 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble' ],
   }),
   computed: {
     wsConnStr() {
@@ -119,6 +128,10 @@ export default {
     department(val) {
       this.$store.commit('userdept', val)
       this.$localForage.setItem('department', val)
+    },
+    effectVal(val) {
+      this.$store.commit('effect', val)
+      this.$localForage.setItem('effect', val)
     }
   },
   methods: {
@@ -140,6 +153,7 @@ export default {
       this.adPassword = await this.$localForage.getItem('adPassword')
       this.wsHost = await this.$localForage.getItem('wsHost')
       this.wsPort = await this.$localForage.getItem('wsPort')
+      this.effectVal = await this.$localForage.getItem('effect')
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
@@ -147,6 +161,7 @@ export default {
           this.$localForage.removeItem('nickname')
           this.$localForage.removeItem('department')
           this.$localForage.removeItem('adPassword')
+          this.$localForage.removeItem('effect')
           this.restore()
         }
       })

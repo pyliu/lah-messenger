@@ -46,7 +46,7 @@ export default {
             this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
           }
           // 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble'
-          this.delayAttention(message.$el, { name: 'headShake', speed: 'faster' })
+          this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
         }
       })
     }

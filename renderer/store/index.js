@@ -38,6 +38,7 @@ const state = () => ({
   password: '',
   username: '',
   userdept: '',
+  effect: '',
   websocket: undefined,
   timer: null,
   currentChannel: 'announcement',
@@ -90,7 +91,8 @@ const getters = {
   address: state => state.userinfo.address,
   currentChannel: state => String(state.currentChannel),
   participatedChannels: state => state.participatedChannels,
-  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`
+  platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
+  effect: state => state.effect
 }
 
 // only sync operation
@@ -116,6 +118,9 @@ const mutations = {
   },
   password (state, password) {
     state.password = password
+  },
+  effect (state, effect) {
+    state.effect = effect
   },
   currentChannel(state, currentChannel) {
     state.currentChannel = currentChannel
