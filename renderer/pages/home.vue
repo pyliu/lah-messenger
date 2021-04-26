@@ -646,7 +646,7 @@ export default {
 @mixin notify() {
   position: absolute;
   top: 15px;
-  opacity: 0.65;
+  opacity: 0.75;
 }
 .notify-announcement {
   @include notify();
@@ -666,6 +666,5 @@ export default {
 }
 .nav-link:hover .badge {
   opacity: 1.0;
-  font-size: .9rem;
 }
 </style>

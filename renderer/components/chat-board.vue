@@ -72,7 +72,12 @@ export default {
   border-bottom: 1px solid rgb(199, 199, 199)
 }
 
+.list-group-item .badge {
+  opacity: 0.75;
+}
+
 .list-group-item:hover .badge {
-  font-size: .9rem;
+  background-color: rgb(82, 83, 82) !important;
+  opacity: 1;
 }
 </style>
