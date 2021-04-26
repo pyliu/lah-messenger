@@ -1,6 +1,6 @@
 <template lang="pug">
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
-    transition(name="list" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
+    transition(name="bg" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2.25" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
     transition-group(name="listY" mode="out-in")
       message(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
 </template>
@@ -42,7 +42,7 @@ export default {
           latest.$el.scrollIntoView && latest.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
           !latest.$el.scrollIntoView && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
           // 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble'
-          (this.isPersonal || this.isAnnouncement) && this.attention(latest.$el, { name: 'tada', speed: 'slow' })
+          (this.isPersonal || this.isAnnouncement) && setTimeout(() => this.attention(latest.$el, { name: 'tada', speed: 'slow' }), 400)
           // this.$refs.box.scrollTop = this.$refs.box.scrollHeight
         }
       })

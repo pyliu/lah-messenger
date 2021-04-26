@@ -99,7 +99,8 @@ blockquote p {
 }
 
 .list-enter-active, .list-leave-active,
-.listY-enter-active, .listY-leave-active {
+.listY-enter-active, .listY-leave-active,
+.bg-enter-active, .bg-leave-active {
   transition: all .4s;
 }
 
@@ -115,4 +116,8 @@ blockquote p {
 .listY-enter, .listY-leave-to {
   @include opacity();
   transform: translateY(30px);
+}
+
+.bg-enter, .bg-leave-to {
+  color: #007bff !important;
 }
