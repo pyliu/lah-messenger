@@ -111,8 +111,10 @@ export default {
 .msg {
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: inline-block;
+
 }
 
 .old-message-arrow {
