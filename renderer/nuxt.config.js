@@ -17,7 +17,7 @@ export default {
     link: [{
       rel: 'icon',
       type: 'image/x-icon',
-      href: '/taoyuan.ico'
+      href: '/chat.ico'
     }
     ],
     script: []

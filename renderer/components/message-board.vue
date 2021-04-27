@@ -121,7 +121,7 @@ export default {
   cursor: pointer;
   position: fixed;
   opacity: 0.3;
-  right: 30px;
+  right: 25px;
   top: 72px;
   &:hover {
     transition: all .5s;
