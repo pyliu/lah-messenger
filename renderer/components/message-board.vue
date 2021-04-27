@@ -138,7 +138,7 @@ export default {
 /* Track */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  box-shadow: inset 0 0 5px grey;
+  box-shadow: inset 0 0 5px rgb(192, 191, 191);
   border-radius: 10px;
 }
 
