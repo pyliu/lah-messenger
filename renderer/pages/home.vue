@@ -614,6 +614,8 @@ export default {
     this.wsHost = await this.$localForage.getItem('wsHost')
     this.wsPort = await this.$localForage.getItem('wsPort')
     this.adPassword = await this.$localForage.getItem('adPassword')
+    // restore effect setting to store
+    this.$store.commit('effect', await this.$localForage.getItem('effect'))
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
