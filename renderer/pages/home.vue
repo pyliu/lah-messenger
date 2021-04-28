@@ -38,7 +38,7 @@
           span {{ getChannelName($store.getters.currentChannel) }} 
 
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
-        transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list")
+        transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
       //- 輸入訊息UI
       transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
         b-textarea.mr-1(
@@ -239,6 +239,15 @@ export default {
     }
   },
   methods: {
+    reply (text) {
+      const tmp = document.createElement('DIV')
+      tmp.innerHTML = text
+      this.text = `${tmp.textContent || tmp.innerText || ''}\n***\n`
+      this.$nextTick(() => {
+        this.$refs.textarea.$el.scrollTop = 999999
+        this.$refs.textarea?.focus()
+      })
+    },
     switchAdPasswordIcon() {
       if (this.adPasswordIcon === 'eye') {
         this.adPasswordIcon = 'eye-slash'

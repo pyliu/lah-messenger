@@ -2,7 +2,7 @@
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
     transition(name="bg" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
     transition-group(name="listY" mode="out-in")
-      message.mr-1(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`")
+      message.mr-1(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`" @reply="$emit('reply', $event)")
 </template>
 
 <script>
@@ -128,28 +128,5 @@ export default {
     opacity: 1.0;
     color: #007bff !important;
   }
-}
-
-/* width */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  box-shadow: inset 0 0 5px rgb(192, 191, 191);
-  border-radius: 10px;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: rgb(196, 192, 192);
-  border-radius: 10px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(116, 116, 117);
 }
 </style>

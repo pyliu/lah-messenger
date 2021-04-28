@@ -28,7 +28,9 @@
       p(v-else-if="!mine" v-html="message")
 
       //- timestamp for the message
-      .time.s-60.mx-1.text-muted(v-if="!system") {{ mtime }}
+      .time.s-60.mx-1.text-muted(v-if="!system")
+        b-icon(v-if="!isAnnouncement && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
+        div {{ mtime }}
 
       //- my message
       p(v-if="mine" v-html="message")
@@ -96,6 +98,11 @@ export default {
       ];
     }
   },
+  methods: {
+    emitReply () {
+      this.$emit('reply', this.message)
+    }
+  }
 };
 </script>
 
@@ -146,6 +153,9 @@ export default {
   .time {
     display: inline-block;
     align-self: flex-end;
+    svg {
+      cursor: pointer;
+    }
   }
 }
 </style>
