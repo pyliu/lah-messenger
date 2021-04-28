@@ -27,7 +27,7 @@
         span.my-auto 提示效果
       b-select.ml-2(v-model="effectVal" :options="effectOpts")
 
-    b-input-group.my-2
+    b-input-group.my-2(title="歷史訊息")
       template(#prepend)
         b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
         span.my-auto 回朔數量
