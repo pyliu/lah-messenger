@@ -27,6 +27,11 @@
         span.my-auto 提示效果
       b-select.ml-2(v-model="effectVal" :options="effectOpts")
 
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
+        span.my-auto 回朔數量
+      b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
 
     b-input-group.my-2
       template(#prepend)
@@ -72,6 +77,7 @@ export default {
     adPasswordType: 'password',
     adPasswordIcon: 'eye-slash',
     nickname: '',
+    historyCount: 10,
     department: '',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
@@ -132,6 +138,10 @@ export default {
     effectVal(val) {
       this.$store.commit('effect', val)
       this.$localForage.setItem('effect', val)
+    },
+    historyCount (val) {
+      this.$store.commit('history', this.historyCount)
+      this.$localForage.setItem('history', this.historyCount)
     }
   },
   methods: {
@@ -154,6 +164,7 @@ export default {
       this.wsHost = await this.$localForage.getItem('wsHost')
       this.wsPort = await this.$localForage.getItem('wsPort')
       this.effectVal = await this.$localForage.getItem('effect')
+      this.historyCount = await this.$localForage.getItem('history') || 10
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
@@ -162,6 +173,7 @@ export default {
           this.$localForage.removeItem('department')
           this.$localForage.removeItem('adPassword')
           this.$localForage.removeItem('effect')
+          this.$localForage.removeItem('history')
           this.restore()
         }
       })

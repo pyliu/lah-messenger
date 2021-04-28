@@ -39,6 +39,8 @@ const state = () => ({
   username: '',
   userdept: '',
   effect: '',
+  history: 10,
+  fetchingHistory: false,
   websocket: undefined,
   timer: null,
   currentChannel: 'announcement',
@@ -92,7 +94,9 @@ const getters = {
   currentChannel: state => String(state.currentChannel),
   participatedChannels: state => state.participatedChannels,
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
-  effect: state => state.effect
+  effect: state => state.effect,
+  history: state => parseInt(state.history),
+  fetchingHistory: state => state.fetchingHistory
 }
 
 // only sync operation
@@ -121,6 +125,12 @@ const mutations = {
   },
   effect (state, effect) {
     state.effect = effect
+  },
+  history (state, history) {
+    state.history = parseInt(history)
+  },
+  fetchingHistory (state, flag) {
+    state.fetchingHistory = flag
   },
   currentChannel(state, currentChannel) {
     state.currentChannel = currentChannel

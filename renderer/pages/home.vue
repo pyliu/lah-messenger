@@ -387,6 +387,10 @@ export default {
           json.success && this.$store.commit('removeParticipatedChannel', item)
           this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
           break;
+        case 'previous':
+          this.$store.commit('fetchingHistory', false)
+          this.connectText = `擷取歷史訊息完成`
+          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
       }
@@ -625,6 +629,9 @@ export default {
     this.adPassword = await this.$localForage.getItem('adPassword')
     // restore effect setting to store
     this.$store.commit('effect', await this.$localForage.getItem('effect'))
+    // restore history count to store
+    this.$store.commit('history', await this.$localForage.getItem('history') || 10)
+    this.$store.commit('fetchingHistory', false) 
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()

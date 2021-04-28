@@ -1,6 +1,6 @@
 <template lang="pug">
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
-    transition(name="bg" mode="out-in"): b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" title="讀取舊訊息" @click="delayLoadHistoryMessage")
+    b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
     transition-group(name="listY" mode="out-in")
       message.mr-1(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`" @reply="$emit('reply', $event)")
 </template>
@@ -13,7 +13,6 @@ export default {
   },
   data: () => ({
     ready: false,
-    loadHistoryCount: 10,
     scrollTop: 0,
     scrollBehavior: 'last'
   }),
@@ -31,7 +30,7 @@ export default {
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.ready && this.scrollTop < 50 && this.list.length > 0 }
+    showOldMessageArrow () { return this.ready && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
   },
   watch: {
     messageCount (dontcare) {
@@ -49,13 +48,19 @@ export default {
           this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
         }
       })
+    },
+    fetchingHistory (flag) {
+      this.scrollBehavior = flag ? 'first' : 'last'
     }
   },
   methods: {
     delayAttention () {}, // placeholder for attention
     delayLoadHistoryMessage () {},  // placeholder for loadHistoryMessage
     loadHistoryMessage () {
-      if (this.connected) {
+      if (this.fetchingHistory) {
+        this.warning(`讀取之前訊息中，請稍待 ... `)
+      } else if (this.connected) {
+        this.$store.commit('fetchingHistory', true)
         const jsonString = JSON.stringify({
           type: "command",
           sender: this.userid,
@@ -65,14 +70,14 @@ export default {
             command: 'previous',
             channel: this.currentChannel,
             headId: this.list[0].id,
-            count: this.loadHistoryCount
+            count: this.history
           }),
           channel: 'system'
         })
         this.websocket.send(jsonString)
         this.scrollBehavior = 'first'
-        // reset the scroll behavior to default
-        setTimeout(() => { this.scrollBehavior = 'last' }, 400)
+        // in case the ack is missing
+        setTimeout(() => { this.$store.commit('fetchingHistory', false) }, 30000)
       } else {
         this.$config.isDev && console.log(
           this.time(),

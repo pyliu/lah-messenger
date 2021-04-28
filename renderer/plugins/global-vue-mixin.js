@@ -44,6 +44,8 @@ Vue.mixin({
       'username',
       'userdept',
       'effect',
+      'history',
+      'fetchingHistory',
       'ip',
       'domain',
       'hostname',
