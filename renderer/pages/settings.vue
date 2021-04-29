@@ -1,8 +1,14 @@
 <template lang="pug">
   .vh-100.p-2(v-cloak)
-    .mt-2: b-link.d-flex.justify-content-start.align-items-center(to="/home?reconnect=true" title="返回主畫面")
-      b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
-      span(style="font-size: 1.5rem;") 返回
+    .mt-2.d-flex.justify-content-between
+      b-link.align-items-center(to="/home?reconnect=true" title="返回主畫面")
+        b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
+        span(style="font-size: 1.5rem;") 返回
+      
+      b-button(variant="outline-danger" @click="clear" title="清除個人設定資料")
+        b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
+        span.my-auto 清除個人設定
+      
     hr
     fieldset
       legend 個人設定
@@ -59,10 +65,6 @@
           b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
           span.my-auto ＡＤ主機
         b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
-      
-    b-button.mx-auto.clear(variant="outline-danger" block @click="clear")
-      b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-      span.my-auto 清除個人設定
     
     status
 </template>
@@ -281,12 +283,6 @@ legend {
   position: absolute;
   left: 80px;
   top: 100px;
-}
-.clear {
-  position: absolute;
-  left: 5px;
-  bottom: calc(2rem);
-  max-width: 98%;
 }
 .eye {
   cursor: pointer;
