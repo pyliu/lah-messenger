@@ -239,9 +239,12 @@ export default {
     }
   },
   methods: {
-    reply (text) {
+    reply (raw) {
+      const sender = this.userMap[raw["sender"]] || raw["sender"]
+      const hrIdx = raw["message"]?.indexOf('<hr>')
+      const text = hrIdx === -1 ? raw['message'] : raw['message'].substring(hrIdx+4)
       const tmp = document.createElement('DIV')
-      tmp.innerHTML = text
+      tmp.innerHTML = `@${sender} ${text}`
       this.text = `${tmp.textContent || tmp.innerText || ''}\n***\n`
       this.$nextTick(() => {
         this.$refs.textarea.$el.scrollTop = 999999
@@ -572,7 +575,7 @@ export default {
           this.connectText = `AD: ${this.userid} ${name}`
         }).catch((err) => {
           console.error(err)
-          this.error(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
+          this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
         }).finally(() =>{
           this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
           this.asking = false

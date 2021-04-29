@@ -184,7 +184,7 @@ export default {
           this.warning(data.message)
         }
       }).catch((err) => {
-        this.error(err.toString())
+        this.alert(err.toString())
       }).finally(() => {
       })
     },
