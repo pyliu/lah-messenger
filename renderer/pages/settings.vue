@@ -9,7 +9,6 @@
         b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
         span.my-auto 清除個人設定
       
-    hr
     fieldset
       legend 個人設定
       b-input-group.my-2
@@ -65,7 +64,7 @@
           b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
           span.my-auto ＡＤ主機
         b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
-    
+    copyright
     status
 </template>
 
