@@ -46,7 +46,7 @@ export default {
   },
   data: () => ({}),
   asyncData(ctx) {
-    return {};
+    return {}
   },
   computed: {
     showMdate() {
@@ -56,28 +56,28 @@ export default {
       return this.currentChannel.startsWith('announcement')
     },
     mine() {
-      return this.raw ? this.userid === this.sender : false;
+      return this.raw ? this.userid === this.raw["sender"] : false
     },
     system() {
-      return this.raw ? 'system' === this.sender : false;
+      return this.raw ? 'system' === this.sender : false
     },
     id() {
-      return this.raw ? this.raw["id"] : "";
+      return this.raw ? this.raw["id"] : ""
     },
     type() {
-      return this.raw ? this.raw["type"] : "";
+      return this.raw ? this.raw["type"] : ""
     },
     message() {
-      return this.raw ? this.raw["message"] : "";
+      return this.raw ? this.raw["message"] : ""
     },
     sender() {
-      return this.raw ? this.userMap[this.raw["sender"]] || this.raw["sender"] : "";
+      return this.raw ? this.userMap[this.raw["sender"]] || this.raw["sender"] : ""
     },
     from() {
-      return this.raw ? this.raw["ip"] : "";
+      return this.raw ? this.raw["ip"] : ""
     },
     mtime() {
-      return this.raw ? this.raw["time"] : "";
+      return this.raw ? this.raw["time"] : ""
     },
     prevMdate() {
       if (this.prev) {
@@ -86,24 +86,24 @@ export default {
       return ''
     },
     mdate() {
-      return this.raw ? this.raw["date"] : "";
+      return this.raw ? this.raw["date"] : ""
     },
     channel() {
-      return this.raw ? this.raw["channel"] : "";
+      return this.raw ? this.raw["channel"] : ""
     },
     classes() {
       return [
         this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
         this.mine ? 'mine' : this.system ? 'system' : '',
-      ];
+      ]
     }
   },
   methods: {
     emitReply () {
-      this.$emit('reply', this.message)
+      this.$emit('reply', this.raw)
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
