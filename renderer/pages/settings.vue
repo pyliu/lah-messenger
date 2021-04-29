@@ -4,60 +4,65 @@
       b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
       span(style="font-size: 1.5rem;") 返回
     hr
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-        span.my-auto 顯示姓名
-      b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim readonly)
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
-        span.my-auto 網域密碼
-      b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
-      b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-        span.my-auto 所屬部門
-      b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment")
+    fieldset
+      legend 個人設定
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
+          span.my-auto 顯示姓名
+        b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim readonly)
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
+          span.my-auto 網域密碼
+        b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+        b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+          span.my-auto 所屬部門
+        b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment")
 
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
-        span.my-auto 提示效果
-      b-select.ml-2(v-model="effectVal" :options="effectOpts")
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
+          span.my-auto 提示效果
+        b-select.ml-2(v-model="effectVal" :options="effectOpts")
 
-    b-input-group.my-2(title="歷史訊息")
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
-        span.my-auto 回朔數量
-      b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
+      b-input-group.my-2(title="歷史訊息")
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
+          span.my-auto 回朔數量
+        b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
 
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-        span.my-auto 連線主機
-      b-input.ml-2(v-model="wsHost" :state="validHost" trim)
-      span.my-auto.mx-1 :
-      b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
-
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="cpu" font-scale="2.25" variant="secondary")
-        span.my-auto 查詢主機
-      b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
-      span.my-auto.mx-1 :
-      b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
-
-    b-input-group.my-2
-      template(#prepend)
-        b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
-        span.my-auto ＡＤ主機
-      b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
     
+    fieldset
+      legend 伺服器設定
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
+          span.my-auto 會話主機
+        b-input.ml-2(v-model="wsHost" :state="validHost" trim)
+        span.my-auto.mx-1 :
+        b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
+
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="cpu" font-scale="2.25" variant="secondary")
+          span.my-auto 查詢主機
+        b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+        span.my-auto.mx-1 :
+        b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+
+      b-input-group.my-2
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
+          span.my-auto ＡＤ主機
+        b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+      
     b-button.mx-auto.clear(variant="outline-danger" block @click="clear")
       b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-      span.my-auto 清除所有設定
+      span.my-auto 清除個人設定
     
     status
 </template>
@@ -202,7 +207,7 @@ export default {
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
     },
     clear() {
-      this.confirm(`清除所有已儲存的設定？`).then((answer) => {
+      this.confirm(`清除個人設定？`).then((answer) => {
         if (answer) {
           this.$localForage.removeItem('nickname')
           this.$localForage.removeItem('department')
@@ -227,6 +232,45 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+fieldset {
+	border:0;
+	padding:10px;
+	padding-top:30px;
+  margin-top: 25px;
+	margin-bottom: 35px;
+  background:rgb(255, 255, 255);
+
+	border-radius: 15px;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+
+	box-shadow:3px 3px 10px #666;
+	-moz-box-shadow:3px 3px 10px #666;
+	-webkit-box-shadow:3px 3px 10px #666;
+
+	position:relative;
+}
+
+legend {
+	padding:5px 10px;
+	background-color:#e6e9f0;
+	color:rgb(70, 66, 66);
+
+	border-radius:15px;
+	-moz-border-radius:15px;
+	-webkit-border-radius:15px;
+
+	box-shadow:2px 2px 4px #666;
+	-moz-box-shadow:2px 2px 4px #666;
+	-webkit-box-shadow:2px 2px 4px #666;
+
+	position:absolute;
+	left:10px;
+  top:-20px;
+  width: auto;
+  font-size: 1.25rem;
+}
+
 .color-primary {
   color: #007bff;
 }
