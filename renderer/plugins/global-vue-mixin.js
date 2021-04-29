@@ -10,22 +10,6 @@ const empty = function(value) {
          (typeof value === 'string' && trim(value).length === 0)
 }
 
-const error = function (message, opts = {}) {
-  if (!empty(message)) {
-    if (opts && opts.pos === 'bottom') {
-      opts.pos = 'bf'
-    } else if (opts && opts.pos === 'top') {
-      opts.pos = 'tf'
-    }
-    const merged = Object.assign({
-      title: '錯誤',
-      autoHideDelay: 10000,
-      variant: 'danger'
-    }, opts)
-    this.notify(message, merged)
-  }
-}
-
 // inject to all Vue instances
 Vue.mixin({
   data: () => ({
@@ -402,8 +386,21 @@ Vue.mixin({
         this.notify(message, merged)
       }
     },
-    error,
-    alert: error,
+    alert (message, opts = {}) {
+      if (!empty(message)) {
+        if (opts && opts.pos === 'bottom') {
+          opts.pos = 'bf'
+        } else if (opts && opts.pos === 'top') {
+          opts.pos = 'tf'
+        }
+        const merged = Object.assign({
+          title: '錯誤',
+          autoHideDelay: 10000,
+          variant: 'danger'
+        }, opts)
+        this.notify(message, merged)
+      }
+    },
     attention (selector, opts = { name: 'flash', speed: 'faster' }) {
       return process.client && this.$utils.animated(selector, opts)
     },
