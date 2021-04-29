@@ -553,9 +553,9 @@ export default {
         this.connectText = `AD查詢中`
         return
       }
-      if (force || (this.nickname === this.userid && !this.empty(this.domain) && this.ipFilter.test(this.adHost))) {
+      this.nickname = this.userMap[this.userid] || this.userid
+      if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.ipFilter.test(this.adHost))) {
         this.asking = true
-        this.nickname = this.userid
         this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
         const sAMAccountName = `${this.userid}@${this.domain}`
         this.ipcRenderer.invoke('ad-user-desc', {
@@ -571,8 +571,8 @@ export default {
           this.nickname = name
           this.connectText = `AD: ${this.userid} ${name}`
         }).catch((err) => {
-          this.connectText = err.toString()
           console.error(err)
+          this.error(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
         }).finally(() =>{
           this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
           this.asking = false
@@ -590,22 +590,6 @@ export default {
           this.invokeADUsernameQuery()
           this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.username} / ${this.ip}`)
           this.register()
-          // get user name mapping from API server
-          const queryEP = `http://${this.wsHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
-          this.$axios.post(queryEP, {
-            type: 'user_mapping'
-          }).then(({ data }) => {
-            if (this.$utils.statusCheck(data.status)) {
-              this.$store.commit('userMap', data.data)
-              this.connectText = data.message
-            } else {
-              this.warning(data.message)
-            }
-          }).catch((err) => {
-            this.error(err.toString())
-          }).finally(() => {
-          })
-
         })
       })
       // remvoe main process 'quit' all listeners
@@ -649,6 +633,8 @@ export default {
     this.$store.commit('history', await this.$localForage.getItem('history') || 10)
     this.$store.commit('fetchingHistory', false)
     this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
+    // restore user map
+    this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
     
 
     // back from settings page
