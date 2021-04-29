@@ -71,7 +71,7 @@ export default {
       return this.raw ? this.raw["message"] : "";
     },
     sender() {
-      return this.raw ? this.raw["sender"] : "";
+      return this.raw ? this.userMap[this.raw["sender"]] || this.raw["sender"] : "";
     },
     from() {
       return this.raw ? this.raw["ip"] : "";
