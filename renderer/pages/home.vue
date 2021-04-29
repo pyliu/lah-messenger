@@ -565,7 +565,7 @@ export default {
           password: this.adPassword
         }).then((desc) => {
           this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-          const name = desc || this.userid
+          const name = desc || this.userMap[this.userid] || this.userid
           this.$store.commit('username', name)
           this.$localForage.setItem('nickname', name)
           this.nickname = name
