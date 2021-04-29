@@ -483,7 +483,13 @@ export default {
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
                   // add message to store channel list
-                  !isEmpty(incoming['message']) && (incoming.prepend ? (this.messages[channel] = [incoming, ...this.messages[channel]]) : this.messages[channel].push(incoming))
+                  if(!isEmpty(incoming['message'])) {
+                    if (incoming.prepend) {
+                      this.messages[channel].unshift(incoming)
+                    } else {
+                      this.messages[channel].push(incoming)
+                    }
+                  }
                 })
                 // tell electron window got a unread message
                 this.ipcRenderer.invoke('unread', channel)
