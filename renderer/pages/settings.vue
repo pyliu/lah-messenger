@@ -43,6 +43,14 @@
 
     b-input-group.my-2
       template(#prepend)
+        b-icon.my-auto.mr-2(icon="cpu" font-scale="2.25" variant="secondary")
+        span.my-auto 查詢主機
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+      span.my-auto.mx-1 :
+      b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+
+    b-input-group.my-2
+      template(#prepend)
         b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
         span.my-auto ＡＤ主機
       b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
@@ -73,6 +81,7 @@ export default {
     adHost: '',
     wsHost: '',
     wsPort: 8081,
+    apiPortSetting: 80,
     adPassword: '',
     adPasswordType: 'password',
     adPasswordIcon: 'eye-slash',
@@ -103,6 +112,10 @@ export default {
       const i = parseInt(trim(this.wsPort))
       return (i > 1024 && i < 65536) === false ? false : null
     },
+    validApiPort() {
+      const i = parseInt(trim(this.apiPortSetting))
+      return (i > 79 && i < 65536) === false ? false : null
+    },
     validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
@@ -126,6 +139,10 @@ export default {
     },
     wsPort(val) {
       this.$localForage.setItem('wsPort', val)
+    },
+    apiPortSetting(val) {
+      this.$localForage.setItem('apiPort', val)
+      this.$store.commit('apiPort', val)
     },
     nickname(val) {
       this.$store.commit('username', val)
@@ -165,6 +182,7 @@ export default {
       this.wsPort = await this.$localForage.getItem('wsPort')
       this.effectVal = await this.$localForage.getItem('effect')
       this.historyCount = await this.$localForage.getItem('history') || 10
+      this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
     },
     clear() {
       this.confirm(`清除所有已儲存的設定？`).then((answer) => {
@@ -174,6 +192,7 @@ export default {
           this.$localForage.removeItem('adPassword')
           this.$localForage.removeItem('effect')
           this.$localForage.removeItem('history')
+          this.$localForage.removeItem('apiPort')
           this.restore()
         }
       })

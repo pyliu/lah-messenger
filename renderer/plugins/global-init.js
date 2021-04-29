@@ -108,10 +108,10 @@ export default ({ $axios, store }, inject) => {
      */
     empty: isEmpty, // '0' is not empty
     equal: isEqual,
-    debounce,
-    remove,
-    filter,
-    reject,
+    debounce, // _.debounce(func, wait, options)
+    remove, // _.remove(array, function)
+    filter, // _.filter(array, function)
+    reject, // reverse filter
     md5: _md5,
     /**
      * usage in Vue

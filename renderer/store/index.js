@@ -23,6 +23,7 @@ const timestamp = (full = false) => {
 }
 
 const state = () => ({
+  userMap: {},
   userinfo: {
     address: [],
     ipv4: '127.0.0.1',
@@ -35,6 +36,7 @@ const state = () => ({
     dns: []
   },
   ad: '',
+  apiPort: '80',
   password: '',
   username: '',
   userdept: '',
@@ -78,6 +80,7 @@ const getters = {
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
+  userMap: state => state.userMap,
   userinfo: state => state.userinfo,
   username: state => state.username,
   userdept: state => state.userdept,
@@ -86,6 +89,7 @@ const getters = {
   pcname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid.toUpperCase(),
   ad: state => state.ad,
+  apiPort: state => state.apiPort,
   password: state => state.password,  // used for activedirectory query
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
@@ -108,6 +112,9 @@ const mutations = {
   timer (state, timer) {
     state.timer = timer
   },
+  userMap (state, data) {
+    state.userMap = { ...data }
+  },
   userinfo (state, userinfo) {
     state.userinfo = { ...userinfo }
   },
@@ -119,6 +126,9 @@ const mutations = {
   },
   ad (state, ip) {
     state.ad = ip
+  },
+  apiPort (state, port) {
+    state.apiPort = port
   },
   password (state, password) {
     state.password = password

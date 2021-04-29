@@ -590,6 +590,22 @@ export default {
           this.invokeADUsernameQuery()
           this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.username} / ${this.ip}`)
           this.register()
+          // get user name mapping from API server
+          const queryEP = `http://${this.wsHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
+          this.$axios.post(queryEP, {
+            type: 'user_mapping'
+          }).then(({ data }) => {
+            if (this.$utils.statusCheck(data.status)) {
+              this.$store.commit('userMap', data.data)
+              this.connectText = data.message
+            } else {
+              this.warning(data.message)
+            }
+          }).catch((err) => {
+            this.error(err.toString())
+          }).finally(() => {
+          })
+
         })
       })
       // remvoe main process 'quit' all listeners
@@ -631,7 +647,9 @@ export default {
     this.$store.commit('effect', await this.$localForage.getItem('effect'))
     // restore history count to store
     this.$store.commit('history', await this.$localForage.getItem('history') || 10)
-    this.$store.commit('fetchingHistory', false) 
+    this.$store.commit('fetchingHistory', false)
+    this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
+    
 
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
