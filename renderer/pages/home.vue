@@ -392,7 +392,8 @@ export default {
           break;
         case 'previous':
           this.$store.commit('fetchingHistory', false)
-          this.connectText = `擷取歷史訊息完成`
+          !json.success && this.notify(json.message, { subtitle: this.getChannelName(json.payload.channel), type: 'info'})
+          this.connectText = `${json.message}(${json.payload.count}筆)`
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
@@ -466,7 +467,7 @@ export default {
               this.connecting = false
               // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
             }
-            ws.onmessage = (e) => {
+            ws.onmessage = async (e) => {
               const incoming = JSON.parse(e.data)
               const channel = incoming['channel']
 
@@ -480,6 +481,7 @@ export default {
                 // got system message
                 this.handleSystemMessage(incoming.message)
               } else if (this.currentChannel == channel) {
+                // add empty array if store does not have it
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
                   // add message to store channel list
@@ -493,6 +495,9 @@ export default {
                 })
                 // tell electron window got a unread message
                 this.ipcRenderer.invoke('unread', channel)
+                // store the read id for this channel
+                await this.$localForage.setItem(`${channel}_read`, incoming)
+                this.$config.isDev && console.log(`${channel} 訊息已讀 id 設定為 ${incoming.id}`, await this.$localForage.getItem(`${channel}_read`))
               } else if (incoming.message && incoming.sender !== 'system') {
                 // add unread stats
                 if (parseInt(this.unread[channel]) === NaN) {
