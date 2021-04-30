@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 import $ from 'jquery'
-import * as EStore from 'electron-store'
 import trim from 'lodash/trim'
 
 const empty = function(value) {
@@ -13,17 +12,14 @@ const empty = function(value) {
 // inject to all Vue instances
 Vue.mixin({
   data: () => ({
-    isBusy: false,
-    busyIconSize: undefined,
-    estore: new EStore()
+    isBusy: false
   }),
   watch: {
     isBusy (flag) {
       if (flag) {
         this.toggleBusy({
           selector: this.$el,
-          forceOn: true,
-          size: this.busyIconSize
+          forceOn: true
         })
       } else {
         this.toggleBusy({
@@ -201,7 +197,8 @@ Vue.mixin({
         selector: 'body',
         style: 'ld-over', // ld-over, ld-over-inverse, ld-over-full, ld-over-full-inverse
         forceOff: false,
-        forceOn: false
+        forceOn: false,
+        size: 'lg'
       }
       opts = {...def, ...opts}
       const container = this.$(opts.selector)
@@ -217,26 +214,27 @@ Vue.mixin({
 
           // randomize loading.io css for fun
           const coverEl = this.$(this.parseHTML('<div class="ld auto-add-spinner"></div>'))
-          coverEl.addClass(this.$consts.loadingShapeSet[this.$utils.rand(this.$consts.loadingShapeSet.length)]) // shape
-            .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)]) // color
+          coverEl
+            .addClass(this.$consts.loadingShapeSet[this.$utils.rand(this.$consts.loadingShapeSet.length)]) // shape
+            .addClass('text-dark') // color
+            // .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)]) // color
           switch (opts.size) {
             case 'xs':
-              coverEl.addClass('fa-xs')
+              coverEl.addClass('s-xs')
               break
             case 'sm':
-              coverEl.addClass('fa-sm')
+              coverEl.addClass('s-sm')
               break
             case 'md':
-              coverEl.addClass('fa-3x')
+              coverEl.addClass('s-md')
               break
             case 'lg':
-              coverEl.addClass('fa-5x')
+              coverEl.addClass('s-lg')
               break
             case 'xl':
-              coverEl.addClass('fa-10x')
+              coverEl.addClass('s-xl')
               break
             default:
-              coverEl.addClass(`fa-${opts.size === undefined ? '2x' : opts.size}`)
               break
           }
           container.append(coverEl)

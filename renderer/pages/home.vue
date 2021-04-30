@@ -236,6 +236,9 @@ export default {
       this.resetReconnectTimer()
       this.$store.commit('userdept', val)
       this.$localForage.setItem('department', val)
+    },
+    fetchingHistory(flag) {
+      this.isBusy = flag
     }
   },
   methods: {

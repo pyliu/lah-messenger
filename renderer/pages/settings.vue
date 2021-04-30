@@ -1,5 +1,5 @@
 <template lang="pug">
-  .vh-100.p-2(v-cloak)
+  .vh-100.p-2.gradient-top(v-cloak)
     .mt-2.d-flex.justify-content-between
       b-link.align-items-center(to="/home?reconnect=true" title="返回主畫面")
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
@@ -248,7 +248,7 @@ fieldset {
 	-moz-box-shadow:3px 3px 10px #666;
 	-webkit-box-shadow:3px 3px 10px #666;
 
-	position:relative;
+  position:relative;
 }
 
 legend {
@@ -274,18 +274,26 @@ legend {
 .color-primary {
   color: #007bff;
 }
+
 .vh-100 {
   height: 100vh;
 }
+
 .logo {
   position: absolute;
   left: 80px;
   top: 100px;
 }
+
 .eye {
   cursor: pointer;
   position: absolute;
   right: .55rem;
   top: .55rem;
+}
+
+.gradient-top {
+  background: rgb(255,255,255);
+  background: linear-gradient(0deg, rgba(255,255,255,1) 90%, rgba(201,204,196,1) 100%);
 }
 </style>
