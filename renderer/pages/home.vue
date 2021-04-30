@@ -467,7 +467,7 @@ export default {
               this.connecting = false
               // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
             }
-            ws.onmessage = async (e) => {
+            ws.onmessage = (e) => {
               const incoming = JSON.parse(e.data)
               const channel = incoming['channel']
 
@@ -496,8 +496,7 @@ export default {
                 // tell electron window got a unread message
                 this.ipcRenderer.invoke('unread', channel)
                 // store the read id for this channel
-                await this.$localForage.setItem(`${channel}_read`, incoming)
-                this.$config.isDev && console.log(`${channel} 訊息已讀 id 設定為 ${incoming.id}`, await this.$localForage.getItem(`${channel}_read`))
+                this.setReadMessage(channel, incoming)
               } else if (incoming.message && incoming.sender !== 'system') {
                 // add unread stats
                 if (parseInt(this.unread[channel]) === NaN) {
