@@ -237,8 +237,7 @@ fieldset {
 	border:0;
 	padding:10px;
 	padding-top:30px;
-  margin-top: 25px;
-	margin-bottom: 35px;
+  margin: 25px 10px 35px 10px;
   background:rgb(255, 255, 255);
 
 	border-radius: 15px;
@@ -254,7 +253,7 @@ fieldset {
 
 legend {
 	padding:5px 10px;
-	background-color:#e6e9f0;
+	background-color:#ffffff;
 	color:rgb(70, 66, 66);
 
 	border-radius:15px;
@@ -266,7 +265,7 @@ legend {
 	-webkit-box-shadow:2px 2px 4px #666;
 
 	position:absolute;
-	left:10px;
+	left:15px;
   top:-20px;
   width: auto;
   font-size: 1.25rem;
