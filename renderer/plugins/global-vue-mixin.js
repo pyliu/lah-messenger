@@ -216,8 +216,7 @@ Vue.mixin({
           const coverEl = this.$(this.parseHTML('<div class="ld auto-add-spinner"></div>'))
           coverEl
             .addClass(this.$consts.loadingShapeSet[this.$utils.rand(this.$consts.loadingShapeSet.length)]) // shape
-            .addClass('text-dark') // color
-            // .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)]) // color
+            .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)]) // color
           switch (opts.size) {
             case 'xs':
               coverEl.addClass('s-xs')

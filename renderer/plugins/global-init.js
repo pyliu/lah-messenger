@@ -33,7 +33,7 @@ export default ({ $axios, store }, inject) => {
       'ld-ring ld-cycle',
       'ld-cross ld-spin-fast'
     ],
-    loadingShapeColor: ['text-primary', 'text-secondary', 'text-danger', 'text-info', 'text-warning', 'text-default', ''],
+    loadingShapeColor: ['text-primary', 'text-secondary', 'text-danger', 'text-info', 'text-warning', 'text-default', 'text-success'],
     XHR_STATUS_CODE: {
       SUCCESS_WITH_NO_RECORD: 3,
       SUCCESS_WITH_MULTIPLE_RECORDS: 2,
