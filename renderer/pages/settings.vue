@@ -7,7 +7,7 @@
       
       b-button(variant="outline-danger" @click="clear" title="清除個人設定資料")
         b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-        span.my-auto 清除個人設定
+        span.my-auto 清除
       
     fieldset
       legend 個人設定
