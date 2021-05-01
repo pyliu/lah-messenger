@@ -56,10 +56,21 @@
           b-icon(icon="cursor" v-if="valid")
           span 傳送
     //- 連線主畫面
-    .center.vh-100(v-else)
+    .center.vh-100(v-else v-cloak)
       .w-75
-        .center.logo: b-img(src="taoyuan_logo.png")
-        .center(style="margin-top:3rem;"): b-iconstack(font-scale="7.5")
+        .center.logo: transition.text-center(
+          enter-active-class="animate__slideInDown"
+          leave-active-class="animate__slideInUp"
+          mode="out-in"
+          appear
+        ): b-img.animate__animated(id="main_logo" src="taoyuan_logo.png")
+
+        .center(style="margin-top:3rem;"): transition.text-center(
+          enter-active-class="animate__slideInUp"
+          leave-active-class="animate__slideInDown"
+          mode="out-in"
+          appear
+        ): b-iconstack.animate__animated(id="main_logo_icon" font-scale="7.5")
           b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
           b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
 
@@ -662,7 +673,6 @@ export default {
     // restore user map
     this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
     
-
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
 
