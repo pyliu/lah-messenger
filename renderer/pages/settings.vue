@@ -106,7 +106,7 @@ export default {
       { value: 'supervisor', text: '主任秘書室' },
     ],
     effectVal: '',
-    effectOpts: [ '', 'bounce', 'flash', 'heartBeat', 'jello', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada' ],
+    effectOpts: [ '', 'bounce', 'flash', 'headShake', 'heartBeat', 'jello', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'swing', 'tada' ],
   }),
   computed: {
     wsConnStr() {
