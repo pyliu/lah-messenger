@@ -87,7 +87,17 @@
           span.my-auto.mx-1 :
           b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
 
-        transition.text-center(name="listY"): b-button(block @click="manualConnect" variant="success" v-if="validInformation" :disabled="connecting")
+        transition.text-center(
+          enter-active-class="animate__slideInUp"
+          leave-active-class="animate__slideInDown"
+          mode="out-in"
+        ): b-button.animate__animated(
+          v-if="validInformation"
+          @click="manualConnect"
+          :disabled="connecting"
+          variant="success"
+          block
+        )
           b-icon(v-if="connecting" icon="arrow-clockwise" animation="spin-pulse")
           span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right" font-scale="1")] 連線
     status(:status-text="connectText")

@@ -46,7 +46,7 @@ export default {
     '~/assets/css/loading.min.css',
     '~/assets/css/loading-btn.css',
     // https://github.com/loadingio/transition.css/
-    '~/assets/css/transition.min.css',
+    // '~/assets/css/transition.min.css',
     '~/assets/scss/main.scss'
   ],
   purgeCSS: {

@@ -1,8 +1,14 @@
 <template lang="pug">
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
     b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-    transition-group(name="listY" mode="out-in")
-      message.mr-1(v-for="(item, idx) in list" :raw="item" :prev="list[idx - 1]" :key="`msg-${idx}`" :ref="`msg-${idx}`" @reply="$emit('reply', $event)")
+    //- transition-group(name="listY")
+    transition-group(name="list")
+      message.mr-1.animate__animated(
+        v-for="(item, idx) in list"
+        :raw="item" :prev="list[idx - 1]"
+        :key="`msg-${idx}`" :ref="`msg-${idx}`"
+        @reply="$emit('reply', $event)"
+      )
 </template>
 
 <script>
