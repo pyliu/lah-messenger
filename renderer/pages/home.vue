@@ -366,6 +366,26 @@ export default {
         )
       }
     },
+    queryStickyChannelUnreadCount () {
+      this.queryChannelUnreadCount('announcement')
+      this.queryChannelUnreadCount(`announcement_${this.userdept}`)
+      this.queryChannelUnreadCount(this.userid)
+    },
+    queryChannelUnreadCount (channel) {
+      const jsonString = JSON.stringify({
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({
+          command: 'unread',
+          channel: 'channel',
+          last: this.getLastReadMessage(channel)
+        }),
+        channel: 'system'
+      })
+      this.websocket.send(jsonString)
+    },
     queryMyChannel () {
       const jsonString = JSON.stringify({
         type: "command",
@@ -382,7 +402,7 @@ export default {
       this.$config.isDev && console.log(this.time(), `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`, json)
       switch (cmd) {
         case 'register':
-          json.success && this.queryMyChannel()
+          json.success && this.queryMyChannel() && this.queryStickyChannelUnreadCount()
           break;
         case 'mychannel':
           if (json.success) {
@@ -408,6 +428,13 @@ export default {
           this.$store.commit('fetchingHistory', false)
           !json.success && this.notify(json.message, { subtitle: this.getChannelName(json.payload.channel), type: 'info'})
           this.connectText = `${json.message}(${json.payload.count}筆)`
+          break;
+        case 'unread':
+          this.$store.commit('setUnread', {
+            channel: json.channel,
+            count: json.count
+          })
+          this.connectText = `${json.message}`
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)

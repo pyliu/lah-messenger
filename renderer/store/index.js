@@ -159,18 +159,24 @@ const mutations = {
   },
   plusUnread (state, channel) {
     if (!empty(channel)) {
-      // if (state.unread[channel] !== '9+') {
-        if (typeof state.unread[channel] !== 'number') {
-          state.unread = { ...state.unread, ...{ [channel]: 0 } }
-          this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
-        }
-        state.unread[channel]++
-        // maximun is 9
-        // state.unread[channel] > 9 && (state.unread[channel] = '9+')
-        this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
-      // } else {
-      //   this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增加已達最大值 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
-      // }
+      if (typeof state.unread[channel] !== 'number') {
+        state.unread = { ...state.unread, ...{ [channel]: 0 } }
+        this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+      }
+      state.unread[channel]++
+      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
+    }
+  },
+  setUnread (state, payload) {
+    const channel = payload.channel
+    const count = payload.count
+    if (!empty(channel)) {
+      if (typeof state.unread[channel] !== 'number') {
+        state.unread = { ...state.unread, ...{ [channel]: 0 } }
+        this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+      }
+      state.unread[channel] = count
+      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
     }
   },
   resetParticipatedChannel (state) {
