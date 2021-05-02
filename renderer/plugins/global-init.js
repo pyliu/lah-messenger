@@ -6,7 +6,6 @@ import remove from 'lodash/remove'
 import filter from 'lodash/filter'
 import reject from 'lodash/reject'
 import _md5 from 'md5'
-import uploadAxios from 'axios'
 
 export default ({ $axios, store }, inject) => {
   // global const variables, use this.$consts.xxxx to access them in Vue
@@ -136,31 +135,6 @@ export default ({ $axios, store }, inject) => {
         }
       })
     },
-    addAnimation (selector, which) {
-      let el = $(selector || '*').removeClass('ld').attr('class', function(i, c) {
-        return c ? c.replace(/(^|\s+)ld-\S+/g, '') : ''
-      })
-      if (el.length) {
-        el.addClass('ld')
-        if (!which) {
-          el.each((idx, el) => {
-            if (!el.is('body') && !el.is('html')) {
-              const index = Math.floor(Math.random() * Math.floor(consts.loadingAction.length || 100))
-              const randAnimPattern = consts.loadingAction[index]
-              el.addClass(randAnimPattern)
-            }
-          })
-        } else {
-          el.addClass(which)
-        }
-      }
-      return el
-    },
-    clearAnimation (selector) {
-      return $(selector || '*').removeClass('ld').attr('class', function(i, c) {
-        return c ? c.replace(/(^|\s+)ld-\S+/g, '') : ''
-      })
-    },
     openNewWindow (url, e) {
       if (window) {
         const win = window.open(url, '_blank')
@@ -168,60 +142,10 @@ export default ({ $axios, store }, inject) => {
       }
     },
     statusCheck (statusCode) { return statusCode > 0 },
-    message (statusCode) {
-      switch (statusCode) {
-        case 0:
-          return `失敗【${consts.XHR_STATUS_CODE.DEFAULT_FAIL}, DEFAULT_FAIL】`
-        case 1:
-          return `成功【${consts.XHR_STATUS_CODE.SUCCESS_NORMAL}, SUCCESS_NORMAL】`
-        case 2:
-          return `成功(回傳多筆資料)【${consts.XHR_STATUS_CODE.SUCCESS_WITH_MULTIPLE_RECORDS}, SUCCESS_WITH_MULTIPLE_RECORDS】`
-        case 3:
-          return `成功(無資料)【${consts.XHR_STATUS_CODE.SUCCESS_WITH_NO_RECORD}, SUCCESS_WITH_NO_RECORD】`
-        case -1:
-          return `失敗(不支援)【${consts.XHR_STATUS_CODE.UNSUPPORT_FAIL}, UNSUPPORT_FAIL】`
-        case -2:
-          return `失敗(本地端無資料)【${consts.XHR_STATUS_CODE.FAIL_WITH_LOCAL_NO_RECORD}, FAIL_WITH_LOCAL_NO_RECORD】`
-        case -3:
-          return `失敗(非正確伺服主機)【${consts.XHR_STATUS_CODE.FAIL_NOT_VALID_SERVER}, FAIL_NOT_VALID_SERVER】`
-        case -4:
-          return `失敗(遠端無資料)【${consts.XHR_STATUS_CODE.FAIL_WITH_REMOTE_NO_RECORD}, FAIL_WITH_REMOTE_NO_RECORD】`
-        case -5:
-          return `授權失敗【${consts.XHR_STATUS_CODE.FAIL_NO_AUTHORITY}, FAIL_NO_AUTHORITY】`
-        case -6:
-          return `JSON編碼失敗【${consts.XHR_STATUS_CODE.FAIL_JSON_ENCODE}, FAIL_JSON_ENCODE】`
-        case -7:
-          return `找不到資料失敗【${consts.XHR_STATUS_CODE.FAIL_NOT_FOUND}, FAIL_NOT_FOUND`
-        case -8:
-          return `讀取檔案失敗【${consts.XHR_STATUS_CODE.FAIL_LOAD_ERROR}, FAIL_LOAD_ERROR`
-        case -9:
-          return `動作請求逾時【${consts.XHR_STATUS_CODE.FAIL_TIMEOUT}, FAIL_TIMEOUT`
-        default:
-          return `不支援的狀態碼【${statusCode}】`
-      }
-    },
-    isOfficeHours () {
-      const now = new Date()
-      if (now.getDay() === 0 || now.getDay() === 6) {
-        return false
-      }
-      return now.getHours() > 6 && now.getHours() < 19
-    },
     rand (range) {
       return Math.floor(Math.random() * Math.floor(range || 100))
     },
     trim (x) { return typeof x === 'string' ? x.replace(/^\s+|\s+$/gm,'') : '' },
-    caseId (id) {
-      if (isEmpty(id)) {
-        return ''
-      }
-      id = id.replace(/^[a-zA-Z0-9]$/g, '')
-      if (isEmpty(id) || id.length !== 13) {
-        this.warn(`id is not a valid string, can not convert to formatted case id. (${id})`)
-        return id
-      }
-      return `${id.substring(0, 3)}-${id.substring(3, 7)}-${id.substring(7)}`
-    },
     uuid () {
       let d = Date.now()
       if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
@@ -262,15 +186,6 @@ export default ({ $axios, store }, inject) => {
       }
       return false
     },
-    rareWordReplace (txt) {
-      if (typeof txt === 'string') {
-        const regex = /(BAD\+[\da-zA-Z]{2,3}[\da-zA-Z]?)|(&#\d+;)/ig
-        const after = txt.replace(regex, '○')
-        // txt.match(regex) && console.log(txt, after)
-        return after
-      }
-      return txt
-    },
     msToHuman(remain_ms) {
       const seconds = (remain_ms / 1000).toFixed(1);
       const minutes = (remain_ms / (1000 * 60)).toFixed(1);
@@ -301,9 +216,4 @@ export default ({ $axios, store }, inject) => {
   // all injected var can be used by {varname} in Vue and ${varname} in Nuxt, e.g. this.$http (Vue), $http (Nuxt)
   inject('consts', consts)
   inject('utils', utility)
-  
-  // inject uploading file axios
-  // need to add 'Header set Access-Control-Allow-Origin "*"' to Apache site and turn on mod_header.so in httpd.conf
-  uploadAxios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
-  inject('upload', uploadAxios)
 }
