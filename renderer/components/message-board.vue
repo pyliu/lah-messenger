@@ -2,13 +2,13 @@
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
     b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
     //- transition-group(name="listY")
-    transition-group(name="list")
-      message.mr-1.animate__animated(
-        v-for="(item, idx) in list"
-        :raw="item" :prev="list[idx - 1]"
-        :key="`msg-${idx}`" :ref="`msg-${idx}`"
-        @reply="$emit('reply', $event)"
-      )
+    //- transition-group(name="list")
+    message.mr-1.animate__animated(
+      v-for="(item, idx) in list"
+      :raw="item" :prev="list[idx - 1]"
+      :key="`msg-${idx}`" :ref="`msg-${idx}`"
+      @reply="$emit('reply', $event)"
+    )
 </template>
 
 <script>
@@ -18,7 +18,6 @@ export default {
     list: { type: Array, required: true },
   },
   data: () => ({
-    ready: false,
     scrollTop: 0,
     scrollBehavior: 'last'
   }),
@@ -36,7 +35,7 @@ export default {
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.ready && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
+    showOldMessageArrow () { return this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
   },
   watch: {
     messageCount (dontcare) {
@@ -98,7 +97,10 @@ export default {
     this.delayAttention = debounce(this.attention, 600)
   },
   mounted () {
-    setTimeout(() => this.ready = true, 800)
+    setTimeout(() => {
+      // this.ready = true
+      this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
+    }, 800)
   }
 };
 </script>
