@@ -30,7 +30,7 @@
             span 交談
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
 
-          b-nav-item(title="進入設定頁面"): b-link(to="/settings")
+          b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
             b-icon.mr-1(icon="tools")
 
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")

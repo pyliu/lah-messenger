@@ -1,7 +1,7 @@
 <template lang="pug">
   .vh-100.p-2.gradient-top(v-cloak)
     .mt-2.d-flex.justify-content-between
-      b-link.align-items-center(to="/home?reconnect=true" title="返回主畫面")
+      nuxt-link.align-items-center(to="/home?reconnect=true" title="返回主畫面")
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
         span(style="font-size: 1.5rem;") 返回
       
