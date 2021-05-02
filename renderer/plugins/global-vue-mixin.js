@@ -95,13 +95,15 @@ Vue.mixin({
     },
     async setReadMessage (channel, incoming) {
       const prev = this.getLastReadMessage(channel)
-      if (prev && prev.id < incoming.id) {
-        await this.$localForage.setItem(`${channel}_read`, incoming)
+      if (prev) {
+        prev.id < incoming.id && await this.$localForage.setItem(`${channel}_read`, incoming)
         const last = this.getLastReadMessage(channel)
         this.$config.isDev && console.log(`${channel} 訊息已讀 id 設定為 ${incoming.id}`, last)
         return last
+      } else {
+        await this.$localForage.setItem(`${channel}_read`, incoming)
+        return incoming
       }
-      return prev
     },
     async getLastReadMessage (channel) {
       return await this.$localForage.getItem(`${channel}_read`)
