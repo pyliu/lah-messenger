@@ -58,19 +58,9 @@
     //- 連線主畫面
     .center.vh-100(v-else v-cloak)
       .w-75
-        .center.logo: transition.text-center(
-          enter-active-class="animate__slideInDown"
-          leave-active-class="animate__slideInUp"
-          mode="out-in"
-          appear
-        ): b-img.animate__animated(id="main_logo" src="taoyuan_logo.png")
+        .center.logo: b-img(id="main_logo" src="taoyuan_logo.png" v-cloak)
 
-        .center(style="margin-top:3rem;"): transition.text-center(
-          enter-active-class="animate__slideInUp"
-          leave-active-class="animate__slideInDown"
-          mode="out-in"
-          appear
-        ): b-iconstack.animate__animated(id="main_logo_icon" font-scale="7.5")
+        .center(style="margin-top:3rem;"): b-iconstack.iconstack(id="main_logo_icon" font-scale="7.5" v-cloak)
           b-icon(icon="chat-dots" variant="success" flip-h shift-h="10" shift-v="3" stacked)
           b-icon(icon="chat-text" variant="info" shift-h="-10" shift-v="6" stacked)
 
@@ -694,6 +684,13 @@ export default {
   position: absolute;
   left: 80px;
   top: 75px;
+
+  animation: fadeInDown;      /* referring directly to the animation's @keyframe declaration */
+  animation-duration: 2000ms; /* don't forget to set a duration! */
+}
+.iconstack {
+  animation: rubberBand;
+  animation-duration: 2s;
 }
 .eye {
   cursor: pointer;

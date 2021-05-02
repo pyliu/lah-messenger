@@ -33,5 +33,8 @@
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
+  /* This changes all the animations globally */
+  --animate-duration: 400ms;
+  // --animate-delay: 0.9s;
 }
 // By setting SASS variables and maps, and recompiling the SCSS, the above generated SCSS variables will also be updated.
