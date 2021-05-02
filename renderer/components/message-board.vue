@@ -50,7 +50,7 @@ export default {
           } else {
             this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
           }
-          !message.mine && this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
+          !message.mine && !message.system && this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
         }
       })
     },
