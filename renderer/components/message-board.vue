@@ -2,8 +2,9 @@
   div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop")
     b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
     //- transition-group(name="listY")
-    //- transition-group(name="list")
     message.mr-1.animate__animated(
+      enter-active-class="animate__slideInUp"
+      leave-active-class="animate__slideInDown"
       v-for="(item, idx) in list"
       :raw="item" :prev="list[idx - 1]"
       :key="`msg-${idx}`" :ref="`msg-${idx}`"
@@ -49,8 +50,7 @@ export default {
           } else {
             this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
           }
-          // 'bounce', 'flash', 'pulse', 'rubberBand', 'shakeX', 'shakeY', 'headShake', 'swing', 'tada', 'wobble'
-          this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
+          !message.mine && this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
         }
       })
     },

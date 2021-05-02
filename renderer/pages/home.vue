@@ -1,6 +1,6 @@
 <template lang="pug">
   div(v-cloak)
-    transition(v-if="connected" name="list"): div
+    transition(v-if="connected" name="list" mode="out-in"): div
       b-card.m-1(no-body header-tag="nav")
         template(#header): client-only: b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
