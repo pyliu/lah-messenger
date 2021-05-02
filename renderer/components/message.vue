@@ -114,7 +114,7 @@ export default {
   p {
     display: inline-block;
     border-radius: 5px;
-    background: #d3d4d4;
+    background: #e6e9e9;
     color: rgb(10, 10, 10);
     padding: 5px;
     max-width: 85%;
