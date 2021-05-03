@@ -81,11 +81,19 @@ export default {
     },
     prevMdate() {
       if (this.prev) {
+        // announcement card date is inside the message
+        if (this.isAnnouncement) {
+          return this.prev['message']['create_datetime'].split(' ')[0]
+        }
         return this.prev['date']
       }
       return ''
     },
     mdate() {
+      // announcement card date is inside the message
+      if (this.isAnnouncement) {
+        return this.raw['message']['create_datetime'].split(' ')[0]
+      }
       return this.raw ? this.raw["date"] : ""
     },
     channel() {
