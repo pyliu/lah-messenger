@@ -5,7 +5,7 @@
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
         span(style="font-size: 1.5rem;") 返回
       
-      b-button(variant="outline-danger" @click="clear" title="清除個人設定資料")
+      b-button(variant="outline-danger" @click="clear" title="清除已儲存資料")
         b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
         span.my-auto 清除
       
@@ -214,14 +214,15 @@ export default {
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
     },
     clear() {
-      this.confirm(`清除個人設定？`).then((answer) => {
+      this.confirm(`清除所有設定？`).then((answer) => {
         if (answer) {
-          this.$localForage.removeItem('nickname')
-          this.$localForage.removeItem('department')
-          this.$localForage.removeItem('adPassword')
-          this.$localForage.removeItem('effect')
-          this.$localForage.removeItem('history')
-          this.$localForage.removeItem('apiPort')
+          // this.$localForage.removeItem('nickname')
+          // this.$localForage.removeItem('department')
+          // this.$localForage.removeItem('adPassword')
+          // this.$localForage.removeItem('effect')
+          // this.$localForage.removeItem('history')
+          // this.$localForage.removeItem('apiPort')
+          this.$localForage.clear()
           this.restore()
         }
       })
