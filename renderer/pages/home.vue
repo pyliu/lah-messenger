@@ -181,7 +181,7 @@ export default {
     validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
-      return i < 1025 || i > 65535 ? false : null
+      return i < 1025 || i > 65535 || this.empty(this.wsPort) ? false : null
     },
     validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
