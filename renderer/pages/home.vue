@@ -45,8 +45,8 @@
           ref="textarea"
           v-model="text"
           debounce="200"
-          placeholder="... Ctrl + Enter 直接送出 ..."
-          @keyup.ctrl.enter="send"
+          placeholder="... Shift + Enter 換行 ..."
+          @keyup.enter.exact="send"
           @keydown="delayConnect"
           no-resize
           no-auto-shrink
