@@ -29,8 +29,9 @@ if (!gotTheLock) {
   app.on('ready', () => {
     (async () => {
       await app.whenReady()
+      
       // tray icon
-      const iconPath = path.join(__dirname, '../', 'resources/icon_g.ico')
+      const iconPath = path.join(__dirname, '../', 'resources/taoyuan.ico')
       !isProd && console.log(`tray icon path`, iconPath)
       const tray = new Tray(iconPath)
       tray.setContextMenu(Menu.buildFromTemplate([{
@@ -45,8 +46,8 @@ if (!gotTheLock) {
           }
         }
       ]))
-      tray.on('click', () => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
-      tray.on('double-click', () => mainWindow.show())
+      tray.setIgnoreDoubleClickEvents(true)
+      tray.on('click', (event) => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
       tray.setToolTip('桃園地政-信差服務即時通')
 
       mainWindow = createWindow('main',  {

@@ -1,6 +1,6 @@
 export default {
   head: {
-    title: '信差服務即時通-桃園市桃園地政事務所',
+    title: '信差服務即時通',
     meta: [{
       charset: 'utf-8'
     },
@@ -17,7 +17,7 @@ export default {
     link: [{
       rel: 'icon',
       type: 'image/x-icon',
-      href: '/chat.ico'
+      href: '/bureau.ico'
     }
     ],
     script: []
