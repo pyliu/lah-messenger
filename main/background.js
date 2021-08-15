@@ -47,7 +47,7 @@ if (!gotTheLock) {
       ]))
       tray.on('click', () => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
       tray.on('double-click', () => mainWindow.show())
-      tray.setToolTip('桃園地政通知即時通')
+      tray.setToolTip('桃園地政-信差服務即時通')
 
       mainWindow = createWindow('main',  {
         width: isProd ? 490 : 960,
