@@ -1,33 +1,53 @@
-import { app } from 'electron';
-import serve from 'electron-serve';
-const path = require('path');
+import { app, Tray, Menu } from 'electron'
+import serve from 'electron-serve'
+const path = require('path')
+const url = require('url')
 
 import {
   createWindow,
   exitOnChange,
-} from './helpers';
+} from './helpers'
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production'
 
 const gotTheLock = app.requestSingleInstanceLock()
 
 let mainWindow = null
 
 if (!gotTheLock) {
-  app.quit();
+  app.quit()
 } else {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
     }
   })
 
   // Create mainWindow, load the rest of the app, etc...
   app.on('ready', () => {
     (async () => {
-      await app.whenReady();
+      await app.whenReady()
+      // tray icon
+      const iconPath = path.join(__dirname, '../', 'resources/icon_g.ico')
+      !isProd && console.log(`tray icon path`, iconPath)
+      const tray = new Tray(iconPath)
+      tray.setContextMenu(Menu.buildFromTemplate([{
+          label: '顯示視窗', click () { mainWindow.show() }
+        }, {
+          label: '隱藏視窗', click () { mainWindow.hide() }
+        }, {
+          label: '關閉程式(您將無法收到通知)',
+          click () {
+            app.isQuiting = true
+            app.quit()
+          }
+        }
+      ]))
+      tray.on('click', () => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
+      tray.on('double-click', () => mainWindow.show())
+      tray.setToolTip('桃園地政通知即時通')
 
       mainWindow = createWindow('main',  {
         width: isProd ? 490 : 960,
@@ -41,9 +61,9 @@ if (!gotTheLock) {
         alwaysOnTop: false,
         kiosk: false,
         menuBarVisible: false,  // not working
-      });
+      })
       // disable the menu bar since menuBarVisible flag does not work properly
-      mainWindow.setMenuBarVisibility(false);
+      mainWindow.setMenuBarVisibility(false)
       mainWindow.once('ready-to-show', function(e) {
         setTimeout(() => this.show(), 5000)
       })
@@ -51,19 +71,19 @@ if (!gotTheLock) {
       mainWindow.on('focus', () => {
         // when browser window focused, set always on top attr to false
         mainWindow.setAlwaysOnTop(false)
-      });
+      })
 
       if (isProd) {
-        await mainWindow.loadURL('app://./home');
+        await mainWindow.loadURL('app://./home')
       } else {
-        const port = process.argv[2];
-        await mainWindow.loadURL(`http://localhost:${port}/home`);
-        mainWindow.webContents.openDevTools();
+        const port = process.argv[2]
+        await mainWindow.loadURL(`http://localhost:${port}/home`)
+        mainWindow.webContents.openDevTools()
       }
 
       // open all a link with external browser
       // https://github.com/electron/electron/issues/1344#issuecomment-359312676
-      const shell = require('electron').shell;
+      const shell = require('electron').shell
       mainWindow.webContents.on('will-navigate', (event, url) => {
         if (!url.startsWith('http://localhost:8888')) {
           event.preventDefault()
@@ -71,24 +91,37 @@ if (!gotTheLock) {
             shell.openExternal(url)
           }
         }
-      });
+      })
 
-    })();
-  });
+      mainWindow.on('minimize', function(event) {
+        event.preventDefault()
+        mainWindow.hide()
+      })
+      
+      mainWindow.on('close', function (event) {
+        if (!app.isQuiting){
+            event.preventDefault()
+            mainWindow.hide()
+        }
+        return false
+      })
+
+    })()
+  })
 }
 
 if (isProd) {
-  serve({ directory: 'app' });
+  serve({ directory: 'app' })
 } else {
-  exitOnChange();
-  app.setPath('userData', `${app.getPath('userData')} (development)`);
+  exitOnChange()
+  app.setPath('userData', `${app.getPath('userData')} (development)`)
 }
 
 app.on('window-all-closed', () => {
   // send to renderer process
-  mainWindow.webContents.send('quit');
-  app.quit();
-});
+  mainWindow.webContents.send('quit')
+  app.quit()
+})
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
