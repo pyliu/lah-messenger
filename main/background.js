@@ -25,9 +25,9 @@ if (!gotTheLock) {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       mainWindow.isMinimized() && mainWindow.restore()
+      mainWindow.setAlwaysOnTop(true)
       mainWindow.show()
       mainWindow.focus()
-      mainWindow.setAlwaysOnTop(true)
     }
   })
 
@@ -74,7 +74,7 @@ if (!gotTheLock) {
       
       mainWindow.once('ready-to-show', function(e) {
         // setTimeout(() => this.show(), 5000)
-        this.show()
+        mainWindow.show()
       })
 
       mainWindow.on('focus', () => {
@@ -84,6 +84,10 @@ if (!gotTheLock) {
 
       if (isProd) {
         await mainWindow.loadURL('app://./home')
+        // await mainWindow.loadURL(url.format({
+        //   pathname: path.join(__dirname, 'home', 'index.html'),
+        //   protocol: 'app:'
+        // }))
       } else {
         const port = process.argv[2]
         await mainWindow.loadURL(`http://localhost:${port}/home`)
@@ -156,9 +160,9 @@ ipcMain.handle('notification', async (event, payload) => {
   if (payload.showMainWindow && mainWindow) {
     mainWindow.isMinimized() && mainWindow.restore()
     mainWindow.show()
-    mainWindow.focus()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
+    mainWindow.focus()
   }
 })
 
