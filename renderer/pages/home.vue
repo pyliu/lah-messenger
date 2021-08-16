@@ -67,7 +67,7 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button(id="nametag" title="開啟查詢視窗" @click="showModalById('ad-query-modal')" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ userid === nickname ? '查詢AD主機' : userid }}
+            b-button(id="nametag" title="開啟查詢視窗" @click="showModalById('ad-query-modal')" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking || this.empty(this.userid)") {{ userid === nickname ? '查詢AD主機' : userid }}
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
             b-modal(
               id="ad-query-modal"
@@ -84,7 +84,7 @@
                 template(#prepend): .mr-1.my-auto 網域密碼
                 b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`網域密碼`" trim)
                 b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon" :style="'margin-right: 60px'")
-                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="$utils.empty(adPassword)") 查詢
+                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword)") 查詢
         
         .center.d-flex.my-2
           b-input-group
