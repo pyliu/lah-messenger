@@ -168,7 +168,8 @@ export default {
       { value: 'announcement_supervisor', text: '主任秘書' },
     ],
     connecting: false,
-    asking: false
+    asking: false,
+    reconnectMs: 20 * 1000
   }),
   computed: {
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -489,6 +490,8 @@ export default {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
         this.connectText = ''
+        this.reconnectMs = 20 * 1000
+        this.resetReconnectTimer()
       } else {
         if (this.validInformation) {
           this.connecting = true
@@ -580,6 +583,10 @@ export default {
             message: IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ',
             showMainWindow: true
           })
+          if (this.reconnectMs < 80 * 1000) {
+            this.reconnectMs *= 2
+            this.resetReconnectTimer()
+          }
         }
       }
     },
@@ -611,14 +618,14 @@ export default {
     resetReconnectTimer () {
       // reset timer if it already settled
       this.clearReconnectTimer()
-      // in home.vue, checks connection every 20s
+      // in home.vue, checks connection every 20s (default)
       if (this.timer === null && this.$route.name === 'home') {
-        this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器")
+        this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器", this.reconnectMs / 1000, 'secs')
         this.$store.commit('timer', setInterval(() => {
           this.$config.isDev && console.log(this.time(), "檢查連線狀態 ... ")
           this.connectText = '檢查連線狀態'
           this.connect()
-        }, 20 * 1000))
+        }, this.reconnectMs))
       }
     },
     invokeADUsernameQuery (force = false) {
