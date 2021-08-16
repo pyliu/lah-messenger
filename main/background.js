@@ -15,7 +15,6 @@ let mainWindow = null
 const gotTheLock = app.requestSingleInstanceLock()  // 鎖定視窗，並記錄回傳值
 if (!gotTheLock) {
   // 開啟第二個視窗時無法成功鎖定，關閉視窗
-  notify('關閉本程式中 ... ', '程式已執行')
   app.quit()
 } else {
   // 開啟第二個視窗時觸發，將第一個視窗還原並關注
@@ -138,7 +137,6 @@ const { ipcMain } = require('electron')
 
 
 ipcMain.handle('quit', async (event, str) => {
-  notify('程式已關閉。')
   app.isQuiting = true
   // send to renderer process
   mainWindow.webContents.send('quit')
