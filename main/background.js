@@ -24,10 +24,10 @@ if (!gotTheLock) {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
-      notify('顯示已啟動視窗')
-      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.isMinimized() && mainWindow.restore()
       mainWindow.show()
       mainWindow.focus()
+      mainWindow.setAlwaysOnTop(true)
     }
   })
 
@@ -149,9 +149,17 @@ ipcMain.handle('home-ready', async (event, arg) => {
   mainWindow.show()
 })
 
-ipcMain.handle('notification', async (event, str) => {
-  !isProd && console.log(`trigger notification`, str)
-  notify(str)
+ipcMain.handle('notification', async (event, payload) => {
+  const message = typeof payload === 'string' ? payload : payload.message
+  !isProd && console.log(`trigger notification`, message)
+  notify(message)
+  if (payload.showMainWindow && mainWindow) {
+    mainWindow.isMinimized() && mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+    mainWindow.center()
+    mainWindow.setAlwaysOnTop(true)
+  }
 })
 
 ipcMain.handle('title', async (event, str) => {

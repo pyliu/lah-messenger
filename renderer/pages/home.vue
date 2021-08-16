@@ -575,7 +575,11 @@ export default {
           }
         } else {
           const IDReady = !this.empty(this.userid)
-          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
+          // this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
+          this.ipcRenderer.invoke('notification', {
+            message: IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ',
+            showMainWindow: true
+          })
         }
       }
     },
@@ -614,7 +618,7 @@ export default {
           this.$config.isDev && console.log(this.time(), "檢查連線狀態 ... ")
           this.connectText = '檢查連線狀態'
           this.connect()
-        }, 20000))
+        }, 20 * 1000))
       }
     },
     invokeADUsernameQuery (force = false) {
