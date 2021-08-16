@@ -67,7 +67,13 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button(id="nametag" title="開啟查詢視窗" @click="showModalById('ad-query-modal')" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking || this.empty(this.userid)") {{ userid === nickname ? '查詢AD主機' : userid }}
+            b-button(
+              id="nametag"
+              title="開啟查詢視窗"
+              @click="showModalById('ad-query-modal')"
+              :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'"
+              :disabled="asking || this.empty(this.userid)"
+            ) {{ userid === nickname ? '查詢名字' : userid }}
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
             b-modal(
               id="ad-query-modal"
@@ -82,9 +88,9 @@
                 b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
               b-input-group.ml-1(:title="`${userid}的網域密碼`")
                 template(#prepend): .mr-1.my-auto 網域密碼
-                b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`網域密碼`" trim)
+                b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="`網域密碼`" trim)
                 b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon" :style="'margin-right: 60px'")
-                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword)") 查詢
+                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword) || validAdHost === false") 查詢
         
         .center.d-flex.my-2
           b-input-group
@@ -187,6 +193,7 @@ export default {
     },
     valid() { return !isEmpty(trim(this.text)) },
     validAdHost() { return this.ipFilter.test(this.adHost) === false ? false : null },
+    validAdPassword() { return this.empty(this.adPassword) ? false : null },
     validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
@@ -231,11 +238,6 @@ export default {
       this.messages[oVal] && (this.messages[oVal].length = 0)
       this.latestMessage()
     },
-    adHost(val) {
-      this.resetReconnectTimer()
-      this.$store.commit('ad', val)
-      this.$localForage.setItem('adHost', val)
-    },
     wsHost(val) {
       this.resetReconnectTimer()
       this.$localForage.setItem('wsHost', val)
@@ -247,6 +249,10 @@ export default {
     nickname(val) {
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
+    },
+    adHost(val) {
+      this.$store.commit('ad', val)
+      this.$localForage.setItem('adHost', val)
     },
     adPassword(val) {
       this.$store.commit('password', val)
