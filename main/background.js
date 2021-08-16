@@ -22,10 +22,11 @@ if (!gotTheLock) {
   // 開啟第二個視窗時觸發，將第一個視窗還原並關注
   // 此事件為第一個視窗發出
   app.on('second-instance', (event, commandLine, workingDirectory) => {
-    notify('找到重複執行的程式 ... ')
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
+      notify('顯示已啟動視窗')
       if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
       mainWindow.focus()
     }
   })
