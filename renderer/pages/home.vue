@@ -95,7 +95,7 @@
         .center.d-flex.my-2
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
+            b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門")
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-1(icon="server" font-scale="2.25" variant="secondary")
