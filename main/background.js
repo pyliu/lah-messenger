@@ -1,23 +1,28 @@
 import { app, Tray, Menu } from 'electron'
 import serve from 'electron-serve'
 const path = require('path')
-const url = require('url')
+// const url = require('url')
 
 import {
   createWindow,
   exitOnChange,
+  notify
 } from './helpers'
 
 const isProd = process.env.NODE_ENV === 'production'
 
-const gotTheLock = app.requestSingleInstanceLock()
-
 let mainWindow = null
 
+const gotTheLock = app.requestSingleInstanceLock()  // 鎖定視窗，並記錄回傳值
 if (!gotTheLock) {
+  // 開啟第二個視窗時無法成功鎖定，關閉視窗
+  notify('關閉本程式中 ... ', '程式已執行')
   app.quit()
 } else {
+  // 開啟第二個視窗時觸發，將第一個視窗還原並關注
+  // 此事件為第一個視窗發出
   app.on('second-instance', (event, commandLine, workingDirectory) => {
+    notify('找到重複執行的程式 ... ')
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
@@ -31,7 +36,7 @@ if (!gotTheLock) {
       await app.whenReady()
       
       // tray icon
-      const iconPath = path.join(__dirname, '../', 'resources/taoyuan.ico')
+      const iconPath = path.join(__dirname, '..', 'resources', 'taoyuan.ico')
       !isProd && console.log(`tray icon path`, iconPath)
       const tray = new Tray(iconPath)
       tray.setContextMenu(Menu.buildFromTemplate([{
@@ -126,14 +131,22 @@ app.on('window-all-closed', () => {
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
+
 ipcMain.handle('home-ready', async (event, arg) => {
   !isProd && console.log(`home.vue ready`, arg)
   mainWindow.show()
 })
+
+ipcMain.handle('notification', async (event, str) => {
+  !isProd && console.log(`trigger notification`, str)
+  notify(str)
+})
+
 ipcMain.handle('title', async (event, str) => {
   !isProd && console.log(`Set Title`, str)
   mainWindow.setTitle(str)
 })
+
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   mainWindow.restore()
@@ -143,6 +156,7 @@ ipcMain.handle('unread', async (event, channel) => {
     mainWindow.setAlwaysOnTop(true)
   }
 })
+
 ipcMain.handle('userinfo', async (event, arg) => {
   const si = require('systeminformation')
   const found = [ ...await si.users() ].find(thisuser => !thisuser.user.startsWith('Admin') && !thisuser.user.startsWith('admin'))
@@ -208,6 +222,7 @@ ipcMain.handle('userinfo', async (event, arg) => {
 
   return userinfo
 })
+
 ipcMain.handle('ad-user-desc', async (event, config) => {
   const ActiveDirectory = require('activedirectory2').promiseWrapper
   // expect config: {
