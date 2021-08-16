@@ -1,7 +1,6 @@
 import { app, Tray, Menu } from 'electron'
 import serve from 'electron-serve'
 const path = require('path')
-// const url = require('url')
 
 import {
   createWindow,
@@ -84,10 +83,6 @@ if (!gotTheLock) {
 
       if (isProd) {
         await mainWindow.loadURL('app://./home')
-        // await mainWindow.loadURL(url.format({
-        //   pathname: path.join(__dirname, 'home', 'index.html'),
-        //   protocol: 'app:'
-        // }))
       } else {
         const port = process.argv[2]
         await mainWindow.loadURL(`http://localhost:${port}/home`)
@@ -106,11 +101,13 @@ if (!gotTheLock) {
         }
       })
 
+      // minimize to tray
       mainWindow.on('minimize', function(event) {
         event.preventDefault()
         mainWindow.hide()
       })
       
+      // close to tray
       mainWindow.on('close', function (event) {
         if (!app.isQuiting){
             event.preventDefault()
