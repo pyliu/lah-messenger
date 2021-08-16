@@ -36,7 +36,7 @@ if (!gotTheLock) {
       await app.whenReady()
       
       // tray icon
-      const iconPath = path.join(__dirname, '..', 'resources', 'taoyuan.ico')
+      const iconPath = isProd ? path.join(__dirname, 'taoyuan.ico') : path.join(__dirname, '..', 'resources', 'taoyuan.ico')
       !isProd && console.log(`tray icon path`, iconPath)
       const tray = new Tray(iconPath)
       tray.setContextMenu(Menu.buildFromTemplate([{
