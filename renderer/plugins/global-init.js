@@ -47,7 +47,8 @@ export default ({ $axios, store }, inject) => {
       FAIL_NOT_FOUND: -7,
       FAIL_LOAD_ERROR: -8,
       FAIL_TIMEOUT: -9,
-      FAIL_REMOTE_UNREACHABLE: -10
+      FAIL_REMOTE_UNREACHABLE: -10,
+      FAIL_DB_ERROR: -11
     },
     API: {
       XLSX: {

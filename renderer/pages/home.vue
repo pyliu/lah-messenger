@@ -67,20 +67,29 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
-            b-button(style="width:142.75px" id="nametag" :title="`點擊重新查詢查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ nickname }}
-            //- b-input(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
-          b-input-group.ml-1(:title="`${userid}的網域密碼`")
-            template(#prepend): b-icon.my-auto.mr-1(icon="key" font-scale="2.25" variant="secondary" rotate="135")
-            b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`網域密碼`" trim)
-            b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
+            b-button(id="nametag" title="開啟查詢視窗" @click="showModalById('ad-query-modal')" :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'" :disabled="validAdHost === false || asking") {{ userid === nickname ? '查詢AD主機' : userid }}
+            b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
+            b-modal(
+              id="ad-query-modal"
+              hide-footer
+              centered
+              scrollable
+              no-close-on-backdrop
+            )
+              template(#modal-title): div(v-html="`查詢使用者名稱`")
+              b-input-group.ml-1.mb-1(title="AD伺服器IP")
+                template(#prepend): .mr-1.my-auto ＡＤ主機
+                b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+              b-input-group.ml-1(:title="`${userid}的網域密碼`")
+                template(#prepend): .mr-1.my-auto 網域密碼
+                b-input(:type="adPasswordType" v-model="adPassword" :placeholder="`網域密碼`" trim)
+                b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon" :style="'margin-right: 60px'")
+                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="$utils.empty(adPassword)") 查詢
         
         .center.d-flex.my-2
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="building" font-scale="2.25" variant="secondary")
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment")
-          b-input-group.ml-1(title="AD伺服器IP")
-            template(#prepend): b-icon.my-auto.mr-1(icon="card-list" font-scale="2.25" variant="secondary")
-            b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-1(icon="server" font-scale="2.25" variant="secondary")
@@ -603,6 +612,8 @@ export default {
       }
     },
     invokeADUsernameQuery (force = false) {
+      // hide modal window
+      this.hideModalById('ad-query-modal')
       if (this.asking === true) {
         this.connectText = `AD查詢中`
         return
@@ -624,6 +635,7 @@ export default {
           this.$localForage.setItem('nickname', name)
           this.nickname = name
           this.connectText = `AD: ${this.userid} ${name}`
+          this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
         }).catch((err) => {
           console.error(err)
           this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
@@ -641,14 +653,14 @@ export default {
           if (!this.ipFilter.test(this.adHost)) {
             this.adHost = this.getFirstDNSIp()
           }
-          this.invokeADUsernameQuery()
+          // this.invokeADUsernameQuery()
           this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.username} / ${this.ip}`)
           this.register()
         })
       })
       // remvoe main process 'quit' all listeners
       this.ipcRenderer.removeAllListeners('quit')
-      // register main process quit event listener
+      // register main process quit event listener (To send leave channel message after user closed the app)
       this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
@@ -679,7 +691,7 @@ export default {
     this.department = await this.$localForage.getItem('department')
     this.adHost = await this.$localForage.getItem('adHost')
     this.wsHost = await this.$localForage.getItem('wsHost')
-    this.wsPort = await this.$localForage.getItem('wsPort')
+    this.wsPort = await this.$localForage.getItem('wsPort') || 8081
     this.adPassword = await this.$localForage.getItem('adPassword')
     // restore effect setting to store
     this.$store.commit('effect', await this.$localForage.getItem('effect'))

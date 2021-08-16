@@ -510,7 +510,7 @@ Vue.mixin({
         this.$emit(evtName, evt)
         return evt
       } else {
-        console.warning('CustomEvent not defined?')
+        console.warn('CustomEvent not defined?')
       }
     },
     async setCache (key, val, expire_timeout = 0) {

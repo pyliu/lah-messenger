@@ -5,9 +5,13 @@
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
         span(style="font-size: 1.5rem;") 返回
       
-      b-button(variant="outline-danger" @click="clear" title="清除已儲存資料")
-        b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-        span.my-auto 清除
+      div
+        b-button.mr-1(variant="warning" @click="clear" title="清除已儲存設定")
+          b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
+          span.my-auto 清除已儲存設定
+        b-button(variant="danger" @click="quit")
+          b-icon.mr-1(icon="x-circle" font-scale="1.25")
+          span 關閉程式
       
     fieldset
       legend 個人設定
@@ -64,6 +68,7 @@
           b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
           span.my-auto ＡＤ主機
         b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+
     copyright
     status
 </template>
@@ -226,14 +231,23 @@ export default {
           this.restore()
         }
       })
+    },
+    quit () {
+      this.confirm(`確定關閉程式？`).then((answer) => {
+        if (answer) {
+          // ipc to electron main process
+          const { ipcRenderer } = require('electron')
+          ipcRenderer.invoke('quit')
+        }
+      })
     }
   },
-  mounted() {
+  mounted () {
     this.restore()
     this.clearReconnectTimer()
     this.loadUserMapData()
   },
-  destroyed() {
+  destroyed () {
     this.closeWebsocket()
   }
 }

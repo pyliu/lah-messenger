@@ -55,7 +55,7 @@ if (!gotTheLock) {
       tray.on('click', (event) => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
       tray.setToolTip('桃園地政-信差服務即時通')
 
-      mainWindow = createWindow('main',  {
+      mainWindow = createWindow('main', {
         width: isProd ? 490 : 960,
         height: 740,
         show: false,  // use 'ready-to-show' event to show the window
@@ -70,8 +70,10 @@ if (!gotTheLock) {
       })
       // disable the menu bar since menuBarVisible flag does not work properly
       mainWindow.setMenuBarVisibility(false)
+      
       mainWindow.once('ready-to-show', function(e) {
-        setTimeout(() => this.show(), 5000)
+        // setTimeout(() => this.show(), 5000)
+        this.show()
       })
 
       mainWindow.on('focus', () => {
@@ -111,7 +113,6 @@ if (!gotTheLock) {
         }
         return false
       })
-
     })()
   })
 }
@@ -124,6 +125,7 @@ if (isProd) {
 }
 
 app.on('window-all-closed', () => {
+  app.isQuiting = true
   // send to renderer process
   mainWindow.webContents.send('quit')
   app.quit()
@@ -131,6 +133,15 @@ app.on('window-all-closed', () => {
 
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
+
+
+ipcMain.handle('quit', async (event, str) => {
+  notify('程式已關閉。')
+  app.isQuiting = true
+  // send to renderer process
+  mainWindow.webContents.send('quit')
+  app.quit()
+})
 
 ipcMain.handle('home-ready', async (event, arg) => {
   !isProd && console.log(`home.vue ready`, arg)
