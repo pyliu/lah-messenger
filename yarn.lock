@@ -2477,7 +2477,7 @@ binary-extensions@^2.0.0:
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.2.0.tgz#75f502eeaf9ffde42fc98829645be4ea76bd9e2d"
   integrity sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==
 
-bindings@^1.5.0:
+bindings@1.5.0, bindings@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"
   integrity sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==
@@ -6895,6 +6895,11 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
+nan@2.14.1:
+  version "2.14.1"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
+  integrity sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
+
 nan@^2.12.1, nan@^2.13.2, nan@^2.14.0:
   version "2.15.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
@@ -6931,6 +6936,14 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
+
+netlinkwrapper@^1.1.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/netlinkwrapper/-/netlinkwrapper-1.2.1.tgz#eea73889b60f7690f03e533e6a202fa3d7c02a12"
+  integrity sha512-rh3hl2EPZOCC0ddEyJOQRb0bmJgAxuCW3dlhJFZ/V/pAQbLHyLy8TJ4EvS8aFOdUGJunvasepIuSDwgs2c37fA==
+  dependencies:
+    bindings "1.5.0"
+    nan "2.14.1"
 
 no-case@^2.2.0:
   version "2.3.2"
@@ -9907,6 +9920,11 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
+sync-socket@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/sync-socket/-/sync-socket-1.1.0.tgz#4b5bef5b602cd1224bac66971b6207eb44b2bda5"
+  integrity sha1-S1vvW2As0SJLrGaXG2IH60SyvaU=
+
 systeminformation@^5.6.12:
   version "5.8.0"
   resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.8.0.tgz#43e6d0918d7d42c65e53e36059f0849354ab2873"
@@ -9933,6 +9951,15 @@ tar@^6.0.2:
     minizlib "^2.1.1"
     mkdirp "^1.0.3"
     yallist "^4.0.0"
+
+tcp-ping-sync@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/tcp-ping-sync/-/tcp-ping-sync-2.0.0.tgz#3b3fea160c0a66bdb9b4e688b92e6aa4c98fb520"
+  integrity sha512-y+EKtS/21xcmG2vfGN2j4GHA7ZS6FcusuUie4Yy6auuMxa3XxRMMOqY7k+nnA0XdkyPVa91D4DFso34MEDcYPg==
+  dependencies:
+    sync-socket "^1.1.0"
+  optionalDependencies:
+    netlinkwrapper "^1.1.1"
 
 temp-file@^3.4.0:
   version "3.4.0"

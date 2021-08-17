@@ -152,6 +152,15 @@ app.on('window-all-closed', closeApp)
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
 
+ipcMain.handle('wss-probe', async (event, payload) => {
+  // https://www.npmjs.com/package/tcp-ping-sync
+  const { probe } = require('tcp-ping-sync')
+  return probe({
+    host: payload.ip,   // (default: 'localhost')
+    port: payload.port  // (default: 80)
+  })
+})
+
 ipcMain.handle('quit', async (event, str) => {
   app.isQuiting = true
   // send to renderer process

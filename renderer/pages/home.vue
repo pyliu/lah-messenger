@@ -485,6 +485,21 @@ export default {
       this.connecting = true
       this.resetReconnectTimer()
       this.delayConnect()
+      // dynamic get userinfo from main process
+      // this.ipcRenderer.invoke('wss-probe', {
+      //   ip: this.wsHost,
+      //   port: this.wsPort
+      // }).then((YN) => {
+      //   this.$config.isDev && console.log(this.time(), `${this.wsHost}:${this.wsPort}回應`, YN)
+      //   if (YN === true) {
+      //     this.resetReconnectTimer()
+      //     this.delayConnect()
+      //   } else {
+      //     this.alert(`${this.wsHost}:${this.wsPort} 無法連線!`)
+      //   }
+      // }).finally(() => {
+      //   this.connecting = false
+      // })
     }, 
     connect() {
       if (this.connected) {
