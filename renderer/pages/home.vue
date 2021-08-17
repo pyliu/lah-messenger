@@ -539,7 +539,7 @@ export default {
               this.$config.isDev && console.warn(this.time(), "WS伺服器連線出錯", e)
               this.connectText = `'WS伺服器連線出錯'`
               this.connecting = false
-              // this.notify(`連線有問題`, { type: 'dark', pos: 'bf', subtitle: this.wsConnStr })
+              this.alert(`WS伺服器連線有問題`, { pos: 'tf', subtitle: this.wsConnStr })
             }
             ws.onmessage = (e) => {
               const incoming = JSON.parse(e.data)
