@@ -1,13 +1,13 @@
 <p align="center"><img src="snap.jpg"></p>
 
-## Usage
+## Dev Usage
 
 ```bash
-# create an app
-$ nuxtron init my-app --example with-javascript
+# copy the source
+$ git clone git@github.com:pyliu/lah-messenger.git
 
 # install dependencies
-$ cd my-app
+$ cd lah-messenger
 $ yarn (or `npm install`)
 
 # development mode
