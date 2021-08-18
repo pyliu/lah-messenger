@@ -156,10 +156,11 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
   axios
   .post(`http://${payload.api_host}:${payload.api_port}${payload.api_uri}`, qs.stringify(payload))
   .then(({ data }) => {
-    notify(data.message)
+    data.status < 1 && notify(data.message)
   })
   .catch(error => {
     console.error(error)
+    notify(error.message)
   })
 })
 
