@@ -46,16 +46,10 @@ if (!gotTheLock) {
       try {
         // tray icon
         let iconPath = path.join(__dirname, 'taoyuan.ico')
-        if (!fs.existsSync(iconPath)) {
-          iconPath = path.join(__dirname, '..', 'resources', 'taoyuan.ico')
-        }
-
         !isProd && console.log(`tray icon path`, iconPath)
-        
         const trayIcon = nativeImage.createFromPath(iconPath);
         trayIcon.resize({ width: 16, height: 16 })
         tray = new Tray(trayIcon)
-        
         tray.setContextMenu(Menu.buildFromTemplate([{
             label: '顯示視窗', click () { mainWindow.show() }
           }, {

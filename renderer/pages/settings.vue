@@ -213,8 +213,8 @@ export default {
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
       this.wsHost = await this.$localForage.getItem('wsHost')
-      this.wsPort = await this.$localForage.getItem('wsPort')
-      this.effectVal = await this.$localForage.getItem('effect')
+      this.wsPort = await this.$localForage.getItem('wsPort') || 8081
+      this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
     },
