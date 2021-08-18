@@ -716,7 +716,7 @@ export default {
             this.adHost = this.getFirstDNSIp()
           }
           // this.invokeADUsernameQuery()
-          this.ipcRenderer.invoke('title', `桃園地政事務所 - ${this.pcname} / ${this.userid} / ${this.username} / ${this.ip}`)
+          this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
           this.register()
         })
       })
