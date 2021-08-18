@@ -145,9 +145,10 @@ if (isProd) {
 
 app.on('window-all-closed', closeApp)
 
-// ipc main process to handle renderer request 
+/*
+ * ipc main process to handle renderer request 
+ */
 const { ipcMain } = require('electron')
-
 
 ipcMain.handle('add-ip-entry', async (event, payload) => {
   const axios = require('axios')
@@ -163,7 +164,6 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
     notify(error.message)
   })
 })
-
 
 ipcMain.handle('wss-probe', async (event, payload) => {
   // https://www.npmjs.com/package/tcp-ping-sync
