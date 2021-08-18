@@ -148,6 +148,22 @@ app.on('window-all-closed', closeApp)
 // ipc main process to handle renderer request 
 const { ipcMain } = require('electron')
 
+
+ipcMain.handle('add-ip-entry', async (event, payload) => {
+  const axios = require('axios')
+  const qs = require('qs')
+  axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
+  axios
+  .post(`http://${payload.api_host}:${payload.api_port}${payload.api_uri}`, qs.stringify(payload))
+  .then(({ data }) => {
+    notify(data.message)
+  })
+  .catch(error => {
+    console.error(error)
+  })
+})
+
+
 ipcMain.handle('wss-probe', async (event, payload) => {
   // https://www.npmjs.com/package/tcp-ping-sync
   const { probe } = require('tcp-ping-sync')

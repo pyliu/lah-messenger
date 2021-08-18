@@ -63,7 +63,8 @@ export default ({ $axios, store }, inject) => {
         USER: '/api/user_json_api.php',
         MSSQL: '/api/mssql_json_api.php',
         LXHWEB: '/api/lxhweb_json_api.php',
-        AUTH: '/api/auth_json_api.php'
+        AUTH: '/api/auth_json_api.php',
+        IP: '/api/ip_json_api.php'
       },
       FILE: {
         LOAD: '/api/load_file_api.php',

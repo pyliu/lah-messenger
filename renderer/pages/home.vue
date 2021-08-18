@@ -369,6 +369,8 @@ export default {
           channel: 'system'
         })
         this.websocket.send(jsonString)
+        // also update IP entry to API server
+        this.registerIPEntry()
       } else {
         this.$config.isDev && console.log(
           this.time(),
@@ -381,6 +383,34 @@ export default {
           }
         )
       }
+    },
+    registerIPEntry () {
+      this.ipcRenderer.invoke('add-ip-entry', {
+        api_host: this.wsHost,
+        api_port: this.apiPort,
+        api_uri: this.$consts.API.JSON.IP,
+        type: 'add_ip_entry',
+        ip: this.ip,
+        note: `${this.domain} ${this.department}`,
+        added_type: 'DYNAMIC',
+        entry_type: 'USER',
+        entry_id: this.userid,
+        entry_desc: this.nickname
+      })
+      // this.$axios.post(`http://${this.wsHost}:${this.apiPort}` + this.$consts.API.JSON.IP, {
+      //   type: 'add_ip_entry',
+      //   ip: this.ip,
+      //   note: `${this.domain} ${this.department}`,
+      //   added_type: 'DYNAMIC',
+      //   entry_type: 'USER',
+      //   entry_id: this.userid,
+      //   entry_desc: this.nickname
+      // }).then(({ data }) => {
+      //   this.notify(data.message)
+      // }).catch((err) => {
+      //   this.alert(err)
+      // }).finally(() => {
+      // })
     },
     queryStickyChannelUnreadCount () {
       this.queryChannelUnreadCount('announcement')
