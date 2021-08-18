@@ -54,7 +54,9 @@ if (!gotTheLock) {
           }, {
             label: '隱藏視窗', click () { mainWindow.hide() }
           }, {
-            label: '關閉程式(您將無法收到通知)',
+            type: "separator"
+          }, {
+            label: '關閉程式',
             click () {
               app.isQuiting = true
               app.quit()
