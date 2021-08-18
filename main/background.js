@@ -1,6 +1,5 @@
 import { app, Tray, Menu, nativeImage } from 'electron'
 import serve from 'electron-serve'
-const fs = require('fs')
 const path = require('path')
 
 import {
@@ -45,7 +44,7 @@ if (!gotTheLock) {
       await app.whenReady()
       try {
         // tray icon
-        let iconPath = path.join(__dirname, 'bureau.ico')
+        let iconPath = path.join(__dirname, 'taoyuan.ico')
         !isProd && console.log(`tray icon path`, iconPath)
         const trayIcon = nativeImage.createFromPath(iconPath);
         trayIcon.resize({ width: 16, height: 16 })
