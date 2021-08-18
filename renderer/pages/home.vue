@@ -726,15 +726,13 @@ export default {
       this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
-  async created() {
+  created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
       this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
-    // set apiPort from cache
-    this.$store.commit('apiPort', await this.$localForage.getItem('apiPort') || 80)
     // ipc to electron main process
     const { ipcRenderer } = require('electron')
     this.ipcRenderer = ipcRenderer
