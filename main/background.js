@@ -152,17 +152,34 @@ app.on('window-all-closed', closeApp)
 const { ipcMain } = require('electron')
 
 ipcMain.handle('add-ip-entry', async (event, payload) => {
-  const axios = require('axios')
+  // get all possible ipv4 address
+  const ipv4 = []
+  const nets = require('os').networkInterfaces()
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      userinfo.address.push(net.address)
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        ipv4.push(net.address)
+      }
+    }
+  }
+
   const qs = require('qs')
+  const axios = require('axios')
   axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
-  axios
-  .post(`http://${payload.api_host}:${payload.api_port}${payload.api_uri}`, qs.stringify(payload))
-  .then(({ data }) => {
-    data.status < 1 && notify(data.message)
-  })
-  .catch(error => {
-    console.error(error)
-    notify(error.message)
+  ipv4.forEach((ip) => {
+    // update ip user mapping to API server
+    payload.ip = ip
+    axios.post(
+      `http://${payload.api_host}:${payload.api_port}${payload.api_uri}`,
+      qs.stringify(payload)
+    ).then(({ data }) => {
+      data.status < 1 && notify(data.message, ip)
+    }).catch(error => {
+      console.error(error)
+      notify(error.message, ip)
+    })
   })
 })
 
