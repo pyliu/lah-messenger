@@ -46,8 +46,7 @@ if (!gotTheLock) {
         // tray icon
         let iconPath = path.join(__dirname, 'chat.png')
         !isProd && console.log(`tray icon path`, iconPath)
-        const trayIcon = nativeImage.createFromPath(iconPath);
-        trayIcon.resize({ width: 16, height: 16 })
+        const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
         tray = new Tray(trayIcon)
         tray.setContextMenu(Menu.buildFromTemplate([{
             label: '顯示視窗', click () { mainWindow.show() }, icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
@@ -61,7 +60,7 @@ if (!gotTheLock) {
               app.isQuiting = true
               app.quit()
             },
-            icon: nativeImage.createFromPath(path.join(__dirname, 'close_window.png')).resize({ width: 16, height: 16 })
+            icon: nativeImage.createFromPath(path.join(__dirname, 'close.ico')).resize({ width: 16, height: 16 })
           }
         ]))
         tray.setIgnoreDoubleClickEvents(true)
