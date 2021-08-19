@@ -385,17 +385,19 @@ export default {
       }
     },
     registerIPEntry () {
-      this.ipcRenderer.invoke('add-ip-entry', {
-        api_host: this.wsHost,
-        api_port: this.apiPort,
-        api_uri: this.$consts.API.JSON.IP,
-        type: 'add_ip_entry',
-        ip: this.ip,
-        note: `${this.domain} ${this.department}`,
-        added_type: 'DYNAMIC',
-        entry_type: 'USER',
-        entry_id: this.userid,
-        entry_desc: this.nickname
+      this.$nextTick(() => {
+        this.ipcRenderer.invoke('add-ip-entry', {
+          api_host: this.wsHost,
+          api_port: this.apiPort,
+          api_uri: this.$consts.API.JSON.IP,
+          type: 'add_ip_entry',
+          ip: this.ip,
+          note: `${this.domain} ${this.department}`,
+          added_type: 'DYNAMIC',
+          entry_type: 'USER',
+          entry_id: this.userid,
+          entry_desc: this.nickname
+        })
       })
       // this.$axios.post(`http://${this.wsHost}:${this.apiPort}` + this.$consts.API.JSON.IP, {
       //   type: 'add_ip_entry',
@@ -598,7 +600,7 @@ export default {
                   }
                 })
                 // tell electron window got a unread message
-                this.ipcRenderer.invoke('unread', channel)
+                this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
                 // store the read id for this channel
                 this.setReadMessage(channel, incoming)
               } else if (incoming.message && incoming.sender !== 'system') {
@@ -609,7 +611,7 @@ export default {
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
                 if (this.showUnreadChannels.includes(channel)) {
                   // tell electron window the channels got unread message
-                  this.ipcRenderer.invoke('unread', channel)
+                  this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
                 }
               }
               
@@ -624,11 +626,13 @@ export default {
         } else {
           const IDReady = !this.empty(this.userid)
           // this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
-          this.ipcRenderer.invoke('notification', {
-            message: IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ',
-            showMainWindow: true
+          this.$nextTick(() => {
+            this.ipcRenderer.invoke('notification', {
+              message: IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ',
+              showMainWindow: true
+            })
           })
-          if (this.reconnectMs < 80 * 1000) {
+          if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2
             this.resetReconnectTimer()
           }
@@ -685,45 +689,53 @@ export default {
         this.asking = true
         this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
         const sAMAccountName = `${this.userid}@${this.domain}`
-        this.ipcRenderer.invoke('ad-user-desc', {
-          url: `ldap://${this.adHost}`,
-          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
-          username: sAMAccountName,
-          password: this.adPassword
-        }).then((desc) => {
-          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-          const name = desc || this.userMap[this.userid] || this.userid
-          this.$store.commit('username', name)
-          this.$localForage.setItem('nickname', name)
-          this.nickname = name
-          this.connectText = `AD: ${this.userid} ${name}`
-          this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
-        }).catch((err) => {
-          console.error(err)
-          this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
-        }).finally(() =>{
-          this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
-          this.asking = false
+        this.$nextTick(() => {
+          this.ipcRenderer.invoke('ad-user-desc', {
+            url: `ldap://${this.adHost}`,
+            baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+            username: sAMAccountName,
+            password: this.adPassword
+          }).then((desc) => {
+            this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+            const name = desc || this.userMap[this.userid] || this.userid
+            this.$store.commit('username', name)
+            this.$localForage.setItem('nickname', name)
+            this.nickname = name
+            this.connectText = `AD: ${this.userid} ${name}`
+            this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
+          }).catch((err) => {
+            console.error(err)
+            this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
+          }).finally(() =>{
+            this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+            this.asking = false
+          })
         })
       }
     },
     ipcRendererSetup () {
       // dynamic get userinfo from main process
-      this.ipcRenderer.invoke('userinfo').then((userinfo) => {
-        this.$store.commit('userinfo', userinfo)
-        this.$nextTick(() => {
-          if (!this.ipFilter.test(this.adHost)) {
-            this.adHost = this.getFirstDNSIp()
-          }
-          // this.invokeADUsernameQuery()
-          this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
-          this.register()
+      this.$nextTick(() => {
+        this.ipcRenderer.invoke('userinfo').then((userinfo) => {
+          this.$store.commit('userinfo', userinfo)
+          this.$nextTick(() => {
+            if (!this.ipFilter.test(this.adHost)) {
+              this.adHost = this.getFirstDNSIp()
+            }
+            // this.invokeADUsernameQuery()
+            if (this.userid === this.username) {
+              this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.pcname}`)
+            } else {
+              this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
+            }
+            this.register()
+          })
         })
+        // remvoe main process 'quit' all listeners
+        this.ipcRenderer.removeAllListeners('quit')
+        // register main process quit event listener (To send leave channel message after user closed the app)
+        this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
       })
-      // remvoe main process 'quit' all listeners
-      this.ipcRenderer.removeAllListeners('quit')
-      // register main process quit event listener (To send leave channel message after user closed the app)
-      this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
     }
   },
   created() {
@@ -767,7 +779,7 @@ export default {
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
 
-    this.ipcRenderer.invoke('home-ready')
+    this.$nextTick(() => { this.ipcRenderer.invoke('home-ready') })
   },
   beforeDestroy () {
     // remove timer if user is going to leave the page

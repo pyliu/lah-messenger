@@ -44,7 +44,7 @@ if (!gotTheLock) {
       await app.whenReady()
       try {
         // tray icon
-        let iconPath = path.join(__dirname, 'taoyuan.ico')
+        let iconPath = path.join(__dirname, 'chat_r.ico')
         !isProd && console.log(`tray icon path`, iconPath)
         const trayIcon = nativeImage.createFromPath(iconPath);
         trayIcon.resize({ width: 16, height: 16 })
@@ -78,7 +78,7 @@ if (!gotTheLock) {
           minimizable: true,
           alwaysOnTop: false,
           kiosk: false,
-          icon: path.join(__dirname, 'chat.ico'),
+          icon: path.join(__dirname, 'chat.png'),
           menuBarVisible: false  // not working
         })
         // disable the menu bar since menuBarVisible flag does not work properly
