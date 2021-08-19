@@ -73,7 +73,7 @@
               @click="showModalById('ad-query-modal')"
               :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'"
               :disabled="asking || this.empty(this.userid)"
-            ) {{ userid === nickname ? '查詢名字' : userid }}
+            ) {{ queryADLabel }}
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
             b-modal(
               id="ad-query-modal"
@@ -223,6 +223,7 @@ export default {
       }, 0)
       return result > 99 ? '99+' : result
     },
+    queryADLabel () { return this.userid === this.nickname ? '查詢名字' : this.userid }
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -749,33 +750,35 @@ export default {
     const { ipcRenderer } = require('electron')
     this.ipcRenderer = ipcRenderer
   },
-  async mounted () {
+  mounted () {
     this.delayConnect = debounce(this.connect, 1500)
     this.delayLatestMessage = debounce(this.latestMessage, 400)
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
     this.ipcRendererSetup()
     this.$store.commit("resetUnread", this.userid)
-    // auto connect to ws server, delay 40s
-    setTimeout(this.resetReconnectTimer, 40 * 1000)
+    // auto connect to ws server, delay 30s
+    setTimeout(this.resetReconnectTimer, 30 * 1000)
 
-    // restore last settings
-    this.nickname = await this.$localForage.getItem('nickname')
-    this.empty(this.nickname) && (this.nickname = this.userid)
-    this.department = await this.$localForage.getItem('department')
-    this.adHost = await this.$localForage.getItem('adHost')
-    this.wsHost = await this.$localForage.getItem('wsHost')
-    this.wsPort = await this.$localForage.getItem('wsPort') || 8081
-    this.adPassword = await this.$localForage.getItem('adPassword')
-    // restore effect setting to store
-    this.$store.commit('effect', await this.$localForage.getItem('effect'))
-    // restore history count to store
-    this.$store.commit('history', await this.$localForage.getItem('history') || 10)
-    this.$store.commit('fetchingHistory', false)
-    this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
-    // restore user map
-    this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
-    
+    this.$nextTick(async () => {
+      // restore last settings
+      this.nickname = await this.$localForage.getItem('nickname')
+      this.empty(this.nickname) && (this.nickname = this.userid)
+      this.department = await this.$localForage.getItem('department')
+      this.adHost = await this.$localForage.getItem('adHost')
+      this.wsHost = await this.$localForage.getItem('wsHost')
+      this.wsPort = await this.$localForage.getItem('wsPort') || 8081
+      this.adPassword = await this.$localForage.getItem('adPassword')
+      // restore effect setting to store
+      this.$store.commit('effect', await this.$localForage.getItem('effect'))
+      // restore history count to store
+      this.$store.commit('history', await this.$localForage.getItem('history') || 10)
+      this.$store.commit('fetchingHistory', false)
+      this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
+      // restore user map
+      this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
+    })
+
     // back from settings page
     this.$route.query.reconnect === 'true' && this.connect()
 
