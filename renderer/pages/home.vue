@@ -371,7 +371,7 @@ export default {
         })
         this.websocket.send(jsonString)
         // also update IP entry to API server
-        this.registerIPEntry()
+        this.reportToAPIServer()
       } else {
         this.$config.isDev && console.log(
           this.time(),
@@ -385,14 +385,13 @@ export default {
         )
       }
     },
-    registerIPEntry () {
+    reportToAPIServer () {
       this.$nextTick(() => {
         this.ipcRenderer.invoke('add-ip-entry', {
           api_host: this.wsHost,
           api_port: this.apiPort,
           api_uri: this.$consts.API.JSON.IP,
           type: 'add_ip_entry',
-          ip: this.ip,
           note: `${this.domain} ${this.department}`,
           added_type: 'DYNAMIC',
           entry_type: 'USER',
