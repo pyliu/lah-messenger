@@ -44,7 +44,7 @@ if (!gotTheLock) {
       await app.whenReady()
       try {
         // tray icon
-        let iconPath = path.join(__dirname, 'chat_r.ico')
+        let iconPath = path.join(__dirname, 'chat.png')
         !isProd && console.log(`tray icon path`, iconPath)
         const trayIcon = nativeImage.createFromPath(iconPath);
         trayIcon.resize({ width: 16, height: 16 })
