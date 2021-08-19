@@ -50,9 +50,9 @@ if (!gotTheLock) {
         trayIcon.resize({ width: 16, height: 16 })
         tray = new Tray(trayIcon)
         tray.setContextMenu(Menu.buildFromTemplate([{
-            label: '顯示視窗', click () { mainWindow.show() }
+            label: '顯示視窗', click () { mainWindow.show() }, icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
           }, {
-            label: '隱藏視窗', click () { mainWindow.hide() }
+            label: '隱藏視窗', click () { mainWindow.hide() }, icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
           }, {
             type: "separator"
           }, {
@@ -60,7 +60,8 @@ if (!gotTheLock) {
             click () {
               app.isQuiting = true
               app.quit()
-            }
+            },
+            icon: nativeImage.createFromPath(path.join(__dirname, 'close_window.png')).resize({ width: 16, height: 16 })
           }
         ]))
         tray.setIgnoreDoubleClickEvents(true)
