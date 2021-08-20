@@ -71,7 +71,7 @@
               id="nametag"
               title="開啟查詢視窗"
               @click="showModalById('ad-query-modal')"
-              :variant="empty(nickname) ? 'outline-danger' : 'outline-primary'"
+              :variant="queryADVariant"
               :disabled="asking || this.empty(this.userid)"
             ) {{ queryADLabel }}
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
@@ -223,7 +223,11 @@ export default {
       }, 0)
       return result > 99 ? '99+' : result
     },
-    queryADLabel () { return this.userid === this.nickname ? '查詢名字' : this.userid }
+    queryADLabel () { return this.userid === this.nickname ? '查詢名字' : this.userid },
+    queryADVariant () {
+      if (this.empty(this.nickname)) { return 'outline-danger' }
+      return this.nickname === this.userid ? 'outline-primary' : 'success'
+    }
   },
   watch: {
     currentChannel(nVal, oVal) {

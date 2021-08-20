@@ -43,6 +43,8 @@ if (!gotTheLock) {
     (async () => {
       await app.whenReady()
       try {
+        app.setLoginItemSettings({ openAtLogin: true })
+
         // tray icon
         let iconPath = path.join(__dirname, 'chat.png')
         !isProd && console.log(`tray icon path`, iconPath)
@@ -300,12 +302,12 @@ ipcMain.handle('ad-user-desc', async (event, config) => {
   //     password: 'XXXXXXXXXXX'
   // }
   const ad = new ActiveDirectory(config)
-  !isProd && console.log(`Query AD Config`, config)
+  !isProd && console.log(`查詢AD設定檔`, config)
   const user = await ad.findUser(config.username.split('@')[0])
   if (user) {
-    !isProd && console.log(`found user`, user)
+    !isProd && console.log(`找到使用者`, user)
   } else {
-    !isProd && console.error('AD query failed', user)
+    !isProd && console.error('AD查詢失敗', user)
   }
   return user ? user.description : undefined
 })
