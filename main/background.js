@@ -217,12 +217,15 @@ ipcMain.handle('title', async (event, str) => {
   mainWindow.setTitle(str)
 })
 
-ipcMain.handle('unread', async (event, channel) => {
+ipcMain.handle('unread', async (event, payload) => {
+  const channel = payload.channel
+  const message = payload.message
   !isProd && console.log(`Set channel Unread`, channel)
   mainWindow.restore()
   // important notification
   if (mainWindow.userinfo.userid === channel || channel.startsWith('announcement')) {
-    // mainWindow.center()
+    notify(message)
+    mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
   }
 })

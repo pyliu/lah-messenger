@@ -595,7 +595,7 @@ export default {
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
                   // add message to store channel list
-                  if(!isEmpty(incoming['message'])) {
+                  if(!isEmpty(incoming.message)) {
                     if (incoming.prepend) {
                       this.messages[channel].unshift(incoming)
                     } else {
@@ -604,7 +604,7 @@ export default {
                   }
                 })
                 // tell electron window got a unread message
-                this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
+                this.$nextTick(() => { this.ipcRenderer.invoke('unread', { channel: channel, message: incoming.message }) })
                 // store the read id for this channel
                 this.setReadMessage(channel, incoming)
               } else if (incoming.message && incoming.sender !== 'system') {
@@ -615,7 +615,7 @@ export default {
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
                 if (this.showUnreadChannels.includes(channel)) {
                   // tell electron window the channels got unread message
-                  this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
+                  this.$nextTick(() => { this.ipcRenderer.invoke('unread', , { channel: channel, message: incoming.message }) })
                 }
               }
               
@@ -629,13 +629,7 @@ export default {
           }
         } else {
           const IDReady = !this.empty(this.userid)
-          // this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
-          this.$nextTick(() => {
-            this.ipcRenderer.invoke('notification', {
-              message: IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ',
-              showMainWindow: true
-            })
-          })
+          this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2
             this.resetReconnectTimer()
@@ -739,6 +733,14 @@ export default {
         this.ipcRenderer.removeAllListeners('quit')
         // register main process quit event listener (To send leave channel message after user closed the app)
         this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
+      })
+    },
+    invokeIPCNotification (message, showMainWindow = false) {
+       this.$nextTick(() => {
+        this.ipcRenderer.invoke('notification', {
+          message: message,
+          showMainWindow: showMainWindow
+        })
       })
     }
   },
