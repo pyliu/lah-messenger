@@ -46,7 +46,7 @@ if (!gotTheLock) {
         app.setLoginItemSettings({ openAtLogin: true })
 
         // tray icon
-        let iconPath = path.join(__dirname, 'chat.png')
+        let iconPath = path.join(__dirname, 'message.ico')
         !isProd && console.log(`tray icon path`, iconPath)
         const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
         tray = new Tray(trayIcon)
@@ -80,7 +80,7 @@ if (!gotTheLock) {
           minimizable: true,
           alwaysOnTop: false,
           kiosk: false,
-          icon: path.join(__dirname, 'chat.png'),
+          icon: path.join(__dirname, 'message.ico'),
           menuBarVisible: false  // not working
         })
         // disable the menu bar since menuBarVisible flag does not work properly
