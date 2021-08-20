@@ -604,7 +604,7 @@ export default {
                   }
                 })
                 // tell electron window got a unread message
-                this.$nextTick(() => { this.ipcRenderer.invoke('unread', { channel: channel, message: incoming.message }) })
+                this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
                 // store the read id for this channel
                 this.setReadMessage(channel, incoming)
               } else if (incoming.message && incoming.sender !== 'system') {
@@ -615,7 +615,7 @@ export default {
                 this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
                 if (this.showUnreadChannels.includes(channel)) {
                   // tell electron window the channels got unread message
-                  this.$nextTick(() => { this.ipcRenderer.invoke('unread', { channel: channel, message: incoming.message }) })
+                  this.$nextTick(() => { this.ipcRenderer.invoke('unread', channel) })
                 }
               }
               
