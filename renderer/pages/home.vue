@@ -563,6 +563,7 @@ export default {
 
               this.connectText = '已上線'
               this.connecting = false
+              this.reconnectMs = 20 * 1000
             }
             ws.onclose = (e) => {
               this.$store.commit('websocket', undefined)
