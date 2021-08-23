@@ -90,7 +90,7 @@ export default {
   data: () => ({
     ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
-    wsHost: '',
+    wsHost: '220.1.34.75',
     wsPort: 8081,
     apiPortSetting: 80,
     adPassword: '',
@@ -190,7 +190,7 @@ export default {
     },
     async loadUserMapData() {
       // refresh user name mapping from API server
-      const queryEP = `http://${this.wsHost || await this.$localForage.getItem('wsHost')}:${this.apiPort}${this.$consts.API.JSON.USER}`
+      const queryEP = `http://${await this.$localForage.getItem('wsHost') || this.wsHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
       this.$axios.post(queryEP, {
         type: 'user_mapping'
       }).then(({ data }) => {
@@ -212,7 +212,7 @@ export default {
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
-      this.wsHost = await this.$localForage.getItem('wsHost')
+      this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
       this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10
