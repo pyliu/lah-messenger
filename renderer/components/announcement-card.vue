@@ -6,12 +6,12 @@
     :header="header"
   )
     template(#header): .d-flex.justify-content-between.font-weight-bold
-      span {{ dataJson['title'] }}
-      span \#{{ dataJson['id'] }}
+      span {{ dataJson.title }}
+      span \#{{ dataJson.id }}
     b-card-text(v-html="content")
     template(#footer): .d-flex.justify-content-between.small.text-muted
-      span {{ dataJson['sender'] }}
-      span {{ dataJson['create_datetime'] }}
+      span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}] 發佈
+      span {{ dataJson.create_datetime }}
 </template>
 
 <script>
@@ -24,10 +24,10 @@ export default {
   },
   computed: {
     header () {
-      return this.dataJson['title']
+      return this.dataJson.title
     },
     borderVariant () {
-      const priority = parseInt(this.dataJson['priority'])
+      const priority = parseInt(this.dataJson.priority)
       switch (priority) {
         case 0:
           return 'danger'
@@ -39,11 +39,14 @@ export default {
           return 'secondary'
       }
     },
+    sender () {
+      return this.userMap[this.dataJson.sender] || this.dataJson.sender
+    },
     content () {
-      if (isEmpty(this.dataJson['content'])) {
+      if (isEmpty(this.dataJson.content)) {
         return ''
       }
-      return DOMPurify.sanitize(Markd(this.dataJson['content']))
+      return DOMPurify.sanitize(Markd(this.dataJson.content))
     }
   }
 }
