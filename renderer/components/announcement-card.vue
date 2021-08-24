@@ -10,7 +10,7 @@
       span \#{{ dataJson.id }}
     b-card-text(v-html="content")
     template(#footer): .d-flex.justify-content-between.small.text-muted
-      span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}] 發佈
+      span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
       span {{ dataJson.create_datetime }}
 </template>
 
