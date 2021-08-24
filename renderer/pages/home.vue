@@ -628,7 +628,7 @@ export default {
           } finally {
           }
         } else {
-          const IDReady = !this.empty(this.userid)
+          const IDReady = !isEmpty(this.userid)
           this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2
@@ -782,12 +782,10 @@ export default {
       this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
       // restore user map
       this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
+      // back from settings page
+      this.$route.query.reconnect === 'true' && this.connect()
+      this.ipcRenderer.invoke('home-ready')
     })
-
-    // back from settings page
-    this.$route.query.reconnect === 'true' && this.connect()
-
-    this.$nextTick(() => { this.ipcRenderer.invoke('home-ready') })
   },
   beforeDestroy () {
     // remove timer if user is going to leave the page
