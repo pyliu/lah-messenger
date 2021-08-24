@@ -56,7 +56,7 @@
           b-icon(icon="cursor" v-if="valid")
           span 傳送
     //- 連線主畫面
-    .center.vh-100(v-else v-cloak)
+    .center.vh-100(v-else-if="!back" v-cloak)
       .w-75
         .center.logo: b-img(id="main_logo" src="taoyuan_logo.png" v-cloak)
 
@@ -169,7 +169,8 @@ export default {
     ],
     connecting: false,
     asking: false,
-    reconnectMs: 20 * 1000
+    reconnectMs: 20 * 1000,
+    back: false
   }),
   computed: {
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
@@ -227,7 +228,8 @@ export default {
     queryADVariant () {
       if (this.empty(this.nickname)) { return 'outline-danger' }
       return this.nickname === this.userid ? 'outline-primary' : 'success'
-    }
+    },
+    backFromSettings () { return this.$route.query.reconnect === 'true' }
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -626,6 +628,8 @@ export default {
             console.error(e)
             this.closeWebsocket()
           } finally {
+            // delay to reset the back flag (control login panel)
+            setTimeout(() => this.back = false, 1000)
           }
         } else {
           const IDReady = !isEmpty(this.userid)
@@ -783,7 +787,10 @@ export default {
       // restore user map
       this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
       // back from settings page
-      this.$route.query.reconnect === 'true' && this.connect()
+      if (this.backFromSettings) {
+        this.back = true
+        this.connect()
+      }
       this.ipcRenderer.invoke('home-ready')
     })
   },
