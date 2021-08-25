@@ -219,7 +219,8 @@ ipcMain.handle('title', async (event, str) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  mainWindow.restore()
+  // mainWindow.restore()
+  mainWindow.show()
   // important notification
   if (mainWindow.userinfo.userid === channel || channel.startsWith('announcement')) {
     mainWindow.center()
