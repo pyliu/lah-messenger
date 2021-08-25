@@ -2,7 +2,7 @@
   b-card(
     :header-border-variant="borderVariant"
     :header-bg-variant="borderVariant"
-    :header-text-variant="'white'"
+    :header-text-variant="textVariant"
     :header="header"
   )
     template(#header): .d-flex.justify-content-between.font-weight-bold
@@ -37,6 +37,17 @@ export default {
           return 'info'
         default:
           return 'secondary'
+      }
+    },
+    textVariant () {
+      const priority = parseInt(this.dataJson.priority)
+      switch (priority) {
+        case 1:
+          return 'black'
+        case 0:
+        case 2:
+        default:
+          return 'white'
       }
     },
     sender () {
