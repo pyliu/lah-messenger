@@ -204,7 +204,6 @@ ipcMain.handle('notification', async (event, payload) => {
   !isProd && console.log(`trigger notification`, message)
   notify(message)
   if (payload.showMainWindow && mainWindow) {
-    mainWindow.isMinimized() && mainWindow.restore()
     mainWindow.show()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)

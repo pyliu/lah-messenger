@@ -579,13 +579,28 @@ export default {
               this.connecting = false
               this.alert(`WS伺服器連線有問題`, { pos: 'tf', subtitle: this.wsConnStr })
             }
-            ws.onmessage = (e) => {
+            ws.onmessage = async (e) => {
               const incoming = JSON.parse(e.data)
-              const channel = incoming['channel']
+              const channel = incoming.channel
 
               this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
 
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
+
+              if (channel.startsWith('announcement')) {
+                const cacheKey = `${channel}_last_id`
+                const title = incoming.message.title
+                const id = incoming.message.id
+                const lastReadId = await this.getCache(cacheKey)
+                isEmpty(lastReadId) && (lastReadId = 0)
+                this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+                if (id > lastReadId) {
+                  this.$nextTick(() => {
+                    this.ipcRenderer.invoke('notification', { message: title, showMainWindow: false })
+                    this.setCache(cacheKey, id)
+                  })
+                }
+              }
 
               if (incoming.type === 'ack') {
                 this.handleAckMessage(incoming.message)
