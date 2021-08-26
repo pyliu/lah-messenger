@@ -201,9 +201,8 @@ export default {
       const i = parseInt(trim(this.wsPort))
       return i < 1025 || i > 65535 || this.empty(this.wsPort) ? false : null
     },
-    validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
-    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
+    validInformation() { return !isEmpty(this.userid) && this.validDepartment === null && this.validPort === null && this.validHost === null },
     list() {
       return this.messages[this.currentChannel] || []
     },
@@ -786,8 +785,8 @@ export default {
 
     this.$nextTick(async () => {
       // restore last settings
-      this.nickname = await this.$localForage.getItem('nickname')
-      this.empty(this.nickname) && (this.nickname = this.userid)
+      this.nickname = await this.$localForage.getItem('nickname') || this.userid
+      // isEmpty(this.nickname) && (this.nickname = this.userid)
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
