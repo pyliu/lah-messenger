@@ -57,7 +57,7 @@ export default {
       if (isEmpty(this.dataJson.content) || !DOMPurify.sanitize) {
         return ''
       }
-      return DOMPurify.sanitize(Markd(this.dataJson.content.replace(/\n/gi, '<br/>')))
+      return DOMPurify.sanitize(Markd(this.dataJson.content).replace(/<p>/gi, "<p style='margin-bottom:1rem'>"))
     }
   }
 }
