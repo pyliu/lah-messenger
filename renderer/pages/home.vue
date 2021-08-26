@@ -56,7 +56,7 @@
           b-icon(icon="cursor" v-if="valid")
           span 傳送
     //- 連線主畫面
-    .center.vh-100(v-else-if="!back" v-cloak)
+    .center.vh-100(v-else v-cloak)
       .w-75
         .center.logo: b-img(id="main_logo" src="taoyuan_logo.png" v-cloak)
 
@@ -591,13 +591,13 @@ export default {
                 const cacheKey = `${channel}_last_id`
                 const title = incoming.message.title
                 const id = incoming.message.id
-                const lastReadId = await this.getCache(cacheKey)
-                isEmpty(lastReadId) && (lastReadId = 0)
+                let lastReadId = await this.getCache(cacheKey)
+                isNaN(parseInt(lastReadId)) && (lastReadId = 0)
                 this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
                 if (id > lastReadId) {
+                  this.setCache(cacheKey, id)
                   this.$nextTick(() => {
                     this.ipcRenderer.invoke('notification', { message: title, showMainWindow: false })
-                    this.setCache(cacheKey, id)
                   })
                 }
               }
