@@ -5,7 +5,8 @@ const path = require('path')
 import {
   createWindow,
   exitOnChange,
-  notify
+  notify,
+  notifyDebounced
 } from './helpers'
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -202,7 +203,8 @@ ipcMain.handle('home-ready', async (event, arg) => {
 ipcMain.handle('notification', async (event, payload) => {
   const message = typeof payload === 'string' ? payload : payload.message
   !isProd && console.log(`trigger notification`, message)
-  notify('[點我開啟APP視窗]', message, () => { mainWindow.show() })
+  // to prevent multiple message coming in at once
+  notifyDebounced('[點我開啟APP視窗]', message, () => { mainWindow.show() })
   if (payload.showMainWindow && mainWindow) {
     mainWindow.show()
     mainWindow.center()

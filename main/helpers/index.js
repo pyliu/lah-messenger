@@ -1,9 +1,10 @@
-import createWindow from './create-window';
-import exitOnChange from './exit-on-change';
-import notify from './notification';
+import createWindow from './create-window'
+import exitOnChange from './exit-on-change'
+import { notify, notifyDebounced } from './notification'
 
 export {
   createWindow,
   exitOnChange,
-  notify
-};
+  notify,
+  notifyDebounced
+}
