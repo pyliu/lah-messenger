@@ -27,7 +27,7 @@
 
           b-nav-item(:active="isChat" title="對話選單" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
-            span 交談
+            span 聊天室
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
 
           b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
@@ -173,7 +173,7 @@ export default {
     back: false
   }),
   computed: {
-    showInputGroup () { return !this.currentChannel.startsWith('announcement') && (this.currentChannel === this.userid || this.currentChannel !== 'chat') },
+    showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
     showMessageBoard () { return this.currentChannel !== 'chat' },
     showChatBoard () { return this.isChat },
 

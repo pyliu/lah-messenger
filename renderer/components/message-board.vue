@@ -27,12 +27,12 @@ export default {
     isPersonal () { return this.userid === this.currentChannel },
     isAnnouncement () { return this.currentChannel === 'announcement' },
     blockCss () {
-      if (this.currentChannel.startsWith('announcement')) {
+      if (this.currentChannel.startsWith('announcement') || this.isPersonal) {
         return 'announcement-container'
       }
-      if (this.isPersonal) {
-        return 'personal-container'
-      }
+      // if (this.isPersonal) {
+      //   return 'personal-container'
+      // }
       return 'chat-container'
     },
     messageCount () { return this.list.length },
