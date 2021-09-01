@@ -26,6 +26,7 @@
           span.my-auto 網域密碼
         b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
         b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
+        b-button.ml-1(@click="queryAd" :disabled="empty(adPassword)" variant="outline-primary" title="透過AD取得顯示姓名") 查詢
       b-input-group.my-2
         template(#prepend)
           b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -240,6 +241,31 @@ export default {
           ipcRenderer.invoke('quit')
         }
       })
+    },
+    queryAd () {
+      this.isBusy = true
+      const sAMAccountName = `${this.userid}@${this.domain}`
+      const { ipcRenderer } = require('electron')
+      ipcRenderer.invoke('ad-user-desc', {
+        url: `ldap://${this.adHost}`,
+        baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+        username: sAMAccountName,
+        password: this.adPassword
+      }).then((desc) => {
+        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+        const name = desc || this.userMap[this.userid] || this.userid
+        this.$store.commit('username', name)
+        this.$localForage.setItem('nickname', name)
+        this.nickname = name
+        this.connectText = `AD: ${this.userid} ${name}`
+        this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
+      }).catch((err) => {
+        console.error(err)
+        this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
+      }).finally(() =>{
+        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+        this.isBusy = false
+      })
     }
   },
   mounted () {
@@ -309,8 +335,9 @@ legend {
 .eye {
   cursor: pointer;
   position: absolute;
-  right: .55rem;
+  right: 4.55rem;
   top: .55rem;
+  z-index: 1001;
 }
 
 .gradient-top {
