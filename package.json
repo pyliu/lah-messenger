@@ -7,8 +7,9 @@
   "main": "app/background.js",
   "scripts": {
     "dev": "nuxtron",
-    "build": "nuxtron build",
-    "build:win32": "nuxtron build --win --ia32"
+    "build": "nuxtron build --all",
+    "build:win32": "nuxtron build --win --ia32",
+    "build:win64": "nuxtron build --win --x64"
   },
   "dependencies": {
     "@nuxt/components": "^2.1.2",
