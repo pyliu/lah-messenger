@@ -573,6 +573,30 @@ export default {
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
               if (channel.startsWith('announcement')) {
+                /**
+                 * expect personal incoming message format:
+                 * {
+                 *    channel: "announcement_inf"
+                 *    date: "2021-09-02"
+                 *    from: "220.1.34.75"
+                 *    id: 1
+                 *    message: {
+                 *      content: "目標：穩定(確保機房及系統正常運作) ..."
+                 *      create_datetime: "2021-08-25 15:52:19"
+                 *      expire_datetime: ""
+                 *      flag: 0
+                 *      from_ip: "192.168.xx.xx"
+                 *      id: 1
+                 *      priority: 2
+                 *      sender: "HA10000000"
+                 *      title: "xxxxxxx"
+                 *    }
+                 *    prepend: false
+                 *    sender: "系統推播"
+                 *    time: "17:26:01"
+                 *    type: "remote"
+                 * }
+                 */
                 const cacheKey = `${channel}_last_id`
                 const title = incoming.message.title
                 const id = incoming.message.id
@@ -581,9 +605,31 @@ export default {
                 this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
                 if (id > lastReadId) {
                   this.setCache(cacheKey, id)
-                  this.$nextTick(() => {
-                    this.ipcRenderer.invoke('notification', { message: title, showMainWindow: false })
-                  })
+                  this.invokeIPCNotification(title)
+                }
+              } else if (channel === this.userid) {
+                /**
+                 * expect personal incoming message format:
+                 * {
+                 *   channel: "HA10013859"
+                 *   date: "2021-09-02"
+                 *   id: 16
+                 *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
+                 *   prepend: false
+                 *   sender: "HA10013859"
+                 *   time: "17:17:13"
+                 *   type: "remote"
+                 * }
+                 */
+                const cacheKey = `${channel}_last_id`
+                const title = incoming.message.substring(3, 18) + ' ... '
+                const id = incoming.id
+                let lastReadId = await this.getCache(cacheKey)
+                isNaN(parseInt(lastReadId)) && (lastReadId = 0)
+                this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+                if (id > lastReadId) {
+                  this.setCache(cacheKey, id)
+                  this.invokeIPCNotification(title)
                 }
               }
 
