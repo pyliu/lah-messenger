@@ -622,7 +622,7 @@ export default {
                  * }
                  */
                 const cacheKey = `${channel}_last_id`
-                const title = incoming.message.replaceAll('<p>', '').replaceAll('</p>', '').substring(0, 18) + ' ... '
+                const title = incoming.message.replace(/(&lt;([^>]+)>)/gi, '').substring(0, 18) + ' ... '
                 const id = incoming.id
                 let lastReadId = await this.getCache(cacheKey)
                 isNaN(parseInt(lastReadId)) && (lastReadId = 0)
