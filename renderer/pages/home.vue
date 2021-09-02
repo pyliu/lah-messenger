@@ -605,7 +605,7 @@ export default {
                 this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
                 if (id > lastReadId) {
                   this.setCache(cacheKey, id)
-                  this.invokeIPCNotification(title)
+                  this.invokeIPCNotification(title, true)
                 }
               } else if (channel === this.userid) {
                 /**
