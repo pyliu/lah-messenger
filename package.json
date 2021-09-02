@@ -2,7 +2,7 @@
   "private": true,
   "name": "lah-messenger",
   "description": "messenger cient for tyland",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "author": "pyliu <pangyu.liu@gmail.com>",
   "main": "app/background.js",
   "scripts": {
@@ -10,9 +10,7 @@
     "build": "nuxtron build",
     "build:all": "nuxtron build --all",
     "build:win32": "nuxtron build --win --ia32",
-    "build:win64": "nuxtron build --win --x64",
-    "build:mac": "nuxtron build --mac --x64",
-    "build:linux": "nuxtron build --linux"
+    "build:win64": "nuxtron build --win --x64"
   },
   "dependencies": {
     "@nuxt/components": "^2.1.2",
