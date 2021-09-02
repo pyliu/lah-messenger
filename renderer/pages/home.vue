@@ -622,7 +622,12 @@ export default {
                  * }
                  */
                 const cacheKey = `${channel}_last_id`
-                const title = incoming.message.replace(/(&lt;([^>]+)>)/gi, '').substring(0, 18) + ' ... '
+
+                // remove all html tags (will generate by Markd)
+                const temp = document.createElement("div");
+                temp.innerHTML = incoming.message;
+                const title = temp.innerText.substring(0, 18) + ' ... '
+
                 const id = incoming.id
                 let lastReadId = await this.getCache(cacheKey)
                 isNaN(parseInt(lastReadId)) && (lastReadId = 0)
