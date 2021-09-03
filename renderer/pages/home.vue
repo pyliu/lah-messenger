@@ -13,8 +13,8 @@
             v-if="deptChannel.value === `announcement_${userdept}`"
             :key="`ann_dept_${idx}`"
             :active="deptChannel.value === currentChannel"
-            title="部門訊息"
             @click="setCurrentChannel(deptChannel.value)"
+            title="部門訊息"
           ): a.mr-1
             b-icon.mr-1(icon="building")
             span {{ deptChannel.text }}
@@ -55,6 +55,8 @@
         b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
+
+
     //- 連線主畫面
     .center.vh-100(v-else v-cloak)
       .w-75
@@ -116,6 +118,9 @@
         )
           b-icon(v-if="connecting" icon="arrow-clockwise" animation="spin-pulse")
           span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right" font-scale="1")] 連線
+
+
+    //- 狀態列
     status(:status-text="connectText")
 </template>
 
@@ -137,7 +142,6 @@ export default {
   data: () => ({
     text: '',
     connectText: '',
-    ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
     adPassword: '',
     adPasswordIcon: 'eye-slash',
@@ -194,9 +198,9 @@ export default {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
     valid() { return !isEmpty(trim(this.text)) },
-    validAdHost() { return this.ipFilter.test(this.adHost) === false ? false : null },
+    validAdHost() { return this.$utils.isIPv4(this.adHost) === false ? false : null },
     validAdPassword() { return this.empty(this.adPassword) ? false : null },
-    validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
+    validHost() { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
       return i < 1025 || i > 65535 || this.empty(this.wsPort) ? false : null
@@ -569,74 +573,7 @@ export default {
               const channel = incoming.channel
 
               this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
-
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
-
-              if (channel.startsWith('announcement')) {
-                /**
-                 * expect personal incoming message format:
-                 * {
-                 *    channel: "announcement_inf"
-                 *    date: "2021-09-02"
-                 *    from: "220.1.34.75"
-                 *    id: 1
-                 *    message: {
-                 *      content: "目標：穩定(確保機房及系統正常運作) ..."
-                 *      create_datetime: "2021-08-25 15:52:19"
-                 *      expire_datetime: ""
-                 *      flag: 0
-                 *      from_ip: "192.168.xx.xx"
-                 *      id: 1
-                 *      priority: 2
-                 *      sender: "HA10000000"
-                 *      title: "xxxxxxx"
-                 *    }
-                 *    prepend: false
-                 *    sender: "系統推播"
-                 *    time: "17:26:01"
-                 *    type: "remote"
-                 * }
-                 */
-                const cacheKey = `${channel}_last_id`
-                const title = incoming.message.title
-                const id = incoming.message.id
-                let lastReadId = await this.getCache(cacheKey)
-                isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-                this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
-                if (id > lastReadId) {
-                  this.setCache(cacheKey, id)
-                  this.invokeIPCNotification(title, true)
-                }
-              } else if (channel === this.userid) {
-                /**
-                 * expect personal incoming message format:
-                 * {
-                 *   channel: "HA10013859"
-                 *   date: "2021-09-02"
-                 *   id: 16
-                 *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
-                 *   prepend: false
-                 *   sender: "HA10013859"
-                 *   time: "17:17:13"
-                 *   type: "remote"
-                 * }
-                 */
-                const cacheKey = `${channel}_last_id`
-
-                // remove all html tags (will generate by Markd)
-                const temp = document.createElement("div");
-                temp.innerHTML = incoming.message;
-                const title = temp.innerText.substring(0, 18) + ' ... '
-
-                const id = incoming.id
-                let lastReadId = await this.getCache(cacheKey)
-                isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-                this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
-                if (id > lastReadId) {
-                  this.setCache(cacheKey, id)
-                  this.invokeIPCNotification(title)
-                }
-              }
 
               if (incoming.type === 'ack') {
                 this.handleAckMessage(incoming.message)
@@ -672,6 +609,8 @@ export default {
                 }
               }
               
+              this.invokeNotification(incoming)
+
               this.connecting = false
             }
           } catch (e) {
@@ -730,6 +669,83 @@ export default {
         }, this.reconnectMs))
       }
     },
+    async invokeNotification (incoming) {
+      const channel = incoming.channel
+      this.$config.isDev && console.log(this.time(), '確認是否需要傳送通知', channel)
+
+      if (channel.startsWith('announcement')) {
+        /**
+         * expect personal incoming message format:
+         * {
+         *    channel: "announcement_inf"
+         *    date: "2021-09-02"
+         *    from: "220.1.34.75"
+         *    id: 1
+         *    message: {
+         *      content: "目標：穩定(確保機房及系統正常運作) ..."
+         *      create_datetime: "2021-08-25 15:52:19"
+         *      expire_datetime: ""
+         *      flag: 0
+         *      from_ip: "192.168.xx.xx"
+         *      id: 1
+         *      priority: 2
+         *      sender: "HA10000000"
+         *      title: "xxxxxxx"
+         *    }
+         *    prepend: false
+         *    sender: "系統推播"
+         *    time: "17:26:01"
+         *    type: "remote"
+         * }
+         */
+        const cacheKey = `${channel}_last_id`
+        const title = incoming.message.title
+        const id = incoming.message.id
+        let lastReadId = await this.getCache(cacheKey)
+        isNaN(parseInt(lastReadId)) && (lastReadId = 0)
+        this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+        if (id > lastReadId) {
+          this.setCache(cacheKey, id)
+          this.invokeIPCNotification(title, {
+            showMainWindow: true,
+            channel: channel
+          })
+        }
+      } else if (channel === this.userid) {
+        /**
+         * expect personal incoming message format:
+         * {
+         *   channel: "HA10013859"
+         *   date: "2021-09-02"
+         *   id: 16
+         *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
+         *   prepend: false
+         *   sender: "HA10013859"
+         *   time: "17:17:13"
+         *   type: "remote"
+         * }
+         */
+        const cacheKey = `${channel}_last_id`
+
+        // remove all html tags (will generate by Markd)
+        const temp = document.createElement("div");
+        temp.innerHTML = incoming.message;
+        const title = temp.innerText.substring(0, 18) + ' ... '
+
+        const id = incoming.id
+        let lastReadId = await this.getCache(cacheKey)
+        isNaN(parseInt(lastReadId)) && (lastReadId = 0)
+        this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+        if (id > lastReadId) {
+          this.setCache(cacheKey, id)
+          this.invokeIPCNotification(title, {
+            showMainWindow: true,
+            channel: channel
+          })
+        }
+      }
+
+    },
     invokeADUsernameQuery (force = false) {
       // hide modal window
       this.hideModalById('ad-query-modal')
@@ -738,7 +754,7 @@ export default {
         return
       }
       this.nickname = this.userMap[this.userid] || this.userid
-      if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.ipFilter.test(this.adHost))) {
+      if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.$utils.isIPv4(this.adHost))) {
         this.asking = true
         this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
         const sAMAccountName = `${this.userid}@${this.domain}`
@@ -766,13 +782,13 @@ export default {
         })
       }
     },
-    ipcRendererSetup () {
-      // dynamic get userinfo from main process
+    queryUserInfo () {
       this.$nextTick(() => {
+        // dynamic get userinfo from main process
         this.ipcRenderer.invoke('userinfo').then((userinfo) => {
           this.$store.commit('userinfo', userinfo)
           this.$nextTick(() => {
-            if (!this.ipFilter.test(this.adHost)) {
+            if (!this.$utils.isIPv4(this.adHost)) {
               this.adHost = this.getFirstDNSIp()
             }
             // this.invokeADUsernameQuery()
@@ -784,17 +800,26 @@ export default {
             this.register()
           })
         })
-        // remvoe main process 'quit' all listeners
-        this.ipcRenderer.removeAllListeners('quit')
-        // register main process quit event listener (To send leave channel message after user closed the app)
-        this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
       })
     },
-    invokeIPCNotification (message, showMainWindow = false) {
+    ipcRendererSetup () {
+      this.$nextTick(() => {
+        // remvoe main process all listeners
+        this.ipcRenderer.removeAllListeners('quit')
+        this.ipcRenderer.removeAllListeners('set-current-channel')
+        // register main process quit event listener (To send leave channel message after user closed the app)
+        this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
+        // register main process set-current-channel event listener (To switch tab after notification showing up)
+        this.ipcRenderer.on('set-current-channel', (event, channel) => {
+          this.setCurrentChannel(channel)
+        })
+      })
+    },
+    invokeIPCNotification (message, payload = { showMainWindow: false }) {
        this.$nextTick(() => {
         this.ipcRenderer.invoke('notification', {
           message: message,
-          showMainWindow: showMainWindow
+          ...payload
         })
       })
     }
@@ -806,7 +831,6 @@ export default {
       this.$store.commit("resetUnread", this.currentChannel)
       this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
-    // ipc to electron main process
     const { ipcRenderer } = require('electron')
     this.ipcRenderer = ipcRenderer
   },
@@ -816,6 +840,7 @@ export default {
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
     this.ipcRendererSetup()
+    this.queryUserInfo()
     this.$store.commit("resetUnread", this.userid)
     // auto connect to ws server, delay 30s
     setTimeout(this.resetReconnectTimer, 30 * 1000)

@@ -202,15 +202,21 @@ ipcMain.handle('home-ready', async (event, arg) => {
 
 ipcMain.handle('notification', async (event, payload) => {
   const message = typeof payload === 'string' ? payload : payload.message
-  !isProd && console.log(`trigger notification`, message)
+  const channel = payload.channel
+  const showMainWindow = payload.showMainWindow
+  !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple message coming in at once
-  notifyDebounced('[點我開啟APP視窗]', message, () => { mainWindow.show() })
-  if (payload.showMainWindow && mainWindow) {
-    mainWindow.show()
-    mainWindow.center()
-    mainWindow.setAlwaysOnTop(true)
-    mainWindow.focus()
-  }
+  notifyDebounced('[點我開啟APP視窗]', message, () => {
+    if (channel) {
+      mainWindow.webContents.send('set-current-channel', channel)
+    }
+    if (showMainWindow && mainWindow) {
+      mainWindow.show()
+      mainWindow.center()
+      mainWindow.setAlwaysOnTop(true)
+      mainWindow.focus()
+    }
+  })
 })
 
 ipcMain.handle('title', async (event, str) => {
