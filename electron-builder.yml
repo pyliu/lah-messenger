@@ -1,5 +1,5 @@
 appId: tw.gov.tyland.messenger
-productName: 桃園地政-信差服務即時通
+productName: 桃園地政信差服務即時通
 copyright: Copyright © 2021 pyliu
 directories:
   output: dist
@@ -9,4 +9,6 @@ files:
     filter:
       - package.json
       - app
+  - resources/icon.ico
+  - resources/message.ico
 publish: null
