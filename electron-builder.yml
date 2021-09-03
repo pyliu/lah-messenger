@@ -9,6 +9,5 @@ files:
     filter:
       - package.json
       - app
-  - resources/icon.ico
-  - resources/message.ico
+      - static
 publish: null

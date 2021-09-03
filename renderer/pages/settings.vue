@@ -26,7 +26,7 @@
           span.my-auto 網域密碼
         b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
         b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
-        b-button.ml-1(@click="queryAd" :disabled="empty(adPassword)" variant="outline-primary" title="透過AD取得顯示姓名") 查詢
+        b-button.ml-1(@click="queryAd" :disabled="empty(adPassword) || !$utils.isIPv4(adHost)" variant="outline-primary" title="透過AD取得顯示姓名") 查詢
       b-input-group.my-2
         template(#prepend)
           b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -89,7 +89,6 @@ export default {
     }
   },
   data: () => ({
-    ipFilter: /^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/,
     adHost: '',
     wsHost: '220.1.34.75',
     wsPort: 8081,
@@ -124,8 +123,9 @@ export default {
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
-    validAdHost() { return this.ipFilter.test(this.adHost) === false ? false : null },
-    validHost() { return this.ipFilter.test(this.wsHost) === false ? false : null },
+    validAdInfo() { return this.empty(this.adPassword) || !this.$utils.isIPv4(this.adHost) },
+    validAdHost() { return this.$utils.isIPv4(this.adHost) === false ? false : null },
+    validHost() { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
     validPort() {
       const i = parseInt(trim(this.wsPort))
       return (i > 1024 && i < 65536) === false ? false : null
