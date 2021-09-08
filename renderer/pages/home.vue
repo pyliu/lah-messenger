@@ -149,7 +149,7 @@ export default {
     wsHost: '',
     wsPort: 8081,
     nickname: '',
-    department: '',
+    department: 'reg',
     departmentOpts: [
       { value: '', text: '選擇部門' },
       { value: 'inf', text: '資訊課' },
