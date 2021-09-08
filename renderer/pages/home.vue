@@ -151,10 +151,10 @@ export default {
     nickname: '',
     department: 'reg',
     departmentOpts: [
-      { value: '', text: '選擇部門' },
+      // { value: '', text: '選擇部門' },
+      { value: 'reg', text: '登記課' },
       { value: 'inf', text: '資訊課' },
       { value: 'adm', text: '行政課' },
-      { value: 'reg', text: '登記課' },
       { value: 'sur', text: '測量課' },
       { value: 'val', text: '地價課' },
       { value: 'hr', text: '人事室' },
