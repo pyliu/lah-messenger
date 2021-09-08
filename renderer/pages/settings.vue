@@ -98,7 +98,7 @@ export default {
     adPasswordIcon: 'eye-slash',
     nickname: '',
     historyCount: 10,
-    department: '',
+    department: 'reg',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
       { value: 'inf', text: '資訊課' },
