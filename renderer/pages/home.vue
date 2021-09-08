@@ -849,7 +849,7 @@ export default {
       // restore last settings
       this.nickname = await this.$localForage.getItem('nickname') || this.userid
       // isEmpty(this.nickname) && (this.nickname = this.userid)
-      this.department = await this.$localForage.getItem('department')
+      this.department = await this.$localForage.getItem('department') || 'reg'
       this.adHost = await this.$localForage.getItem('adHost')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081

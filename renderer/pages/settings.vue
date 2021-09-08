@@ -210,7 +210,7 @@ export default {
       // restore last settings
       this.nickname = await this.$localForage.getItem('nickname')
       this.empty(this.nickname) && (this.nickname = this.userid)
-      this.department = await this.$localForage.getItem('department')
+      this.department = await this.$localForage.getItem('department') || 'reg'
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
