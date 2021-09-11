@@ -237,7 +237,8 @@ export default {
   watch: {
     currentChannel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
-      this.delaySendChannelActivity(oVal, nVal)
+      // comment out to prevent mess in/out system message in chat room
+      // this.delaySendChannelActivity(oVal, nVal)
 
       if (!(nVal in this.messages)) {
         this.$store.commit("addChannel", nVal || this.userid)
