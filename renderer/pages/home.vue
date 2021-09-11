@@ -212,7 +212,7 @@ export default {
     },
 
     stickyChannels() { return ['announcement', this.userid, 'chat', ...this.departmentChannels.map(item => item.value) ] },
-    showUnreadChannels() { return ['announcement', this.userid, , ...this.departmentChannels.map(item => item.value)] },
+    showUnreadChannels() { return ['announcement', this.userid, , `announcement_${this.department}`] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
     
     showChatUnread () {
