@@ -581,7 +581,7 @@ export default {
               } else if (channel === 'system') {
                 // got system message
                 this.handleSystemMessage(incoming.message)
-              } else if (this.currentChannel == channel) {
+              } else if (this.currentChannel === channel) {
                 // add empty array if store does not have it
                 !Array.isArray(this.messages[channel]) && this.$store.commit("addChannel", channel)
                 this.$nextTick(() => {
@@ -674,7 +674,7 @@ export default {
       const channel = incoming.channel
       this.$config.isDev && console.log(this.time(), '確認是否需要傳送通知', channel)
 
-      if (channel.startsWith('announcement')) {
+      if (['announcement', `announcement_${this.department}`].includes(channel)) {
         /**
          * expect personal incoming message format:
          * {
