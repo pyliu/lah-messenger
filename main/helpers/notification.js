@@ -26,7 +26,7 @@ const notify = function (message, title, callback) {
   )
 }
 
-const notifyDebounced = debounce(notify, 400)
+const notifyDebounced = debounce(notify, 5000)
 
 export { notify, notifyDebounced }
   
