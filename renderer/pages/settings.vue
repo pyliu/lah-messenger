@@ -24,7 +24,7 @@
         template(#prepend)
           b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
           span.my-auto 網域密碼
-        b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim)
+        b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim @change="queryAd")
         b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
         b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD取得顯示姓名") 查詢
       b-input-group.my-2

@@ -1,4 +1,5 @@
 export default {
+  ssr: false,
   head: {
     title: '信差服務即時通',
     meta: [{
