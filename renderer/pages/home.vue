@@ -830,7 +830,6 @@ export default {
     this.delayLatestMessage = debounce(this.latestMessage, 400)
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
-    this.$store.commit("resetUnread", this.userid)
     // auto connect to ws server, delay 30s
     setTimeout(this.resetReconnectTimer, 30 * 1000)
 
@@ -852,6 +851,7 @@ export default {
       this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
       // restore user map
       this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
+      this.$store.commit("resetUnread", this.userid)
       // back from settings page
       if (this.backFromSettings) {
         this.back = true
