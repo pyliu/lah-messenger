@@ -1,17 +1,17 @@
 <template lang="pug">
   .vh-100.p-2.gradient-top(v-cloak)
-    .mt-2.d-flex.justify-content-between
-      nuxt-link.align-items-center(to="/home?reconnect=true" title="返回主畫面")
+    .mt-2.d-flex.align-items-center
+      nuxt-link.mr-auto(to="/home?reconnect=true" title="返回主畫面")
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
         span(style="font-size: 1.5rem;") 返回
       
       div
         b-button.mr-1(variant="warning" @click="clear" title="清除已儲存設定")
           b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-          span.my-auto 清除已儲存設定
-        b-button(variant="danger" @click="quit")
-          b-icon.mr-1(icon="x-circle" font-scale="1.25")
-          span 關閉程式
+          span.my-auto 清除
+        //- b-button(variant="danger" @click="quit")
+        //-   b-icon.mr-1(icon="x-circle" font-scale="1.25")
+        //-   span 關閉程式
       
     fieldset
       legend 個人設定
@@ -81,7 +81,7 @@ import isEmpty from 'lodash/isEmpty'
 export default {
   transition: 'list',
   head: {
-    title: `信差即時通-設定`
+    title: `公告信差即時通-設定`
   },
   asyncData ({ req, store, redirect, error }) {
     return {

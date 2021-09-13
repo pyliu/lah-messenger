@@ -834,6 +834,7 @@ export default {
     }
     const { ipcRenderer } = require('electron')
     this.ipcRenderer = ipcRenderer
+    this.queryUserInfo()
   },
   mounted () {
     this.delayConnect = debounce(this.connect, 1500)
@@ -841,7 +842,6 @@ export default {
     this.delaySendChannelActivity = debounce(this.sendChannelActivity, 0.5 * 1000)
 
     this.ipcRendererSetup()
-    this.queryUserInfo()
     this.$store.commit("resetUnread", this.userid)
     // auto connect to ws server, delay 30s
     setTimeout(this.resetReconnectTimer, 30 * 1000)
@@ -867,6 +867,7 @@ export default {
       // back from settings page
       if (this.backFromSettings) {
         this.back = true
+        this.setCurrentChannel('announcement')
         this.connect()
       }
       this.ipcRenderer.invoke('home-ready')

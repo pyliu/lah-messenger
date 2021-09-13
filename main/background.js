@@ -1,6 +1,12 @@
 import { app, Tray, Menu, nativeImage } from 'electron'
 import serve from 'electron-serve'
+
 const path = require('path')
+const si = require('systeminformation')
+const qs = require('qs')
+const axios = require('axios')
+// required for PHP backend
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
 import {
   createWindow,
@@ -154,9 +160,6 @@ app.on('window-all-closed', closeApp)
 const { ipcMain } = require('electron')
 
 ipcMain.handle('add-ip-entry', async (event, payload) => {
-  const qs = require('qs')
-  const axios = require('axios')
-  axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
   // get all possible ipv4 address
   const nets = require('os').networkInterfaces()
   for (const name of Object.keys(nets)) {
@@ -197,7 +200,7 @@ ipcMain.handle('quit', async (event, str) => {
 
 ipcMain.handle('home-ready', async (event, arg) => {
   !isProd && console.log(`home.vue ready`, arg)
-  mainWindow.show()
+  // mainWindow.show()
 })
 
 ipcMain.handle('notification', async (event, payload) => {
@@ -236,7 +239,6 @@ ipcMain.handle('unread', async (event, channel) => {
 })
 
 ipcMain.handle('userinfo', async (event, arg) => {
-  const si = require('systeminformation')
   const found = [ ...await si.users() ].find(thisuser => !thisuser.user.startsWith('Admin') && !thisuser.user.startsWith('admin'))
   !isProd && console.log(`Found User`, found)
   /*

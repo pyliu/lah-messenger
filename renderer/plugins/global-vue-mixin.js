@@ -361,29 +361,32 @@ Vue.mixin({
       })
     },
     notify (msg, opts = { title: '通知' }) {
-      return new Promise((resolve, reject) => {
-        if (typeof msg !== 'string' && typeof opts !== 'object') {
-          reject(`notify 傳入參數有誤: msg:${msg}, opts: ${opts}`)
-        } else {
-          const defDelay = (opts.variant === 'danger' ? 7500 : (opts.variant === 'warning' ? 6250 : 5000))
-          if (typeof msg === 'string') {
-            opts.variant = opts.type || opts.variant || 'default'
-            opts.autoHideDelay = opts.duration || opts.delay || defDelay
-          } else if (typeof msg === 'object') {
-            opts = msg
-            // previous API only use one object param
-            msg = opts.body || opts.message
-            opts.variant = opts.type || opts.variant || 'default'
-            opts.autoHideDelay = opts.duration || opts.delay || defDelay
+      if (document && !document.hidden) {
+        return new Promise((resolve, reject) => {
+          if (typeof msg !== 'string' && typeof opts !== 'object') {
+            reject(`notify 傳入參數有誤: msg:${msg}, opts: ${opts}`)
+          } else {
+            const defDelay = (opts.variant === 'danger' ? 7500 : (opts.variant === 'warning' ? 6250 : 5000))
+            if (typeof msg === 'string') {
+              opts.variant = opts.type || opts.variant || 'default'
+              opts.autoHideDelay = opts.duration || opts.delay || defDelay
+            } else if (typeof msg === 'object') {
+              opts = msg
+              // previous API only use one object param
+              msg = opts.body || opts.message
+              opts.variant = opts.type || opts.variant || 'default'
+              opts.autoHideDelay = opts.duration || opts.delay || defDelay
+            }
+            this.makeToast(msg, opts).then((config) => {
+              resolve(config)
+            }).catch((err) => {
+              this.$utils.error(err)
+              reject(err)
+            })
           }
-          this.makeToast(msg, opts).then((config) => {
-            resolve(config)
-          }).catch((err) => {
-            this.$utils.error(err)
-            reject(err)
-          })
-        }
-      })
+        })
+      }
+      this.$config.isDev && console.log(`document不可見，略過notify訊息`, msg)
     },
     warning (message, opts = {}) {
       if (!empty(message)) {
@@ -505,8 +508,8 @@ Vue.mixin({
         let evt = new CustomEvent(evtName, {
           detail: payload,
           bubbles: true
-        });
-        Object.defineProperty(evt, 'target', {writable: false, value: this.$el});
+        })
+        Object.defineProperty(evt, 'target', {writable: false, value: this.$el})
         this.$emit(evtName, evt)
         return evt
       } else {
