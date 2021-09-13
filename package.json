@@ -33,7 +33,7 @@
     "node-notifier": "^10.0.0",
     "nuxt": "^2.15.4",
     "qs": "^6.9.4",
-    "systeminformation": "^5.6.12",
+    "systeminformation": "^5.8.8",
     "tcp-ping-sync": "^2.0.0"
   },
   "devDependencies": {
