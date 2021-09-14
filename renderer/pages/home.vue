@@ -20,12 +20,12 @@
             span {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
           
-          b-nav-item(:active="isPersonal" title="個人留言板" @click="setCurrentChannel(userid)"): a.mr-1
+          b-nav-item(:active="isPersonal" title="個人通知" @click="setCurrentChannel(userid)"): a.mr-1
             b-icon.mr-1(icon="person")
             span 個人
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
-          b-nav-item(:active="isChat" title="對話選單" @click="setCurrentChannel('chat')"): a.mr-1
+          b-nav-item(:active="isChat" title="聊天室列表" @click="setCurrentChannel('chat')"): a.mr-1
             b-icon.mr-1(icon="chat-text")
             span 聊天室
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
