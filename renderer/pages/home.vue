@@ -757,6 +757,10 @@ export default {
         this.connectText = `AD查詢中`
         return
       }
+      if (empty(adPassword) || validAdHost === false) {
+        this.connectText = `缺漏必要欄位無法查詢`
+        return
+      }
       this.nickname = this.userMap[this.userid] || this.userid
       if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.$utils.isIPv4(this.adHost))) {
         this.asking = true
