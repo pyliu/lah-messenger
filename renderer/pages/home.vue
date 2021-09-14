@@ -2,7 +2,7 @@
   div(v-cloak)
     transition(v-if="connected" name="list" mode="out-in"): div
       b-card.m-1(no-body header-tag="nav")
-        template(#header): client-only: b-nav(card-header tabs fill)
+        template(#header): b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             b-icon.mr-1(icon="bookmarks")
             span 公告
@@ -20,7 +20,7 @@
             span {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
           
-          b-nav-item(:active="isPersonal" title="個人通知" @click="setCurrentChannel(userid)"): a.mr-1
+          b-nav-item(:active="isPersonal" title="個人留言板" @click="setCurrentChannel(userid)"): a.mr-1
             b-icon.mr-1(icon="person")
             span 個人
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
@@ -39,7 +39,7 @@
           span {{ getChannelName($store.getters.currentChannel) }} 
         //- chatting board
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
-        //- announcement & personal message board
+        //- announcement
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
       //- 輸入訊息UI
       transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
