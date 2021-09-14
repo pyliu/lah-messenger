@@ -303,7 +303,7 @@ ipcMain.handle('userinfo', async (event, arg) => {
   return userinfo
 })
 
-ipcMain.handle('ad-user-desc', async (event, config) => {
+ipcMain.handle('ad-user-query', async (event, config) => {
   const ActiveDirectory = require('activedirectory2').promiseWrapper
   // expect config: {
   //     url: `ldap://${this.adHost}`,
@@ -315,9 +315,24 @@ ipcMain.handle('ad-user-desc', async (event, config) => {
   !isProd && console.log(`查詢AD設定檔`, config)
   const user = await ad.findUser(config.username.split('@')[0])
   if (user) {
-    !isProd && console.log(`找到使用者`, user)
+    !isProd && console.log(`找到AD使用者`, user)
+    // find user group
+    let group = ''
+    await ad.isUserMemberOf(config.username, '資訊課') && (group = 'inf')
+    group === '' && await ad.isUserMemberOf(config.username, '登記課') && (group = 'reg')
+    group === '' && await ad.isUserMemberOf(config.username, '地價課') && (group = 'val')
+    group === '' && await ad.isUserMemberOf(config.username, '行政課') && (group = 'adm')
+    group === '' && await ad.isUserMemberOf(config.username, '測量課') && (group = 'sur')
+    group === '' && await ad.isUserMemberOf(config.username, '人事室') && (group = 'hr')
+    group === '' && await ad.isUserMemberOf(config.username, '會計室') && (group = 'acc')
+    group === '' && await ad.isUserMemberOf(config.username, '秘書室') && (group = 'supervisor')
+    group === '' && await ad.isUserMemberOf(config.username, '主任室') && (group = 'supervisor')
+    return {
+      description: user.description,
+      group: group
+    }
   } else {
     !isProd && console.error('AD查詢失敗', user)
   }
-  return user ? user.description : undefined
+  return undefined
 })

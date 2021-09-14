@@ -247,19 +247,23 @@ export default {
       this.isBusy = true
       const sAMAccountName = `${this.userid}@${this.domain}`
       const { ipcRenderer } = require('electron')
-      ipcRenderer.invoke('ad-user-desc', {
+      ipcRenderer.invoke('ad-user-query', {
         url: `ldap://${this.adHost}`,
         baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
         username: sAMAccountName,
         password: this.adPassword
-      }).then((desc) => {
+      }).then((result) => {
+        const group = result.group
+        const desc = result.description
         this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
         const name = desc || this.userMap[this.userid] || this.userid
         this.$store.commit('username', name)
         this.$localForage.setItem('nickname', name)
         this.nickname = name
-        this.connectText = `AD: ${this.userid} ${name}`
-        this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
+        this.department = group
+        this.connectText = `AD: ${this.userid} ${name} ${group}`
+        this.notify(`已查到 ${this.userid} 姓名為 ${name} 部門 ${group}`, { type: 'info' })
       }).catch((err) => {
         console.error(err)
         this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })

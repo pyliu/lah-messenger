@@ -149,9 +149,9 @@ export default {
     wsHost: '',
     wsPort: 8081,
     nickname: '',
-    department: 'reg',
+    department: '',
     departmentOpts: [
-      // { value: '', text: '選擇部門' },
+      { value: '', text: '選擇部門' },
       { value: 'reg', text: '登記課' },
       { value: 'inf', text: '資訊課' },
       { value: 'adm', text: '行政課' },
@@ -755,21 +755,25 @@ export default {
       this.nickname = this.userMap[this.userid] || this.userid
       if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.$utils.isIPv4(this.adHost))) {
         this.asking = true
-        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名`)
+        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者資訊`)
         const sAMAccountName = `${this.userid}@${this.domain}`
-        this.ipcRenderer.invoke('ad-user-desc', {
+        this.ipcRenderer.invoke('ad-user-query', {
           url: `ldap://${this.adHost}`,
           baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
           username: sAMAccountName,
           password: this.adPassword
-        }).then((desc) => {
+        }).then((result) => {
+          const group = result.group
+          const desc = result.description
           this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
           const name = desc || this.userMap[this.userid] || this.userid
           this.$store.commit('username', name)
           this.$localForage.setItem('nickname', name)
           this.nickname = name
-          this.connectText = `AD: ${this.userid} ${name}`
-          this.notify(`已查到 ${this.userid} 姓名為 ${name}`, { type: 'info' })
+          this.department = group
+          this.connectText = `AD: ${this.userid} ${name} ${group}`
+          this.notify(`已查到 ${this.userid} 姓名為 ${name} 部門 ${group}`, { type: 'info' })
         }).catch((err) => {
           console.error(err)
           this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
