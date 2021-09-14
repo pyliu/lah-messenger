@@ -71,11 +71,14 @@
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
             b-button(
               id="nametag"
-              title="開啟查詢視窗"
+              title="開啟登入視窗"
               @click="showModalById('ad-query-modal')"
               :variant="queryADVariant"
               :disabled="asking || this.empty(this.userid)"
-            ) {{ queryADLabel }}
+            )
+              b-icon.mr-1(v-if="this.userid === this.nickname" icon="box-arrow-in-right" font-scale="1.25")
+              span.my-auto {{ queryADLabel }}
+              
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
             b-modal(
               id="ad-query-modal"
@@ -84,20 +87,20 @@
               scrollable
               no-close-on-backdrop
             )
-              template(#modal-title): div(v-html="`查詢使用者名稱`")
+              template(#modal-title): div(v-html="`AD驗證登入 ${userid}`")
               b-input-group.ml-1.mb-1(title="AD伺服器IP")
                 template(#prepend): .mr-1.my-auto ＡＤ主機
                 b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
               b-input-group.ml-1(:title="`${userid}的網域密碼`")
                 template(#prepend): .mr-1.my-auto 網域密碼
-                b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="`網域密碼`" trim)
+                b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="`網域密碼`" trim @keydown.enter="invokeADUsernameQuery(true)")
                 b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon" :style="'margin-right: 60px'")
-                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword) || validAdHost === false") 查詢
+                b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADUsernameQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword) || validAdHost === false") 登入
         
         .center.d-flex.my-2
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門")
+            b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門" disabled)
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-1(icon="server" font-scale="2.25" variant="secondary")
@@ -227,7 +230,7 @@ export default {
       }, 0)
       return result > 99 ? '99+' : result
     },
-    queryADLabel () { return this.userid === this.nickname ? '查詢名字' : this.userid },
+    queryADLabel () { return this.userid === this.nickname ? '登入' : this.userid },
     queryADVariant () {
       if (this.empty(this.nickname)) { return 'outline-danger' }
       return this.nickname === this.userid ? 'outline-primary' : 'success'
@@ -773,7 +776,7 @@ export default {
           this.nickname = name
           this.department = group
           this.connectText = `AD: ${this.userid} ${name} ${group}`
-          this.notify(`已查到 ${this.userid} 姓名為 ${name} 部門 ${group}`, { type: 'info' })
+          this.connect()
         }).catch((err) => {
           console.error(err)
           this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
@@ -842,7 +845,6 @@ export default {
       this.nickname = await this.$localForage.getItem('nickname') || this.userid
       // isEmpty(this.nickname) && (this.nickname = this.userid)
       this.department = await this.$localForage.getItem('department')
-      this.empty(this.department) && (this.department = 'reg')
       this.adHost = await this.$localForage.getItem('adHost')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081

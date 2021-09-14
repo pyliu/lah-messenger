@@ -6,9 +6,9 @@
         span(style="font-size: 1.5rem;") 返回
       
       div
-        b-button.mr-1(variant="warning" @click="clear" title="清除已儲存設定")
-          b-icon.mr-1(icon="exclamation-triangle" font-scale="1.25")
-          span.my-auto 清除
+        b-button.mr-1(variant="warning" @click="logout" title="清除已登入資料")
+          b-icon.mr-1(icon="box-arrow-left" font-scale="1.25")
+          span.my-auto 登出
         //- b-button(variant="danger" @click="quit")
         //-   b-icon.mr-1(icon="x-circle" font-scale="1.25")
         //-   span 關閉程式
@@ -26,12 +26,12 @@
           span.my-auto 網域密碼
         b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim @change="queryAd")
         b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
-        b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD取得顯示姓名") 查詢
+        b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD驗證") 登入
       b-input-group.my-2
         template(#prepend)
           b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
           span.my-auto 所屬部門
-        b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment")
+        b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment" disabled)
 
       b-input-group.my-2
         template(#prepend)
@@ -100,7 +100,7 @@ export default {
     historyCount: 10,
     department: 'reg',
     departmentOpts: [
-      // { value: '', text: '請選擇部門' },
+      { value: '', text: '請選擇部門' },
       { value: 'reg', text: '登記課' },
       { value: 'inf', text: '資訊課' },
       { value: 'adm', text: '行政課' },
@@ -211,7 +211,6 @@ export default {
       this.nickname = await this.$localForage.getItem('nickname')
       this.empty(this.nickname) && (this.nickname = this.userid)
       this.department = await this.$localForage.getItem('department')
-      this.empty(this.department) && (this.department = 'reg')
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
@@ -220,17 +219,12 @@ export default {
       this.historyCount = await this.$localForage.getItem('history') || 10
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
     },
-    clear() {
-      this.confirm(`清除所有設定？`).then((answer) => {
+    logout() {
+      this.confirm(`確認登出清除所有設定？`).then((answer) => {
         if (answer) {
-          // this.$localForage.removeItem('nickname')
-          // this.$localForage.removeItem('department')
-          // this.$localForage.removeItem('adPassword')
-          // this.$localForage.removeItem('effect')
-          // this.$localForage.removeItem('history')
-          // this.$localForage.removeItem('apiPort')
           this.$localForage.clear()
           this.restore()
+          this.$router.push('/home?reconnect=true')
         }
       })
     },
