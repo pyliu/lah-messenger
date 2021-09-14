@@ -304,6 +304,12 @@ ipcMain.handle('userinfo', async (event, arg) => {
 })
 
 ipcMain.handle('ad-user-query', async (event, config) => {
+  if (!isProd) {
+    return {
+      description: 'pyliu',
+      group: 'inf'
+    }
+  }
   const ActiveDirectory = require('activedirectory2').promiseWrapper
   // expect config: {
   //     url: `ldap://${this.adHost}`,
