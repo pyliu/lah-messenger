@@ -757,7 +757,7 @@ export default {
         this.connectText = `AD查詢中`
         return
       }
-      if (empty(adPassword) || validAdHost === false) {
+      if (this.empty(this.adPassword) || this.validAdHost === false) {
         this.connectText = `缺漏必要欄位無法查詢`
         return
       }
