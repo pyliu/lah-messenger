@@ -96,6 +96,11 @@ export default {
       // pathRewrite: {
       //   '^/api': '',
       // },
+    },
+    '/img': {
+      target: `${process.env.PROTOCOL}://${process.env.API_HOST}:${process.env.API_PORT}`,
+      changeOrigin: true,
+      pathRewrite: { '^/img': '' }
     }
   },
   // should hold all env variables that are public as these will be exposed on the frontend.

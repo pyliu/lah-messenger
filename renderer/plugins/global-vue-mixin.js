@@ -68,8 +68,7 @@ Vue.mixin({
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' },
-    apiHttpUrl () { return `http://${this.apiHost}:${this.apiPort}` }
+    belongToSupervisor () { return this.userdept === 'supervisor' }
   },
   methods: {
     ...mapActions([
