@@ -769,7 +769,7 @@ export default {
         const sAMAccountName = `${this.userid}@${this.domain}`
         this.ipcRenderer.invoke('ad-user-query', {
           url: `ldap://${this.adHost}`,
-          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
+          baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=PCNAME,DC=HA,DC=CENWEB,DC=LAND,DC=MOI'
           username: sAMAccountName,
           password: this.adPassword
         }).then((result) => {

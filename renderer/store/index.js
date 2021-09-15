@@ -1,4 +1,3 @@
-import trimStart from 'lodash/trimStart'
 import trim from 'lodash/trim'
 
 const empty = function(value) {
@@ -85,7 +84,12 @@ const getters = {
   userinfo: state => state.userinfo,
   username: state => state.username,
   userdept: state => state.userdept,
-  domain: state => { return trimStart(state.userinfo.domain, `${state.userinfo.hostname}.`) },
+  domain: state => {
+    let arr = state.userinfo.domain?.split('.') || []
+    // remove first element that stands for the PC hostname
+    arr.splice(0, 1)
+    return arr.join('.')
+  },
   hostname: state => state.userinfo.hostname,
   pcname: state => state.userinfo.hostname,
   userid: state => state.userinfo.userid.toUpperCase(),

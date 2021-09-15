@@ -272,6 +272,7 @@ ipcMain.handle('userinfo', async (event, arg) => {
       uefi: false
     }
    */
+  console.log(os)
   const userinfo = {
     address: [],
     ipv4: '',
