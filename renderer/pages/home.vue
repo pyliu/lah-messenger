@@ -237,7 +237,8 @@ export default {
       if (this.empty(this.nickname)) { return 'outline-danger' }
       return this.nickname === this.userid ? 'outline-primary' : 'success'
     },
-    backFromSettings () { return this.$route.query.reconnect === 'true' }
+    backFromSettings () { return this.$route.query.reconnect === 'true' },
+    notifyChannels () { return ['announcement', `announcement_${this.department}`] }
   },
   watch: {
     currentChannel(nVal, oVal) {
@@ -677,9 +678,9 @@ export default {
       const channel = incoming.channel
       this.$config.isDev && console.log(this.time(), '確認是否需要傳送通知', channel)
 
-      if (['announcement', `announcement_${this.department}`].includes(channel)) {
+      if (this.notifyChannels.includes(channel)) {
         /**
-         * expect personal incoming message format:
+         * expect announcement incoming message format:
          * {
          *    channel: "announcement_inf"
          *    date: "2021-09-02"
@@ -743,7 +744,7 @@ export default {
         if (id > lastReadId) {
           this.setCache(cacheKey, id)
           this.invokeIPCNotification(title, {
-            showMainWindow: true,
+            showMainWindow: false,
             channel: channel
           })
         }
@@ -868,7 +869,7 @@ export default {
       // back from settings page
       if (this.backFromSettings) {
         this.back = true
-        this.setCurrentChannel('announcement')
+        this.setCurrentChannel('chat')
         this.connect()
       }
       this.ipcRenderer.invoke('home-ready')

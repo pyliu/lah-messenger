@@ -46,7 +46,7 @@ const state = () => ({
   fetchingHistory: false,
   websocket: undefined,
   timer: null,
-  currentChannel: 'announcement',
+  currentChannel: 'chat',
   messages: {
     'lds': [],
     'announcement': [],

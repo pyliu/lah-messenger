@@ -74,7 +74,7 @@ if (!gotTheLock) {
         ]))
         tray.setIgnoreDoubleClickEvents(true)
         tray.on('click', (event) => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
-        tray.setToolTip('桃園地政-信差服務即時通')
+        tray.setToolTip('桃園地政信差服務即時通')
 
         mainWindow = createWindow('main', {
           width: isProd ? 490 : 960,
@@ -95,7 +95,8 @@ if (!gotTheLock) {
         
         mainWindow.once('ready-to-show', function(e) {
           // setTimeout(() => this.show(), 5000)
-          mainWindow.show()
+          // start as tray ... not showing up
+          // mainWindow.show()
         })
 
         mainWindow.on('focus', () => {
@@ -229,10 +230,9 @@ ipcMain.handle('title', async (event, str) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  // mainWindow.restore()
-  mainWindow.show()
   // important notification
   if (mainWindow.userinfo.userid === channel || channel.startsWith('announcement')) {
+    mainWindow.show()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
   }
