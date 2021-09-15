@@ -49,6 +49,7 @@ Vue.mixin({
       'pcname',
       'userid',
       'ad',
+      'apiHost',
       'apiPort',
       'password',
       'address',
@@ -68,10 +69,7 @@ Vue.mixin({
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' },
-    async apiHttpUrl () {
-      const host = await this.$localForage?.getItem('wsHost') || '220.1.34.75'
-      return `http://${host}:${this.apiPort}`
-    }
+    apiHttpUrl () { return `http://${this.apiHost}:${this.apiPort}` }
   },
   methods: {
     ...mapActions([

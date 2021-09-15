@@ -152,11 +152,12 @@ export default {
       this.$localForage.setItem('adPassword', val)
       this.$store.commit('password', val)
     },
-    wsHost(val) {
-      this.$localForage.setItem('wsHost', val)
-    },
     wsPort(val) {
       this.$localForage.setItem('wsPort', val)
+    },
+    wsHost(val) {
+      this.$localForage.setItem('wsHost', val)
+      this.$store.commit('apiHost', val)
     },
     apiPortSetting(val) {
       this.$localForage.setItem('apiPort', val)

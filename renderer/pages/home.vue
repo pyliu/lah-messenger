@@ -860,6 +860,7 @@ export default {
       // restore history count to store
       this.$store.commit('history', await this.$localForage.getItem('history') || 10)
       this.$store.commit('fetchingHistory', false)
+      this.$store.commit('apiHost', this.wsHost)
       this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
       // restore user map
       this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
