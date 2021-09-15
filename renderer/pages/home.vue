@@ -136,14 +136,7 @@ import debounce from 'lodash/debounce'
 
 export default {
   transition: 'list',
-  head: {
-    title: `桃園地政事務所`
-  },
-  asyncData ({ req, store, redirect, error }) {
-    return {
-      name: process.static ? 'static' : (process.server ? 'server' : 'client')
-    }
-  },
+  head: { title: `桃園地政事務所` },
   data: () => ({
     text: '',
     connectText: '',
@@ -517,23 +510,8 @@ export default {
       this.connecting = true
       this.resetReconnectTimer()
       this.delayConnect()
-      // dynamic get userinfo from main process
-      // this.ipcRenderer.invoke('wss-probe', {
-      //   ip: this.wsHost,
-      //   port: this.wsPort
-      // }).then((YN) => {
-      //   this.$config.isDev && console.log(this.time(), `${this.wsHost}:${this.wsPort}回應`, YN)
-      //   if (YN === true) {
-      //     this.resetReconnectTimer()
-      //     this.delayConnect()
-      //   } else {
-      //     this.alert(`${this.wsHost}:${this.wsPort} 無法連線!`)
-      //   }
-      // }).finally(() => {
-      //   this.connecting = false
-      // })
     }, 
-    connect() {
+    connect () {
       if (this.connected) {
         this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
         this.connectText = ''
@@ -795,19 +773,29 @@ export default {
     },
     queryUserInfo () {
       // dynamic get userinfo from main process
-      this.ipcRenderer.invoke('userinfo').then((userinfo) => {
-        this.$store.commit('userinfo', userinfo)
-        if (!this.$utils.isIPv4(this.adHost)) {
-          this.adHost = this.getFirstDNSIp()
-        }
-        // this.invokeADQuery()
-        if (this.userid === this.username) {
-          this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.pcname}`)
+      this.$localForage.getItem('userinfo').then(userinfo => {
+        // console.log('使用者資訊除錯', userinfo)
+        if (userinfo) {
+          this.setUserInfo(userinfo)
         } else {
-          this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
+          this.ipcRenderer.invoke('userinfo').then((userinfo) => {
+            this.setUserInfo (userinfo)
+          })
         }
-        this.register()
       })
+    },
+    setUserInfo (userinfo) {
+      this.$store.commit('userinfo', userinfo)
+      this.$localForage.setItem('userinfo', userinfo)
+      if (!this.$utils.isIPv4(this.adHost)) {
+        this.adHost = this.getFirstDNSIp()
+      }
+      if (this.userid === this.username) {
+        this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.pcname}`)
+      } else {
+        this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
+      }
+      this.register()
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')

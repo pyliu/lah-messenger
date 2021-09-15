@@ -4,6 +4,7 @@
       b-list-group-item(v-for="(item, idx) in deptChannels" v-if="userdept === item.id || item.id === 'lds'" :key="`dept-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
         span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
+    h5.my-2.text-center 此處為群組聊天看板，可以隨時留信息到各房間
     b-list-group.gray-bottom-border(flush)
       b-list-group-item(v-for="(item, idx) in participatedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
         span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.participants.find(val => val !== userid) }}
