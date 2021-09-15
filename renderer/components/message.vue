@@ -10,7 +10,7 @@
       b-avatar.my-auto.mr-1(
         v-if="['remote'].includes(type) || isAnnouncement"
         size="1.25rem"
-        :src="isAnnouncement ? '/tyland.jpg' : ''"
+        :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
         variant="primary"
       )
       span.mr-1 {{ sender }}
@@ -104,6 +104,9 @@ export default {
         this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
         this.mine ? 'mine' : this.system ? 'system' : '',
       ]
+    },
+    avatarSrc () {
+      return `${this.apiHttpUrl}/get_user_img.php?id=${this.id}_avatar&name=${this.userMap[this.id]}_avatar`
     }
   },
   methods: {
