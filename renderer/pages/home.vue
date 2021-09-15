@@ -4,7 +4,7 @@
       b-card.m-1(no-body header-tag="nav")
         template(#header): b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
-            b-icon.mr-1(icon="bookmarks")
+            b-icon.mr-1(icon="bookmarks" variant="danger")
             span 公告
             b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
 
