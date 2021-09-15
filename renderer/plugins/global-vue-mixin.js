@@ -67,7 +67,11 @@ Vue.mixin({
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' }
+    belongToSupervisor () { return this.userdept === 'supervisor' },
+    async apiHttpUrl () {
+      const host = await this.$localForage?.getItem('wsHost') || '220.1.34.75'
+      return `http://${host}:${this.apiPort}`
+    }
   },
   methods: {
     ...mapActions([
