@@ -5,12 +5,6 @@
         span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
     h5.my-2.text-center 此處為群組聊天看板，可以隨時留信息到各房間
-    b-list-group.gray-bottom-border(flush)
-      b-list-group-item(v-for="(item, idx) in participatedChannels" :key="`talked-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
-        span #[b-avatar.mt-n1(size="1.25rem" icon="chat-dots-fill")] {{ item.participants.find(val => val !== userid) }}
-        span
-          b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
-          b-icon(icon="x-circle-fill" variant="danger" font-scale="1.25" @click.stop="removeParticipatedChannel(item)" title="刪除對話頻道")
 </template>
 
 <script>
@@ -31,35 +25,8 @@ export default {
   computed: {
     isChat () { return this.currentChannel === 'chat'}
   },
-  watch: {
-    
-  },
-  methods: {
-    removeParticipatedChannel (item) {
-      this.confirm(`刪除 ${item.id} / ${item.name} 頻道將一併移除所有歷史訊息，請確認是否執行？`).then((ans) => {
-        if (ans) {
-          // send command message to system channel
-          /*
-            item example: {
-              id: 10,
-              name: 'DONTCARE',
-              participants: [ '0541', 'HB0542' ],
-              type: 0
-            }
-          */
-          const jsonStr = this.packMessage({
-            command: 'remove_channel',
-            ...item
-          }, {
-            type: 'command',
-            channel: 'system',
-            sender: this.userid
-          })
-          this.websocket && this.websocket.send(jsonStr)
-        }
-      })
-    }
-  }
+  watch: { },
+  methods: { }
 };
 </script>
 
