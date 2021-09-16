@@ -609,14 +609,13 @@ export default {
           this.notify(IDReady ? '請輸入正確的連線資訊' : '正在等待取得登入ID ... ', { type: IDReady ? 'warning' : 'info', pos: 'tf', delay: 3000 })
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2
-          } else {
-            // send notification to user to login
-            this.ipcRenderer.invoke('notification', {
-              message: '請登入網域以讀取最新訊息！',
-              showMainWindow: true
-            })
+            this.resetReconnectTimer()
           }
-          this.resetReconnectTimer()
+          // send notification to user to login
+          this.ipcRenderer.invoke('notification', {
+            message: '請登入網域以讀取最新訊息！',
+            showMainWindow: true
+          })
         }
       }
     },
