@@ -796,6 +796,8 @@ export default {
         this.ipcRenderer.invoke('title', `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`)
       }
       this.register()
+      // inject userinfo to electron mainWindow as well
+      this.ipcRenderer.invoke('injectUserinfo', userinfo)
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')

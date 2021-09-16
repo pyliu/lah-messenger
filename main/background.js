@@ -232,10 +232,15 @@ ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   mainWindow.show()
   // important notification
-  if (mainWindow.userinfo.userid === channel || channel.startsWith('announcement')) {
+  if (mainWindow.userinfo?.userid === channel || channel.startsWith('announcement')) {
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
   }
+})
+
+ipcMain.handle('injectUserinfo', async (event, arg) => {  
+  // inject userinfo to main window
+  mainWindow.userinfo = arg
 })
 
 ipcMain.handle('userinfo', async (event, arg) => {
@@ -297,9 +302,6 @@ ipcMain.handle('userinfo', async (event, arg) => {
       }
     }
   }
-
-  // inject userinfo to main window
-  mainWindow.userinfo = userinfo
 
   return userinfo
 })
