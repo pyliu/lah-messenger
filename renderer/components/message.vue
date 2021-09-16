@@ -106,7 +106,7 @@ export default {
       ]
     },
     avatarSrc () {
-      return `/img/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar`
+      return `http://${this.apiHost}:${apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar`
     }
   },
   methods: {
