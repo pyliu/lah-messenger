@@ -1,15 +1,32 @@
 <template lang="pug">
-  div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop" @drop="upload($event)")
-    b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-    //- transition-group(name="listY")
-    message.mr-1.animate__animated(
-      enter-active-class="animate__slideInUp"
-      leave-active-class="animate__slideInDown"
-      v-for="(item, idx) in list"
-      :raw="item" :prev="list[idx - 1]"
-      :key="`msg-${idx}`" :ref="`msg-${idx}`"
-      @reply="$emit('reply', $event)"
+  div(:class="blockCss")
+    input(
+      multiple 
+      ref="file"
+      type="file"
+      accept=".jpg,.jpeg"
+      name="fields[assetsFieldHandle][]"
+      id="assetsFieldHandle" 
+      @change="onChange"
+      v-show="false"
     )
+    .msg(
+      ref="box"
+      @scroll="scrollTop = $event.target.scrollTop"
+      @dragover="dragover"
+      @dragleave="dragleave"
+      @drop="drop"
+    )
+      b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
+      //- transition-group(name="listY")
+      message.mr-1.animate__animated(
+        enter-active-class="animate__slideInUp"
+        leave-active-class="animate__slideInDown"
+        v-for="(item, idx) in list"
+        :raw="item" :prev="list[idx - 1]"
+        :key="`msg-${idx}`" :ref="`msg-${idx}`"
+        @reply="$emit('reply', $event)"
+      )
 </template>
 
 <script>
@@ -20,7 +37,8 @@ export default {
   },
   data: () => ({
     scrollTop: 0,
-    scrollBehavior: 'last'
+    scrollBehavior: 'last',
+    filelist: []
   }),
   computed: {
     isChat () { return !this.isAnnouncement && !this.isPersonal },
@@ -56,6 +74,9 @@ export default {
     },
     fetchingHistory (flag) {
       this.scrollBehavior = flag ? 'first' : 'last'
+    },
+    filelist (arr) {
+      console.log(arr)
     }
   },
   methods: {
@@ -91,10 +112,29 @@ export default {
         )
       }
     },
-    upload (event) {
+    
+    onChange() {
+      this.filelist = [...this.$refs.file.files];
+    },
+    dragover(event) {
       event.preventDefault();
-      // this.$refs.file.files = event.dataTransfer.files;
-      console.log(event.dataTransfer.files)
+      // Add some visual fluff to show the user can drop its files
+      if (!event.currentTarget.classList.contains('bg-green-300')) {
+        event.currentTarget.classList.add('bg-green-300');
+      }
+    },
+    dragleave(event) {
+      // Clean up
+      event.currentTarget.classList.add('bg-gray-100');
+      event.currentTarget.classList.remove('bg-green-300');
+    },
+    drop(event) {
+      event.preventDefault();
+      this.$refs.file.files = event.dataTransfer.files;
+      this.onChange(); // Trigger the onChange event manually
+      // Clean up
+      event.currentTarget.classList.add('bg-gray-100');
+      event.currentTarget.classList.remove('bg-green-300');
     }
   },
   created () {
