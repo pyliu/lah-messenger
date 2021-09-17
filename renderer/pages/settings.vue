@@ -48,26 +48,34 @@
     
     fieldset
       legend 伺服器設定
-      b-input-group.my-2
+      b-input-group.my-2(v-b-tooltip="'Websocket伺服器'")
         template(#prepend)
-          b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="secondary")
-          span.my-auto 會話主機
+          b-icon.my-auto.mr-2(icon="chat" font-scale="2.25" variant="primary")
+          span.my-auto 交談主機
         b-input.ml-2(v-model="wsHost" :state="validHost" trim)
         span.my-auto.mx-1 :
         b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
 
-      b-input-group.my-2
+      b-input-group.my-2(v-b-tooltip="'API伺服器'")
         template(#prepend)
-          b-icon.my-auto.mr-2(icon="cpu" font-scale="2.25" variant="secondary")
+          b-icon.my-auto.mr-2(icon="hdd-network" font-scale="2.25" variant="info")
           span.my-auto 查詢主機
         b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
         span.my-auto.mx-1 :
         b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
 
+      b-input-group.my-2(v-b-tooltip="'地政智慧管控伺服器'")
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="success")
+          span.my-auto 前端主機
+        b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+        span.my-auto.mx-1 :
+        b-input(v-model="fePortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+
       b-input-group.my-2
         template(#prepend)
-          b-icon.my-auto.mr-2(icon="card-list" font-scale="2.25" variant="secondary")
-          span.my-auto ＡＤ主機
+          b-icon.my-auto.mr-2(icon="badge-ad-fill" font-scale="2.25" variant="dark")
+          span.my-auto 目錄主機
         b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
     copyright
@@ -93,6 +101,7 @@ export default {
     wsHost: '220.1.34.75',
     wsPort: 8081,
     apiPortSetting: 80,
+    fePortSetting: 8080,
     adPassword: '',
     adPasswordType: 'password',
     adPasswordIcon: 'eye-slash',
@@ -134,6 +143,10 @@ export default {
       const i = parseInt(trim(this.apiPortSetting))
       return (i > 79 && i < 65536) === false ? false : null
     },
+    validFePort() {
+      const i = parseInt(trim(this.fePortSetting))
+      return (i > 1024 && i < 65536) === false ? false : null
+    },
     validNickname() { return !isEmpty(trim(this.nickname)) },
     validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
     validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
@@ -162,6 +175,10 @@ export default {
     apiPortSetting(val) {
       this.$localForage.setItem('apiPort', val)
       this.$store.commit('apiPort', val)
+    },
+    fePortSetting(val) {
+      this.$localForage.setItem('fePort', val)
+      this.$store.commit('fePort', val)
     },
     nickname(val) {
       this.$store.commit('username', val)
@@ -219,6 +236,7 @@ export default {
       this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
+      this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
     },
     logout() {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {

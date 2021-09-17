@@ -51,6 +51,7 @@ Vue.mixin({
       'ad',
       'apiHost',
       'apiPort',
+      'fePort',
       'password',
       'address',
       'os',

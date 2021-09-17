@@ -4,7 +4,7 @@
       b-card.m-1(no-body header-tag="nav")
         template(#header): b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
-            b-icon.mr-1(icon="bookmarks" variant="danger")
+            b-icon.mr-1(icon="bookmarks-fill" variant="danger")
             span 公告
             b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
 
@@ -16,22 +16,22 @@
             @click="setCurrentChannel(deptChannel.value)"
             title="部門訊息"
           ): a.mr-1
-            b-icon.mr-1(icon="building")
+            b-icon.mr-1(icon="building" variant="primary")
             span {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
           
           b-nav-item(:active="isPersonal" title="個人通知" @click="setCurrentChannel(userid)"): a.mr-1
-            b-icon.mr-1(icon="person")
+            b-icon.mr-1(icon="person-square")
             span 個人
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
           b-nav-item(:active="isChat" title="聊天室列表" @click="setCurrentChannel('chat')"): a.mr-1
-            b-icon.mr-1(icon="chat-text")
+            b-icon.mr-1(icon="chat-dots-fill" variant="secondary")
             span 聊天室
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
 
           b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
-            b-icon.mr-1(icon="tools")
+            b-icon.mr-1(icon="list")
 
         //- chatting room list
         transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
@@ -41,9 +41,10 @@
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
         //- announcement
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
+
       //- 輸入訊息UI
       transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
-        b-textarea.mr-1(
+        b-textarea(
           ref="textarea"
           v-model="text"
           debounce="200"
@@ -54,7 +55,7 @@
           no-auto-shrink
           autofocus
         )
-        b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
+        b-button.mx-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
         b-button(@click="upload" variant="outline-secondary")
@@ -107,7 +108,7 @@
             b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門" disabled)
 
         b-input-group.my-2(title="信差伺服器資訊")
-          template(#prepend): b-icon.my-auto.mr-1(icon="server" font-scale="2.25" variant="secondary")
+          template(#prepend): b-icon.my-auto.mr-1(icon="chat" font-scale="2.25" variant="secondary")
           b-input(v-model="wsHost" @keyup.enter.exact="manualConnect" :state="validHost" trim placeholder="... 信差伺服器IP ...")
           span.my-auto.mx-1 :
           b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 75px;")
@@ -862,6 +863,7 @@ export default {
       this.$store.commit('fetchingHistory', false)
       this.$store.commit('apiHost', this.wsHost)
       this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
+      this.$store.commit('fePort', parseInt(await this.$localForage.getItem('fePort')) || 8080)
       // restore user map
       this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
       this.$store.commit("resetUnread", this.userid)

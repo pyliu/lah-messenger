@@ -37,6 +37,7 @@ const state = () => ({
   ad: '',
   apiHost: '220.1.34.75',
   apiPort: '80',
+  fePort: '8080',
   password: '',
   username: '',
   userdept: '',
@@ -96,6 +97,7 @@ const getters = {
   ad: state => state.ad,
   apiHost: state => state.apiHost,
   apiPort: state => state.apiPort,
+  fePort: state => state.fePort,
   password: state => state.password,  // used for activedirectory query
   os: state => state.userinfo.os,
   user: state => state.userinfo.user,
@@ -138,6 +140,9 @@ const mutations = {
   },
   apiPort (state, port) {
     state.apiPort = port
+  },
+  fePort (state, port) {
+    state.fePort = port
   },
   password (state, password) {
     state.password = password
