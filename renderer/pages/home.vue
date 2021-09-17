@@ -57,6 +57,8 @@
         b-button(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
+        b-button(@click="upload" variant="outline-secondary")
+          b-icon(icon="file-image")
 
 
     //- 連線主畫面
@@ -138,6 +140,7 @@ export default {
   transition: 'list',
   head: { title: `桃園地政事務所` },
   data: () => ({
+    image: null,
     text: '',
     connectText: '',
     adHost: '',
@@ -279,6 +282,7 @@ export default {
     }
   },
   methods: {
+    upload () {},
     reply (raw) {
       const sender = this.userMap[raw["sender"]] || raw["sender"]
       const hrIdx = raw["message"]?.indexOf('<hr>')
