@@ -3,9 +3,9 @@
     transition(v-if="connected" name="list" mode="out-in"): div
       b-card.m-1(no-body header-tag="nav")
         template(#header): b-nav(card-header tabs fill)
-          b-nav-item(:active="isAnnouncement" title="公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
+          b-nav-item(:active="isAnnouncement" title="全所訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             b-icon.mr-1(icon="bookmarks-fill" variant="danger")
-            span 公告
+            span 全所
             b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
 
           b-nav-item(
@@ -26,7 +26,7 @@
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
           b-nav-item(:active="isChat" title="聊天室列表" @click="setCurrentChannel('chat')"): a.mr-1
-            b-icon.mr-1(icon="chat-dots-fill" variant="secondary")
+            b-icon.mr-1(icon="chat-dots-fill" variant="muted")
             span 聊天室
             b-badge.notify-chat(variant="secondary" pill v-if="showChatUnread") {{ chatUnread }}
 

@@ -1,5 +1,5 @@
 <template lang="pug">
-  div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop" @drop="upload")
+  div(:class="blockCss"): .msg(ref="box" @scroll="scrollTop = $event.target.scrollTop" @drop="upload($event)")
     b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
     //- transition-group(name="listY")
     message.mr-1.animate__animated(

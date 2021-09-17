@@ -5,7 +5,7 @@
         span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
     h5.my-2.text-center 此處為群組聊天看板，可以隨時留信息到各房間
-    h5.my-2.text-center 如欲發送信差訊息請至 #[a.underline(:href="`http://${this.apiHost}:${this.fePort}/message`") 地政智慧管控系統]
+    h5.my-2.text-center 如欲發送 #[a(:href="`http://${this.apiHost}:${this.fePort}/message`") 信差] / #[a(:href="`http://${this.apiHost}:${this.fePort}/notification`") 公告] 訊息請至 #[a(:href="`http://${this.apiHost}:${this.fePort}`") 地政智慧管控系統]
 </template>
 
 <script>
