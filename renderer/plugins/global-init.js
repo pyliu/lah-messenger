@@ -6,6 +6,7 @@ import remove from 'lodash/remove'
 import filter from 'lodash/filter'
 import reject from 'lodash/reject'
 import _md5 from 'md5'
+import uploadAxios from 'axios'
 
 export default ({ $axios, store }, inject) => {
   // global const variables, use this.$consts.xxxx to access them in Vue
@@ -222,4 +223,8 @@ export default ({ $axios, store }, inject) => {
   // all injected var can be used by {varname} in Vue and ${varname} in Nuxt, e.g. this.$http (Vue), $http (Nuxt)
   inject('consts', consts)
   inject('utils', utility)
+  // inject uploading file axios
+  // need to add 'Header set Access-Control-Allow-Origin "*"' to Apache site and turn on mod_header.so in httpd.conf
+  uploadAxios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
+  inject('upload', uploadAxios)
 }
