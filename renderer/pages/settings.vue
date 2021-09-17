@@ -207,23 +207,6 @@ export default {
         this.adPasswordType = 'text'
       }
     },
-    async loadUserMapData() {
-      // refresh user name mapping from API server
-      const queryEP = `http://${await this.$localForage.getItem('wsHost') || this.wsHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
-      this.$axios.post(queryEP, {
-        type: 'user_mapping'
-      }).then(({ data }) => {
-        if (this.$utils.statusCheck(data.status)) {
-          this.$store.commit('userMap', data.data)
-          this.$localForage.setItem('userMap', data.data)
-        } else {
-          this.warning(data.message)
-        }
-      }).catch((err) => {
-        this.alert(err.toString())
-      }).finally(() => {
-      })
-    },
     async restore() {
       // restore last settings
       this.nickname = await this.$localForage.getItem('nickname')
@@ -289,7 +272,6 @@ export default {
   mounted () {
     this.restore()
     this.clearReconnectTimer()
-    this.loadUserMapData()
   },
   destroyed () {
     this.closeWebsocket()

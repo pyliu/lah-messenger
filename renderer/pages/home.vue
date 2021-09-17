@@ -1,7 +1,7 @@
 <template lang="pug">
-  div(v-cloak)
+  div
     transition(v-if="connected" name="list" mode="out-in"): div
-      b-card.m-1(no-body header-tag="nav")
+      b-card.m-1(no-body header-tag="nav" v-cloak)
         template(#header): b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="全所訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             b-icon.mr-1(icon="bookmarks-fill" variant="danger")
@@ -178,6 +178,17 @@ export default {
     reconnectMs: 20 * 1000,
     back: false
   }),
+  fetch () {
+    this.$localForage.getItem('userMap').then((obj) => {
+      this.$config.isDev && console.log(`從快取中取得使用者對應表`, obj)
+      obj && this.$store.commit('userMap', obj)
+      !obj && this.$config.isDev && console.log(`無快取使用者對應表，直接重新讀取!`)
+      !obj && this.loadUserMapData()
+    }).finally(() => {
+      this.$config.isDev && console.log(`4hrs後重新更新使用者對應表`)
+      setTimeout(() => this.loadUserMapData(), 4 * 60 * 60 * 1000)
+    })
+  },
   computed: {
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
     showMessageBoard () { return this.currentChannel !== 'chat' },
@@ -284,6 +295,23 @@ export default {
   },
   methods: {
     upload () {},
+    loadUserMapData() {
+      // refresh user name mapping from API server
+      const queryEP = `http://${this.apiHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
+      this.$axios.post(queryEP, {
+        type: 'user_mapping'
+      }).then(({ data }) => {
+        if (this.$utils.statusCheck(data.status)) {
+          this.$store.commit('userMap', data.data)
+          this.$localForage.setItem('userMap', data.data)
+        } else {
+          this.warning(data.message)
+        }
+      }).catch((err) => {
+        this.alert(err.toString())
+      }).finally(() => {
+      })
+    },
     reply (raw) {
       const sender = this.userMap[raw["sender"]] || raw["sender"]
       const hrIdx = raw["message"]?.indexOf('<hr>')
