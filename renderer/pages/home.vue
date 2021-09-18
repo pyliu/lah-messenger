@@ -188,6 +188,10 @@ export default {
       this.$config.isDev && console.log(`4hrs後重新更新使用者對應表`)
       setTimeout(() => this.loadUserMapData(), 4 * 60 * 60 * 1000)
     })
+    this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
+      this.$config.isDev && console.log('回復已上傳的圖檔', arr)
+      this.$store.commit('imageMemento', arr || [])
+    })
   },
   computed: {
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },

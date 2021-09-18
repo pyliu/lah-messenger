@@ -593,6 +593,9 @@ Vue.mixin({
     },
     async clearCache () {
       await this.$localForage.clear()
-    }
+    },
+    log () { this.$config.isDev && console.log(this.time(), ...arguments ) },
+    warn () { this.$config.isDev && console.warn(this.time(), ...arguments ) },
+    error () { this.$config.isDev && console.error(this.time(), ...arguments ) },
   }
 })

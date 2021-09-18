@@ -57,8 +57,9 @@
         )
         hr
         b-img.my-1(
-          v-for="dataUri in imageMemento"
+          v-for="(dataUri, idx) in imageMemento"
           v-if="!$utils.empty(dataUri)"
+          :key="`imgMemento_${idx}`"
           :src="dataUri"
           thumbnail
           fluid
@@ -146,63 +147,67 @@ export default {
         // in case the ack is missing
         setTimeout(() => { this.$store.commit('fetchingHistory', false) }, 30000)
       } else {
-        this.$config.isDev && console.log(
-          this.time(),
-          `尚未連線無法取得 ${this.currentChannel} 之前訊息資料`,
-          this.list[0]
-        )
+        this.log(`尚未連線無法取得 ${this.currentChannel} 之前訊息資料`)
       }
     },
     delayAttention () {/* placeholder for attention */},
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     upload () {
-      // image
-      this.isBusy = true
-      this.uploadedDataUri = ''
-      const formData = new FormData()
-      formData.append('file', this.uploadImage)
-      formData.append('width', 320)
-      formData.append('height', 240)
-      formData.append('quality', 75)
-      this.$upload.post(this.$consts.API.FILE.BASE64, formData).then(({ data }) => {
-        if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
-          this.uploadedDataUri = `${data.uri}${data.encoded}`
-          this.$store.commit('addImageMemento', this.uploadedDataUri)
-          if (!this.$utils.statusCheck(data.status)) {
-            this.warning(data.message, { title: '上傳圖檔結果' })
+      if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
+        this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
+      } else {
+        this.isBusy = true
+        this.uploadedDataUri = ''
+        const formData = new FormData()
+        formData.append('file', this.uploadImage)
+        formData.append('width', 320)
+        formData.append('height', 240)
+        formData.append('quality', 75)
+        this.$upload.post(this.$consts.API.FILE.BASE64, formData).then(({ data }) => {
+          if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
+            this.uploadedDataUri = `${data.uri}${data.encoded}`
+            this.$store.commit('addImageMemento', this.uploadedDataUri)
+            this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
+              this.$utils.error('快取上傳圖檔失敗', err);
+            })
+            if (!this.$utils.statusCheck(data.status)) {
+              this.warning(data.message, { title: '上傳圖檔結果' })
+            }
+          } else {
+            this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
           }
-        } else {
-          this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
-        }
-      }).catch((err) => {
-        this.$utils.error(err)
-      }).finally(() => {
-        this.isBusy = false
-      })
+        }).catch((err) => {
+          this.$utils.error(err)
+        }).finally(() => {
+          this.isBusy = false
+        })
+      }
     },
     dragover(event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
-      if (!event.currentTarget.classList.contains('bg-success')) {
-        event.currentTarget.classList.add('bg-success');
+      if (!event.currentTarget.classList.contains('bg-light')) {
+        event.currentTarget.classList.add('bg-light');
       }
     },
     dragleave(event) {
       // Clean up
-      event.currentTarget.classList.remove('bg-success');
+      event.currentTarget.classList.remove('bg-light');
     },
     drop(event) {
       event.preventDefault();
-      if (event.dataTransfer.files.length > 0) {
+      if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
+        this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
+      } else if (event.dataTransfer.files.length > 0) {
         this.uploadImage = event.dataTransfer.files[0]
         // auto uploading after drop file
         this.upload()
         this.showModalById('upload-modal')
       } else {
-        this.alert('無檔案!')
+        this.log('僅支援拖放實體檔案')
       }
       // Clean up
-      event.currentTarget.classList.remove('bg-success');
+      event.currentTarget.classList.remove('bg-light');
     }
   },
   created () {
