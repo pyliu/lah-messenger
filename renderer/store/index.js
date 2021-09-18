@@ -1,4 +1,5 @@
 import trim from 'lodash/trim'
+import { stat } from 'original-fs'
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -46,6 +47,8 @@ const state = () => ({
   fetchingHistory: false,
   websocket: undefined,
   timer: null,
+  imageMementoCapacity: 30,
+  imageMemento: [],
   currentChannel: 'chat',
   messages: {
     'lds': [],
@@ -108,7 +111,10 @@ const getters = {
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
   effect: state => state.effect,
   history: state => parseInt(state.history),
-  fetchingHistory: state => state.fetchingHistory
+  fetchingHistory: state => state.fetchingHistory,
+  imageMementoCapacity: state =>state.imageMementoCapacity,
+  imageMemento: state => state.imageMemento,
+  imageMementoCacheKey: state => 'imageMementoCached'
 }
 
 // only sync operation
@@ -216,6 +222,26 @@ const mutations = {
     } else {
       this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
+  },
+  imageMementoCapacity (state, capacity) { state.imageMementoCapacity = parseInt(capacity) || 30 },
+  imageMemento (state, arr) {
+    if (Array.isArray(arr)) {
+      state.imageMemento = [...arr]
+    }
+  },
+  addImageMemento (state, base64data) {
+    this.$config.isDev && console.log(timestamp(), `新增 image data 到 store。 [Vuex::addImageMemento]`, state.imageMemento)
+    if (state.imageMemento.length >= state.imageMementoCapacity) {
+      const removed = state.imageMemento.shift()
+      this.$config.isDev && console.log(timestamp(), `移除 image data。 [Vuex::addImageMemento]`, removed)
+      state.imageMemento.length = state.imageMementoCapacity
+    }
+    state.imageMemento.push(base64data)
+    // remove duplication
+    state.imageMemento = [...state.imageMemento.filter(function(item, pos) {
+        return state.imageMemento.indexOf(item) == pos;
+    })]
+    this.$config.isDev && console.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
   }
 }
 

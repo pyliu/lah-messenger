@@ -6,6 +6,7 @@
       @dragover="dragover"
       @dragleave="dragleave"
       @drop="drop"
+      @click="showModalById('upload-modal')"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
       //- transition-group(name="listY")
@@ -17,17 +18,52 @@
         :key="`msg-${idx}`" :ref="`msg-${idx}`"
         @reply="$emit('reply', $event)"
       )
-    //- hiding upload file input
-    input(
-      multiple 
-      ref="file"
-      type="file"
-      accept=".jpg,.jpeg"
-      name="fields[assetsFieldHandle][]"
-      id="assetsFieldHandle" 
-      @change="onChange"
-      v-show="false"
+
+    b-modal(
+      id="upload-modal"
+      hide-footer
+      centered
+      size="xl"
+      scrollable
+      no-close-on-backdrop
     )
+      template(#modal-title) 上傳圖片
+      //- template(#default="{ ok, cancel, hide }")
+      div(
+        @dragover="dragover"
+        @dragleave="dragleave"
+        @drop="drop"
+      )
+        .d-flex
+          b-file(
+            v-model="uploadImage"
+            placeholder="*.jpg"
+            drop-placeholder="放開以設定上傳檔案"
+            accept="image/jpeg"
+          ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
+          //- b-button.ml-1(
+          //-   variant="outline-dark"
+          //-   title="上傳"
+          //-   @click="upload"
+          //-   :disabled="$utils.empty(uploadImage)"
+          //-   no-icon-gutter
+          //- )
+          //-   b-icon(icon="upload")
+        b-img.my-1(
+          v-if="!$utils.empty(uploadedDataUri)"
+          :src="uploadedDataUri"
+          thumbnail
+          fluid
+        )
+        hr
+        b-img.my-1(
+          v-for="dataUri in imageMemento"
+          v-if="!$utils.empty(dataUri)"
+          :src="dataUri"
+          thumbnail
+          fluid
+          style="max-width: 122.5px"
+        )
 </template>
 
 <script>
@@ -40,7 +76,8 @@ export default {
     displayOldMessageArrow: false,
     scrollTop: 0,
     scrollBehavior: 'last',
-    filelist: []
+    uploadImage: undefined,
+    uploadedDataUri: ''
   }),
   computed: {
     isMine () { return this.userid === this.currentChannel },
@@ -78,13 +115,14 @@ export default {
     fetchingHistory (flag) {
       this.scrollBehavior = flag ? 'first' : 'last'
     },
-    filelist (arr) {
-      console.log(arr)
+    lastEncodedImage (val) {
+      console.log(val)
+    },
+    uploadImage (dontcare) {
+      this.upload()
     }
   },
   methods: {
-    delayAttention () {}, // placeholder for attention
-    delayLoadHistoryMessage () {},  // placeholder for loadHistoryMessage
     loadHistoryMessage () {
       if (this.fetchingHistory) {
         this.warning(`讀取之前訊息中，請稍待 ... `)
@@ -115,29 +153,56 @@ export default {
         )
       }
     },
-    
-    onChange() {
-      this.filelist = [...this.$refs.file.files];
+    delayAttention () {/* placeholder for attention */},
+    delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
+    upload () {
+      // image
+      this.isBusy = true
+      this.uploadedDataUri = ''
+      const formData = new FormData()
+      formData.append('file', this.uploadImage)
+      formData.append('width', 320)
+      formData.append('height', 240)
+      formData.append('quality', 75)
+      this.$upload.post(this.$consts.API.FILE.BASE64, formData).then(({ data }) => {
+        if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
+          this.uploadedDataUri = `${data.uri}${data.encoded}`
+          this.$store.commit('addImageMemento', this.uploadedDataUri)
+          if (!this.$utils.statusCheck(data.status)) {
+            this.warning(data.message, { title: '上傳圖檔結果' })
+          }
+        } else {
+          this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
+        }
+      }).catch((err) => {
+        this.$utils.error(err)
+      }).finally(() => {
+        this.isBusy = false
+      })
     },
     dragover(event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
-      if (!event.currentTarget.classList.contains('bg-green-300')) {
-        event.currentTarget.classList.add('bg-green-300');
+      if (!event.currentTarget.classList.contains('bg-success')) {
+        event.currentTarget.classList.add('bg-success');
       }
     },
     dragleave(event) {
       // Clean up
-      event.currentTarget.classList.add('bg-gray-100');
-      event.currentTarget.classList.remove('bg-green-300');
+      event.currentTarget.classList.remove('bg-success');
     },
     drop(event) {
       event.preventDefault();
-      this.$refs.file.files = event.dataTransfer.files;
-      this.onChange(); // Trigger the onChange event manually
+      if (event.dataTransfer.files.length > 0) {
+        this.uploadImage = event.dataTransfer.files[0]
+        // auto uploading after drop file
+        this.upload()
+        this.showModalById('upload-modal')
+      } else {
+        this.alert('無檔案!')
+      }
       // Clean up
-      event.currentTarget.classList.add('bg-gray-100');
-      event.currentTarget.classList.remove('bg-green-300');
+      event.currentTarget.classList.remove('bg-success');
     }
   },
   created () {

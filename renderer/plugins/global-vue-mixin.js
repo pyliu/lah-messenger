@@ -59,7 +59,10 @@ Vue.mixin({
       'timer',
       'participatedChannels',
       'platform',
-      'currentChannel'
+      'currentChannel',
+      'imageMemento',
+      'imageMementoCapacity',
+      'imageMementoCacheKey'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },

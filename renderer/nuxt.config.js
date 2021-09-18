@@ -92,10 +92,8 @@ export default {
   proxy: {
     '/api': {
       target: `${process.env.PROTOCOL}://${process.env.API_HOST}:${process.env.API_PORT}`,
-      changeOrigin: true, 
-      // pathRewrite: {
-      //   '^/api': '',
-      // },
+      changeOrigin: true
+      // pathRewrite: { '^/api': '' }
     },
     '/img': {
       target: `${process.env.PROTOCOL}://${process.env.API_HOST}:${process.env.API_PORT}`,
