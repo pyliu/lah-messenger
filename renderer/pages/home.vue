@@ -58,7 +58,7 @@
         b-button.mx-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
-        b-button(@click="upload" variant="outline-secondary")
+        b-button(@click="upload" variant="outline-success" title="傳送圖片")
           b-icon(icon="file-image")
 
 
@@ -298,7 +298,7 @@ export default {
     }
   },
   methods: {
-    upload () {},
+    upload () { this.showModalById('upload-modal') },
     loadUserMapData() {
       // refresh user name mapping from API server
       const queryEP = `http://${this.apiHost}:${this.apiPort}${this.$consts.API.JSON.USER}`

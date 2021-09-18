@@ -6,7 +6,6 @@
       @dragover="dragover"
       @dragleave="dragleave"
       @drop="drop"
-      @click="showModalById('upload-modal')"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
       //- transition-group(name="listY")
@@ -27,43 +26,45 @@
       scrollable
       no-close-on-backdrop
     )
-      template(#modal-title) 上傳圖片
+      template(#modal-title) #[b-icon(icon="upload")] 圖片管理
       //- template(#default="{ ok, cancel, hide }")
       div(
         @dragover="dragover"
         @dragleave="dragleave"
         @drop="drop"
       )
-        .d-flex
-          b-file(
-            v-model="uploadImage"
-            placeholder="*.jpg"
-            drop-placeholder="放開以設定上傳檔案"
-            accept="image/jpeg"
-          ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
-          //- b-button.ml-1(
-          //-   variant="outline-dark"
-          //-   title="上傳"
-          //-   @click="upload"
-          //-   :disabled="$utils.empty(uploadImage)"
-          //-   no-icon-gutter
-          //- )
-          //-   b-icon(icon="upload")
-        b-img.my-1(
-          v-if="!$utils.empty(uploadedDataUri)"
-          :src="uploadedDataUri"
-          thumbnail
-          fluid
-        )
+        b-file(
+          v-model="uploadImage"
+          placeholder="*.jpg"
+          drop-placeholder="放開以設定上傳檔案"
+          browse-text="瀏覽"
+          accept="image/jpeg"
+        ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
         hr
-        b-img.my-1(
-          v-for="(dataUri, idx) in imageMemento"
-          v-if="!$utils.empty(dataUri)"
+        .d-flex.justify-content-between.align-items-end(v-if="!$utils.empty(pickedEncodingData)")
+          b-img(
+            :src="pickedEncodingData"
+            thumbnail
+            fluid
+          )
+          b-button(
+            @click="sendImage(pickedEncodingData) || (pickedEncodingData = '') || hideModalById('upload-modal')"
+            style="max-height: 48px"
+            variant="outline-primary"
+            title="直接送出選擇的圖片"
+          )
+            b-icon(icon="image-fill")
+        hr
+        b-img.memento.my-1(
+          v-for="(memento, idx) in imageMemento"
+          v-if="!$utils.empty(memento)"
           :key="`imgMemento_${idx}`"
-          :src="dataUri"
+          :src="memento"
           thumbnail
           fluid
+          title="挑選這張圖片"
           style="max-width: 122.5px"
+          @click="pickedEncodingData = memento"
         )
 </template>
 
@@ -78,7 +79,7 @@ export default {
     scrollTop: 0,
     scrollBehavior: 'last',
     uploadImage: undefined,
-    uploadedDataUri: ''
+    pickedEncodingData: ''
   }),
   computed: {
     isMine () { return this.userid === this.currentChannel },
@@ -152,25 +153,30 @@ export default {
     },
     delayAttention () {/* placeholder for attention */},
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
-    upload () {
+    upload (directly = false) {
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
-      } else {
+      } else if (this.uploadImage.type === 'image/jpeg') {
         this.isBusy = true
-        this.uploadedDataUri = ''
+        this.pickedEncodingData = ''
         const formData = new FormData()
         formData.append('file', this.uploadImage)
-        formData.append('width', 320)
-        formData.append('height', 240)
+        formData.append('width', 380)
+        formData.append('height', 290)
         formData.append('quality', 75)
         this.$upload.post(this.$consts.API.FILE.BASE64, formData).then(({ data }) => {
           if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
-            this.uploadedDataUri = `${data.uri}${data.encoded}`
-            this.$store.commit('addImageMemento', this.uploadedDataUri)
+            this.pickedEncodingData = `${data.uri}${data.encoded}`
+            this.$store.commit('addImageMemento', this.pickedEncodingData)
             this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
               this.$utils.error('快取上傳圖檔失敗', err);
             })
-            if (!this.$utils.statusCheck(data.status)) {
+            if (this.$utils.statusCheck(data.status)) {
+              if (directly) {
+                // send the image right away
+                this.sendImage(this.pickedEncodingData, this.uploadImage.name, this.currentChannel)
+              }
+            } else {
               this.warning(data.message, { title: '上傳圖檔結果' })
             }
           } else {
@@ -181,18 +187,23 @@ export default {
         }).finally(() => {
           this.isBusy = false
         })
+      } else {
+        this.warning('僅支援JPEG圖檔')
       }
+    },
+    sendImage (base64, alt, channel) {
+      this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
     },
     dragover(event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
-      if (!event.currentTarget.classList.contains('bg-light')) {
-        event.currentTarget.classList.add('bg-light');
+      if (!event.currentTarget.classList.contains('bg-dropable')) {
+        event.currentTarget.classList.add('bg-dropable');
       }
     },
     dragleave(event) {
       // Clean up
-      event.currentTarget.classList.remove('bg-light');
+      event.currentTarget.classList.remove('bg-dropable');
     },
     drop(event) {
       event.preventDefault();
@@ -200,14 +211,18 @@ export default {
         this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
       } else if (event.dataTransfer.files.length > 0) {
         this.uploadImage = event.dataTransfer.files[0]
-        // auto uploading after drop file
-        this.upload()
-        this.showModalById('upload-modal')
+        // if the file JPEG?
+        if (this.uploadImage.type === "image/jpeg") {
+          // auto uploading after drop file then send it
+          this.upload(true)
+        } else {
+          this.warning(`不支援 ${this.uploadImage.type} 的檔案上傳`)
+        }
       } else {
         this.log('僅支援拖放實體檔案')
       }
       // Clean up
-      event.currentTarget.classList.remove('bg-light');
+      event.currentTarget.classList.remove('bg-dropable');
     }
   },
   created () {
@@ -225,6 +240,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.bg-dropable {
+  background-color: rgb(227, 255, 236);
+  font-weight: bolder;
+}
+
+.memento:hover {
+  border: 5px dashed gray;
+  padding: 2px;
+  cursor: pointer;
+}
+
 .personal-container {
   margin: 5px;
   height: calc(81.5vh - 24px);

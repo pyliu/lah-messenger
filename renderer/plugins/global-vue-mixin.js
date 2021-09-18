@@ -164,6 +164,9 @@ Vue.mixin({
         ...opts,
       })
     },
+    packImage(base64, alt, channel) {
+      return this.packMessage(`![${alt}](${base64})`, { channel: channel || this.currentChannel })
+    },
     getChannelName(channelId) {
       switch (channelId) {
         case 'announcement': return '公告'
