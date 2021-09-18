@@ -1,15 +1,5 @@
 <template lang="pug">
   div(:class="blockCss")
-    input(
-      multiple 
-      ref="file"
-      type="file"
-      accept=".jpg,.jpeg"
-      name="fields[assetsFieldHandle][]"
-      id="assetsFieldHandle" 
-      @change="onChange"
-      v-show="false"
-    )
     .msg(
       ref="box"
       @scroll="scrollTop = $event.target.scrollTop"
@@ -27,6 +17,17 @@
         :key="`msg-${idx}`" :ref="`msg-${idx}`"
         @reply="$emit('reply', $event)"
       )
+    //- hiding upload file input
+    input(
+      multiple 
+      ref="file"
+      type="file"
+      accept=".jpg,.jpeg"
+      name="fields[assetsFieldHandle][]"
+      id="assetsFieldHandle" 
+      @change="onChange"
+      v-show="false"
+    )
 </template>
 
 <script>
@@ -36,25 +37,27 @@ export default {
     list: { type: Array, required: true },
   },
   data: () => ({
+    displayOldMessageArrow: false,
     scrollTop: 0,
     scrollBehavior: 'last',
     filelist: []
   }),
   computed: {
-    isChat () { return !this.isAnnouncement && !this.isPersonal },
-    isPersonal () { return this.userid === this.currentChannel },
+    isMine () { return this.userid === this.currentChannel },
+    isChat () { return !this.isAnnouncement && !this.isMine },
     isAnnouncement () { return this.currentChannel === 'announcement' },
+    isDepartment () { return this.currentChannel.startsWith('announcement_') },
     blockCss () {
-      if (this.currentChannel.startsWith('announcement') || this.isPersonal) {
+      if (this.isAnnouncement || this.isDepartment || this.isMine) {
         return 'announcement-container'
       }
-      // if (this.isPersonal) {
+      // if (this.isMine) {
       //   return 'personal-container'
       // }
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
+    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
   },
   watch: {
     messageCount (dontcare) {
@@ -145,6 +148,7 @@ export default {
     setTimeout(() => {
       // this.ready = true
       this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
+      this.displayOldMessageArrow = true
     }, 800)
   }
 };
