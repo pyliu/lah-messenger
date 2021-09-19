@@ -59,7 +59,7 @@
           b-icon(icon="cursor" v-if="valid")
           span 傳送
         b-button(@click="upload" variant="outline-success" title="傳送圖片")
-          b-icon(icon="file-image")
+          b-icon(icon="image")
 
 
     //- 連線主畫面

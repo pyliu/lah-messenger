@@ -41,20 +41,22 @@
           accept="image/jpeg"
         ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
         hr
-        .d-flex.justify-content-between.align-items-end(v-if="!$utils.empty(pickedEncodingData)")
+        h6 選擇預覽
+        .d-flex(v-if="!$utils.empty(pickedEncodingData)")
           b-img(
             :src="pickedEncodingData"
             thumbnail
             fluid
           )
-          b-button(
-            @click="sendImage(pickedEncodingData) || (pickedEncodingData = '') || hideModalById('upload-modal')"
+          b-button.ml-1(
+            @click="publish"
             style="max-height: 48px"
             variant="outline-primary"
             title="直接送出選擇的圖片"
           )
             b-icon(icon="image-fill")
         hr
+        h6 #[b-icon(icon="card-list")] 已上傳圖片
         b-img.memento.my-1(
           v-for="(memento, idx) in imageMemento"
           v-if="!$utils.empty(memento)"
@@ -190,6 +192,15 @@ export default {
       } else {
         this.warning('僅支援JPEG圖檔')
       }
+    },
+    publish () {
+      this.confirm('立即發送這張圖片?').then((YN) => {
+        if (YN) {
+          this.sendImage(pickedEncodingData)
+          this.pickedEncodingData = ''
+          this.hideModalById('upload-modal')
+        }
+      })
     },
     sendImage (base64, alt, channel) {
       this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
