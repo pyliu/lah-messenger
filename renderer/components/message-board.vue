@@ -41,7 +41,9 @@
           accept="image/jpeg"
         ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
         hr
-        h6 選擇預覽
+        h6 
+          img.mt-n1(src="~/assets/img/preview_black_24dp.svg")
+          span 選定預覽
         .d-flex(v-if="!$utils.empty(pickedEncodingData)")
           b-img(
             :src="pickedEncodingData"
@@ -54,9 +56,12 @@
             variant="outline-primary"
             title="直接送出選擇的圖片"
           )
-            b-icon(icon="image-fill")
+            //- img(src="~/assets/img/send_black_24dp.svg")
+            b-icon(icon="box-arrow-up")
         hr
-        h6 #[b-icon(icon="card-list")] 已上傳圖片
+        h6
+          img.mt-n1(src="~/assets/img/history_black_24dp.svg")
+          span 歷史圖片
         b-img.memento.my-1(
           v-for="(memento, idx) in imageMemento"
           v-if="!$utils.empty(memento)"
@@ -196,7 +201,7 @@ export default {
     publish () {
       this.confirm('立即發送這張圖片?').then((YN) => {
         if (YN) {
-          this.sendImage(pickedEncodingData)
+          this.sendImage(this.pickedEncodingData)
           this.pickedEncodingData = ''
           this.hideModalById('upload-modal')
         }
