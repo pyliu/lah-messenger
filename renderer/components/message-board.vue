@@ -8,15 +8,16 @@
       @drop="drop"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-      //- transition-group(name="listY")
-      message.mr-1.animate__animated(
-        enter-active-class="animate__slideInUp"
-        leave-active-class="animate__slideInDown"
-        v-for="(item, idx) in list"
-        :raw="item" :prev="list[idx - 1]"
-        :key="`msg-${idx}`" :ref="`msg-${idx}`"
-        @reply="$emit('reply', $event)"
-      )
+      transition-group(name="list" mode="out-in")
+        message.mr-1.animate__animated(
+          enter-active-class="animate__slideInUp"
+          leave-active-class="animate__slideInDown"
+          v-for="(item, idx) in list"
+          :raw="item" :prev="list[idx - 1]"
+          :key="`msg-${idx}`" :ref="`msg-${idx}`"
+          @reply="$emit('reply', $event)"
+          @remove="$emit('remove', $event)"
+        )
 
     b-modal(
       id="upload-modal"

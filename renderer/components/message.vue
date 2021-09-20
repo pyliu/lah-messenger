@@ -122,9 +122,29 @@ export default {
       this.$emit('reply', this.raw)
     },
     remove () {
-      // TODO: send request to ws to remvoe the message from channel
-      // to tell outter board remove this message in the list
-      this.$emit('remove', this.raw)
+      this.confirm('刪除本則訊息?').then((YN) => {
+        if (YN) {
+          // TODO: send request to ws to remvoe the message from channel
+          this.sendRemoveMessage()
+          // to tell outter board removing this message in the list
+          this.$emit('remove', this.raw)
+        }
+      })
+    },
+    sendRemoveMessage () {
+      const jsonString = JSON.stringify({
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({
+          command: 'remove_message',
+          channel: this.channel,
+          id: this.id
+        }),
+        channel: 'system'
+      })
+      this.websocket.send(jsonString)
     }
   }
 }

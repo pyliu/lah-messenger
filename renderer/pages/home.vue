@@ -508,6 +508,20 @@ export default {
           json.success && this.$store.commit('removeParticipatedChannel', item)
           this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
           break;
+        case 'remove_message':
+          if (json.success) {
+            let found_idx = -1
+            const found = this.messages[json.payload.channel].find((msg, idx) => {
+              found_idx = idx
+              return msg.id === json.payload.id
+            })
+            if (found_idx > -1) {
+              this.messages[json.payload.channel].splice(found_idx, 1)
+            }
+            this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
+          }
+          this.error(json)
+          break;
         case 'previous':
           this.$store.commit('fetchingHistory', false)
           !json.success && this.notify(json.message, { subtitle: this.getChannelName(json.payload.channel), type: 'info'})
@@ -620,13 +634,19 @@ export default {
                     if (incoming.prepend) {
                       this.messages[channel].unshift(incoming)
                     } else {
-                      this.messages[channel].push(incoming)
-                      // only recieved id is greater than read id need to insert to the current message list
-                      if (receivedId > lastReadId) {
-                        // store the read id for this channel at FE
-                        this.setChannelUnread(channel, receivedId)
-                        // tell electron window got a unread message
-                        this.ipcRenderer.invoke('unread', channel)
+                      // prevent to add duplicated message
+                      const found = this.messages[channel].find((msg, idx) => {
+                        return msg.id === incoming.id
+                      })
+                      if (!found) {
+                        this.messages[channel].push(incoming)
+                        // only recieved id is greater than read id need to insert to the current message list
+                        if (receivedId > lastReadId) {
+                          // store the read id for this channel at FE
+                          this.setChannelUnread(channel, receivedId)
+                          // tell electron window got a unread message
+                          this.ipcRenderer.invoke('unread', channel)
+                        }
                       }
                     }
                   }
