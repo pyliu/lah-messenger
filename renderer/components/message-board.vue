@@ -197,11 +197,11 @@ export default {
           this.$utils.error(err)
         }).finally(() => {
           this.isBusy = false
-          this.uploadImage = undefined
         })
       } else {
-        this.warning('僅支援JPEG圖檔')
+        this.warning('僅支援JPEG圖檔上傳')
       }
+      this.uploadImage = undefined
     },
     publish () {
       this.confirm('立即發送這張圖片?').then((YN) => {
