@@ -592,6 +592,9 @@ export default {
               const incoming = JSON.parse(e.data)
               const channel = incoming.channel
 
+              const receivedId = incoming.message.id
+              const lastReadId = await this.getCache(`${channel}_last_id`) || 0
+
               this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
@@ -609,23 +612,29 @@ export default {
                     if (incoming.prepend) {
                       this.messages[channel].unshift(incoming)
                     } else {
-                      this.messages[channel].push(incoming)
+                      // only recieved id is greater than read id need to insert to the current message list
+                      if (receivedId > lastReadId) {
+                        this.messages[channel].push(incoming)
+                        // tell electron window got a unread message
+                        this.ipcRenderer.invoke('unread', channel)
+                        // store the read id for this channel
+                        this.setReadMessage(channel, incoming)
+                      }
                     }
                   }
                 })
-                // tell electron window got a unread message
-                this.ipcRenderer.invoke('unread', channel)
-                // store the read id for this channel
-                this.setReadMessage(channel, incoming)
               } else if (incoming.message && incoming.sender !== 'system') {
                 // add unread stats
                 if (parseInt(this.unread[channel]) === NaN) {
                   this.$store.dispatch("resetUnread", channel)
                 }
-                this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
-                if (this.showUnreadChannels.includes(channel)) {
-                  // tell electron window the channels got unread message
-                  this.ipcRenderer.invoke('unread', channel)
+                // channel got new message then pluses the counter
+                if (receivedId > lastReadId) {
+                  this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
+                  if (this.showUnreadChannels.includes(channel)) {
+                    // tell electron window the channels got unread message
+                    this.ipcRenderer.invoke('unread', channel)
+                  }
                 }
               }
               
