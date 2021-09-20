@@ -36,7 +36,7 @@
           scale="1.5"
           @click="remove"
         )
-        b-icon.hover(v-if="!isAnnouncement && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
+        b-icon.hover(v-if="!isAnnouncement && !isMyChannel && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
         div {{ mtime }}
 
       //- my message
@@ -62,6 +62,9 @@ export default {
     },
     isAnnouncement() {
       return this.currentChannel.startsWith('announcement')
+    },
+    isMyChannel() {
+      return this.currentChannel === this.userid
     },
     mine() {
       return this.raw ? this.userid === this.raw["sender"] : false
