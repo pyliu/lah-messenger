@@ -509,7 +509,7 @@ export default {
           this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
           break;
         case 'remove_message':
-          if (json.success) {
+          if (json.success && this.messages[json.payload.channel]) {
             let found_idx = -1
             const found = this.messages[json.payload.channel].find((msg, idx) => {
               found_idx = idx
