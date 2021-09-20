@@ -519,8 +519,10 @@ export default {
               this.messages[json.payload.channel].splice(found_idx, 1)
             }
             this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
+          } else {
+            this.error(json)
+            this.alert(`${json.message}`)
           }
-          this.error(json)
           break;
         case 'previous':
           this.$store.commit('fetchingHistory', false)
