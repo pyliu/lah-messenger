@@ -592,10 +592,11 @@ export default {
               const incoming = JSON.parse(e.data)
               const channel = incoming.channel
 
-              const receivedId = incoming.message.id
+              const receivedId = incoming.message.id || incoming.id
+              this.error(await this.getLastReadMessage(channel))
               const lastReadId = await this.getCache(`${channel}_last_id`) || 0
 
-              this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`)
+              this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
               this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
               this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
@@ -617,10 +618,10 @@ export default {
                       this.messages[channel].push(incoming)
                       // only recieved id is greater than read id need to insert to the current message list
                       if (receivedId > lastReadId) {
+                        // store the read id for this channel at FE
+                        this.setCache(`${channel}_last_id`, receivedId)
                         // tell electron window got a unread message
                         this.ipcRenderer.invoke('unread', channel)
-                        // store the read id for this channel
-                        this.setReadMessage(channel, incoming)
                       }
                     }
                   }
