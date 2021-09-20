@@ -298,14 +298,14 @@ Vue.mixin({
               switch(opts.variant) {
                 case 'danger':
                 case 'red':
-                  // opts.toaster = 'b-toaster-bottom-center'
-                  // break
+                  opts.toaster = 'b-toaster-top-full'
+                  break
                 case 'warning':
                 case 'yellow':
-                  opts.toaster = 'b-toaster-bottom-left'
+                  opts.toaster = 'b-toaster-top-left'
                   break
                 default:
-                  opts.toaster = 'b-toaster-bottom-right'
+                  opts.toaster = 'b-toaster-top-right'
               }
           }
           // merge default setting
@@ -316,7 +316,7 @@ Vue.mixin({
             noAutoHide: false,
             autoHideDelay: 5000,
             solid: true,
-            toaster: 'b-toaster-bottom-right',
+            toaster: 'b-toaster-top-right',
             appendToast: true,
             variant: 'info'
           }, opts)
@@ -388,7 +388,7 @@ Vue.mixin({
         const merged = Object.assign({
           title: '警示',
           autoHideDelay: 7500,
-          pos: 'bl',
+          pos: 'tl',
           variant: 'warning'
         }, opts)
         this.notify(message, merged)

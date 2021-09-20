@@ -28,7 +28,7 @@
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
-        b-icon.mr-1(
+        b-icon.mr-1.hover(
           v-if="mine"
           icon="x-circle"
           variant="danger"
@@ -36,7 +36,7 @@
           scale="1.5"
           @click="remove"
         )
-        b-icon(v-if="!isAnnouncement && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
+        b-icon.hover(v-if="!isAnnouncement && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
         div {{ mtime }}
 
       //- my message
@@ -151,6 +151,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.hover:hover {
+  font-size: .85rem;
+}
 .msg-item {
   position: relative;
   overflow: hidden;
