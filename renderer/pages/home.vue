@@ -444,12 +444,18 @@ export default {
         entry_desc: this.nickname
       })
     },
+    async getChannelUnread (channel) {
+      return await this.getCache(`${channel}_last_id`) || 0
+    },
+    setChannelUnread (channel, unreadId) {
+      this.setCache(`${channel}_last_id`, receivedId)
+    },
     queryStickyChannelUnreadCount () {
       this.queryChannelUnreadCount('announcement')
       this.queryChannelUnreadCount(`announcement_${this.userdept}`)
       this.queryChannelUnreadCount(this.userid)
     },
-    queryChannelUnreadCount (channel) {
+    async queryChannelUnreadCount (channel) {
       const jsonString = JSON.stringify({
         type: "command",
         sender: this.userid,
@@ -458,7 +464,7 @@ export default {
         message: JSON.stringify({
           command: 'unread',
           channel: 'channel',
-          last: this.getLastReadMessage(channel)
+          last: this.getChannelUnread(channel)
         }),
         channel: 'system'
       })
@@ -593,8 +599,7 @@ export default {
               const channel = incoming.channel
 
               const receivedId = incoming.message.id || incoming.id
-              this.error(await this.getLastReadMessage(channel))
-              const lastReadId = await this.getCache(`${channel}_last_id`) || 0
+              const lastReadId = this.getChannelUnread(channel)
 
               this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
@@ -619,7 +624,7 @@ export default {
                       // only recieved id is greater than read id need to insert to the current message list
                       if (receivedId > lastReadId) {
                         // store the read id for this channel at FE
-                        this.setCache(`${channel}_last_id`, receivedId)
+                        this.setChannelUnread(channel, receivedId)
                         // tell electron window got a unread message
                         this.ipcRenderer.invoke('unread', channel)
                       }
