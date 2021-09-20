@@ -7,7 +7,7 @@
       @dragleave="dragleave"
       @drop="drop"
     )
-      b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="1.75" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
+      b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
       transition-group(name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
@@ -294,8 +294,8 @@ export default {
   cursor: pointer;
   position: fixed;
   opacity: 0.3;
-  right: 25px;
-  top: 72px;
+  right: 15px;
+  top: 75px;
   &:hover {
     transition: all .5s;
     opacity: 1.0;

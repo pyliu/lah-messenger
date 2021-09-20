@@ -33,13 +33,22 @@
           b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
             b-icon.mr-1(icon="list")
 
-        //- chatting room list
-        transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-start.align-items-center(@click="setCurrentChannel('chat')")
-          b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
-          span {{ getChannelName($store.getters.currentChannel) }} 
-        //- chatting board
+        //- chatting control bar
+        transition(name="list" mode="out-in"): b-list-group.my-1(v-if="inChatting" flush): b-list-group-item: b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('chat')")
+          .mr-auto
+            b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
+            span {{ getChannelName($store.getters.currentChannel) }} 
+          b-avatar-group.mr-4(size="2rem")
+            b-avatar
+            b-avatar
+            b-avatar
+            b-avatar
+            b-avatar
+
+        //- chatting channel board
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
-        //- announcement
+
+        //- main message display board
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
 
       //- 輸入訊息UI
