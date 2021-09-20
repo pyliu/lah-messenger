@@ -163,7 +163,7 @@ export default {
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     upload (directly = false) {
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
-        this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
+        this.warning('公告信差版面不支援JPEG直接上傳')
       } else if (this.uploadImage.type === 'image/jpeg') {
         this.isBusy = true
         this.pickedEncodingData = ''
@@ -225,7 +225,7 @@ export default {
     drop(event) {
       event.preventDefault();
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
-        this.warn('公告信差版面不支援檔案直接上傳', this.currentChannel)
+        this.warning('公告信差版面不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {
         this.uploadImage = event.dataTransfer.files[0]
         // if the file JPEG?
