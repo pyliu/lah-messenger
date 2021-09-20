@@ -1,9 +1,8 @@
 <template lang="pug">
   .mb-1
     //- show date if the message has previous days' message
-    .d-flex.msg-item(
+    .d-flex.msg-item.justify-content-center.system.date(
       v-if="showMdate"
-      :class="['justify-content-center', 'system', 'date']"
     ): p(v-html="mdate")
 
     .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
@@ -28,12 +27,21 @@
       p(v-else-if="!mine" v-html="message")
 
       //- timestamp for the message
-      .time.s-60.mx-1.text-muted(v-if="!system")
+      .time.s-60.mx-1.text-muted.text-right(v-if="!system")
+        b-icon.mr-1(
+          v-if="mine"
+          icon="x-circle"
+          variant="danger"
+          title="移除這則訊息"
+          scale="1.5"
+          @click="remove"
+        )
         b-icon(v-if="!isAnnouncement && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
         div {{ mtime }}
 
       //- my message
       p(v-if="mine" v-html="message")
+
 </template>
 
 <script>
@@ -112,6 +120,11 @@ export default {
   methods: {
     emitReply () {
       this.$emit('reply', this.raw)
+    },
+    remove () {
+      // TODO: send request to ws to remvoe the message from channel
+      // to tell outter board remove this message in the list
+      this.$emit('remove', this.raw)
     }
   }
 }
