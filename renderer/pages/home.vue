@@ -307,6 +307,9 @@ export default {
     }
   },
   methods: {
+    delaySendChannelActivity: function noop () {},
+    delayConnect () { /* placeholder */ },
+    delayLatestMessage () { /* placeholder */ },
     upload () { this.showModalById('upload-modal') },
     loadUserMapData() {
       // refresh user name mapping from API server
@@ -346,7 +349,6 @@ export default {
         this.adPasswordType = 'text'
       }
     },
-    delaySendChannelActivity: function noop () {},
     sendChannelActivity(oVal, nVal) {
       if (this.connected) {
         this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
@@ -705,8 +707,6 @@ export default {
         }
       }
     },
-    delayConnect () { /* placeholder */ },
-    delayLatestMessage () { /* placeholder */ },
     latestMessage() {
       const channel = this.currentChannel
       if (this.connected) {
