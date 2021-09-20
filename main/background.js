@@ -277,7 +277,7 @@ ipcMain.handle('userinfo', async (event, arg) => {
       uefi: false
     }
    */
-  console.log(os)
+  !isProd && console.log('collected OS info', os)
   const userinfo = {
     address: [],
     ipv4: '',

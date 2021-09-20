@@ -102,6 +102,21 @@ Vue.mixin({
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
+      this.queryChatChannelOnlineClients()
+    },
+    queryChatChannelOnlineClients () {
+      const jsonString = JSON.stringify({
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({
+          command: 'online',
+          channel: this.currentChannel
+        }),
+        channel: 'system'
+      })
+      this.websocket.send(jsonString)
     },
     clearReconnectTimer() {
       if (this.timer !== null) {

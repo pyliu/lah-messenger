@@ -38,12 +38,28 @@
           .mr-auto
             b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
             span {{ getChannelName($store.getters.currentChannel) }} 
-          b-avatar-group.mr-4(size="2rem")
-            b-avatar
-            b-avatar
-            b-avatar
-            b-avatar
-            b-avatar
+          //- show online user badges
+          b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="0.4")
+            b-avatar(
+              v-for="(user, idx) in connectedUsers"
+              v-if="idx < 13"
+              :key="`connected_user_${user.userid}_${idx}`"
+              :src="userAvatarSrc(user)"
+              :title="user.username"
+              button
+              :badge="user.userid === userid"
+              badge-variant="success"
+            )
+          span.mr-4(v-if="connectedUsersCount >= 13") ... ({{ connectedUsersCount }})
+          b-avatar.mr-4(
+            v-if="connectedUsersCount === 1"
+            button
+            :src="userAvatarSrc(connectedUsers[0])"
+            title="我"
+            badge
+            badge-variant="success"
+            size="2rem"
+          )
 
         //- chatting channel board
         transition(name="list" mode="out-in"): chat-board(v-if="showChatBoard")
@@ -185,7 +201,8 @@ export default {
     connecting: false,
     asking: false,
     reconnectMs: 20 * 1000,
-    back: false
+    back: false,
+    connectedUsers: []
   }),
   fetch () {
     this.$localForage.getItem('userMap').then((obj) => {
@@ -203,6 +220,8 @@ export default {
     })
   },
   computed: {
+    connectedUsersCount () { return this.connectedUsers.length },
+
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
     showMessageBoard () { return this.currentChannel !== 'chat' },
     showChatBoard () { return this.isChat },
@@ -459,7 +478,7 @@ export default {
       return await this.getCache(`${channel}_last_id`) || 0
     },
     setChannelUnread (channel, unreadId) {
-      this.setCache(`${channel}_last_id`, receivedId)
+      this.setCache(`${channel}_last_id`, unreadId)
     },
     queryStickyChannelUnreadCount () {
       this.queryChannelUnreadCount('announcement')
@@ -535,6 +554,7 @@ export default {
             this.error(json)
             this.alert(`${json.message}`)
           }
+          this.connectText = `${json.message}`
           break;
         case 'previous':
           this.$store.commit('fetchingHistory', false)
@@ -546,6 +566,10 @@ export default {
             channel: json.channel,
             count: json.count
           })
+          this.connectText = `${json.message}`
+          break;
+        case 'online':
+          this.connectedUsers = [...json.payload.users]
           this.connectText = `${json.message}`
           break;
         default:
@@ -627,7 +651,7 @@ export default {
               const channel = incoming.channel
 
               const receivedId = incoming.message.id || incoming.id
-              const lastReadId = this.getChannelUnread(channel)
+              const lastReadId = await this.getChannelUnread(channel)
 
               this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
@@ -889,6 +913,9 @@ export default {
       this.register()
       // inject userinfo to electron mainWindow as well
       this.ipcRenderer.invoke('injectUserinfo', userinfo)
+    },
+    userAvatarSrc (user) {
+      return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${user?.userid}_avatar&name=${user?.username}_avatar`
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')
