@@ -518,7 +518,8 @@ export default {
             if (found_idx > -1) {
               this.messages[json.payload.channel].splice(found_idx, 1)
             }
-            this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
+            this.log(json.message)
+            this.notify(`移除訊息成功 (#${json.payload.id})`)
           } else {
             this.error(json)
             this.alert(`${json.message}`)
