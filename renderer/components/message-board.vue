@@ -128,8 +128,8 @@ export default {
     lastEncodedImage (val) {
       console.log(val)
     },
-    uploadImage (dontcare) {
-      this.upload()
+    uploadImage (file) {
+      file && this.upload()
     }
   },
   methods: {
@@ -162,9 +162,12 @@ export default {
     delayAttention () {/* placeholder for attention */},
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     upload (directly = false) {
-      if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
+      if (!this.uploadImage) {
+        this.warn('uploadImage無值，無法上傳檔案', this.uploadImage)
+      }
+      else if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('公告信差版面不支援JPEG直接上傳')
-      } else if (this.uploadImage.type === 'image/jpeg') {
+      } else if (this.uploadImage?.type === 'image/jpeg') {
         this.isBusy = true
         this.pickedEncodingData = ''
         const formData = new FormData()
@@ -194,6 +197,7 @@ export default {
           this.$utils.error(err)
         }).finally(() => {
           this.isBusy = false
+          this.uploadImage = undefined
         })
       } else {
         this.warning('僅支援JPEG圖檔')
@@ -228,13 +232,7 @@ export default {
         this.warning('公告信差版面不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {
         this.uploadImage = event.dataTransfer.files[0]
-        // if the file JPEG?
-        if (this.uploadImage.type === "image/jpeg") {
-          // auto uploading after drop file then send it
-          this.upload(true)
-        } else {
-          this.warning(`不支援 ${this.uploadImage.type} 的檔案上傳`)
-        }
+        this.upload(true)
       } else {
         this.log('僅支援拖放實體檔案')
       }
