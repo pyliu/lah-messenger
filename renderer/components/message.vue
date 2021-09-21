@@ -66,65 +66,42 @@ export default {
     showMdate() {
       return this.prevMdate !== this.mdate
     },
-    isAnnouncement() {
-      return this.currentChannel.startsWith('announcement')
-    },
-    isMyChannel() {
-      return this.currentChannel === this.userid
-    },
-    mine() {
-      return this.raw ? this.userid === this.raw["sender"] : false
-    },
-    system() {
-      return this.raw ? 'system' === this.sender : false
-    },
-    id() {
-      return this.raw ? this.raw["id"] : ""
-    },
-    type() {
-      return this.raw ? this.raw["type"] : ""
-    },
-    message() {
-      return this.raw ? this.raw["message"] : ""
-    },
-    sender() {
-      return this.raw ? this.userMap[this.raw["sender"]] || this.raw["sender"] : ""
-    },
-    from() {
-      return this.raw ? this.raw["ip"] : ""
-    },
-    mtime() {
-      return this.raw ? this.raw["time"] : ""
-    },
+    isAnnouncement() { return this.currentChannel.startsWith('announcement') },
+    isMyChannel() { return this.currentChannel === this.userid },
+    mine() { return this.raw ? this.userid === this.senderId : false },
+    system() { return this.raw ? 'system' === this.sender : false },
+    id() { return this.raw?.id },
+    type() { return this.raw?.type },
+    message() { return this.raw?.message },
+    senderId() { return this.raw?.sender },
+    sender() { return this.userMap[this.senderId] || this.senderId },
+    from() { return this.raw?.ip },
+    mtime() { return this.raw?.time },
     prevMdate() {
       if (this.prev) {
         // announcement card date is inside the message
         if (this.isAnnouncement) {
-          return this.prev['message']['create_datetime'].split(' ')[0]
+          return this.prev?.message?.create_datetime?.split(' ')[0]
         }
-        return this.prev['date']
+        return this.prev?.date
       }
       return ''
     },
     mdate() {
       // announcement card date is inside the message
       if (this.isAnnouncement) {
-        return this.raw['message']['create_datetime'].split(' ')[0]
+        return this.raw?.message?.create_datetime?.split(' ')[0]
       }
-      return this.raw ? this.raw["date"] : ""
+      return this.raw?.date
     },
-    channel() {
-      return this.raw ? this.raw["channel"] : ""
-    },
+    channel() { return this.raw?.channel },
     classes() {
       return [
         this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
         this.mine ? 'mine' : this.system ? 'system' : '',
       ]
     },
-    avatarSrc () {
-      return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar`
-    }
+    avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` }
   },
   methods: {
     avatarClick (event) {
