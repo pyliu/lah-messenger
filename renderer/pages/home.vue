@@ -551,7 +551,7 @@ export default {
             this.log(json.message)
             this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
-            this.error(json)
+            this.err(json)
             this.alert(`${json.message}`)
           }
           this.connectText = `${json.message}`
