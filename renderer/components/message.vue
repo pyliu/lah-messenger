@@ -46,7 +46,7 @@
           v-if="!isAnnouncement && !mine"
           icon="arrow-return-left"
           title="回覆此訊息"
-          @click="reply"
+          @click="isMyChannel ? reply() : emitReply()"
           flip-v 
         )
         div {{ mtime }}
