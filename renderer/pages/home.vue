@@ -339,7 +339,7 @@ export default {
           name: user.username
         }
       }), {
-        title: `${user.userid} ${user.username}`,
+        title: `${user.username}`,
         size: 'xl'
       })
     },

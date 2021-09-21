@@ -131,7 +131,7 @@ export default {
           name: this.sender
         }
       }), {
-        title: `${this.raw.sender} ${this.sender}`,
+        title: `${this.sender}`,
         size: 'xl'
       })
     },
