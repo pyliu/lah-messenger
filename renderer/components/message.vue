@@ -30,11 +30,11 @@
       )
 
       //- remote or system message
-      p(v-else-if="!mine" v-html="message")
+      p(v-else-if="!mine" v-html="message" @click="reply")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
-        b-icon.mr-1.hover(
+        b-icon.mr-1.clickableIcon(
           v-if="mine"
           icon="x-circle"
           variant="danger"
@@ -42,7 +42,13 @@
           scale="1.5"
           @click="remove"
         )
-        b-icon.hover(v-if="!isAnnouncement && !isMyChannel && !mine" icon="arrow-return-left" flip-v @click="emitReply" title="回覆此訊息")
+        b-icon.clickableIcon(
+          v-if="!isAnnouncement && !mine"
+          icon="arrow-return-left"
+          title="回覆此訊息"
+          @click="reply"
+          flip-v 
+        )
         div {{ mtime }}
 
       //- my message
@@ -99,7 +105,11 @@ export default {
         this.mine ? 'mine' : this.system ? 'system' : '',
       ]
     },
-    avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` }
+    avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` },
+    replyTitle () {
+      const clean = this.message.replace(/(<([^>]+)>)/gi, '')
+      return clean.length > 24 ? `${clean.substring(0, 24)} ... ` : clean
+    }
   },
   methods: {
     avatarClick (event) {
@@ -112,6 +122,21 @@ export default {
       }), {
         title: `${this.sender}`,
         size: 'xl'
+      })
+    },
+    reply () {
+      this.modal(this.$createElement('message-input', {
+        props: {
+          text: this.message,
+          to: this.senderId
+        },
+        on: {
+          sent: () => { this.hideModalById('message-reply-modal') }
+        }
+      }), {
+        id: 'message-reply-modal',
+        size: 'xl',
+        title: `回復：${this.sender} - ${this.replyTitle || ' ... '}`
       })
     },
     emitReply () {
@@ -147,8 +172,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.hover:hover {
-  font-size: .85rem;
+.clickableIcon:hover {
+  font-size: .75rem;
+  font-weight: bold;
+  color: red;
 }
 .msg-item {
   position: relative;

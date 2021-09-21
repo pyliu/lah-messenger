@@ -850,7 +850,8 @@ export default {
         this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
         if (id > lastReadId) {
           this.setCache(cacheKey, id)
-          this.invokeIPCNotification(title, {
+          // don't send notification wehn sender is myself
+          incoming.sender !== this.userid && this.invokeIPCNotification(title, {
             showMainWindow: false,
             channel: channel
           })
