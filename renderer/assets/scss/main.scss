@@ -98,6 +98,13 @@ blockquote p {
   margin-bottom: 0;
 }
 
+.avatar {
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
 .list-enter-active, .list-leave-active,
 .listY-enter-active, .listY-leave-active,
 .bg-enter-active, .bg-leave-active {

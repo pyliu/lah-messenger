@@ -5,14 +5,18 @@
       v-if="showMdate"
     ): p(v-html="mdate")
 
-    .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
+    .s-75.font-weight-bold.align-middle(
+      v-if="!mine && !system"
+      @click="avatarClick($event)"
+      :style="{ cursor: 'pointer' }"
+      title="顯示使用者卡片"
+    )
       b-avatar.my-auto.mr-1(
         v-if="['remote'].includes(type) || isAnnouncement"
         :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
         size="1.25rem"
         variant="primary"
         button
-        @click="avatarClick($event)"
       )
       span.mr-1 {{ sender }}
       em {{ from }}
@@ -189,8 +193,8 @@ export default {
 
   &.mine {
     p {
-      background: rgb(2, 182, 32);
-      color: white;
+      background: rgb(129, 240, 148);
+      color: rgb(0, 0, 0);
       margin-bottom: 0rem !important;
     }
   }

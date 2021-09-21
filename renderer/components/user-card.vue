@@ -1,7 +1,13 @@
 <template lang="pug">
   div: lah-transition(mode="out-in")
     h3.center(v-if="loading")
-      b-icon(icon="slash-circle" animation="spin")
+      //- b-icon(icon="slash-circle" animation="spin")
+      b-iconstack(font-scale="2" animation="cylon")
+        b-icon(
+          stacked
+          icon="slash-circle"
+          animation="spin"
+        )
     h4.center(v-else-if="!found")
       b-icon(icon="exclamation-circle-fill" variant="danger")
       span.ml-1 找不到使用者資料
@@ -121,7 +127,8 @@ export default {
       if (this.websocket && !this.isMessageEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.userData.id }))
         // also send to own channel to simulate talking between eachothers
-        this.websocket.send(this.packMessage(`@${this.userData.name}<hr/>${this.message}`, { channel: this.userid }))
+        const to = `<span class="b-avatar-img my-auto"><img src="${this.avatarSrc}" alt="avatar" class="avatar"></span>`
+        this.websocket.send(this.packMessage(`${to} ${this.userData.name}<hr/>${this.message}`, { channel: this.userid }))
       }
       this.message = ''
       this.$refs.userText && this.$refs.userText.focus()
