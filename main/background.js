@@ -173,10 +173,10 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
           `http://${payload.api_host}:${payload.api_port}${payload.api_uri}`,
           qs.stringify(payload)
         ).then(({ data }) => {
-          data.status < 1 && notify(data.message, ip)
+          data.status < 1 && notify(data.message, payload.ip)
         }).catch(error => {
           console.error(error)
-          notify(error.message, ip)
+          notify(error.message, payload.ip)
         })
       }
     }
