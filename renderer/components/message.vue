@@ -63,9 +63,7 @@ export default {
     return {}
   },
   computed: {
-    showMdate() {
-      return this.prevMdate !== this.mdate
-    },
+    showMdate() { return this.prevMdate !== this.mdate },
     isAnnouncement() { return this.currentChannel.startsWith('announcement') },
     isMyChannel() { return this.currentChannel === this.userid },
     mine() { return this.raw ? this.userid === this.senderId : false },
@@ -77,6 +75,7 @@ export default {
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },
     mtime() { return this.raw?.time },
+    channel() { return this.raw?.channel },
     prevMdate() {
       if (this.prev) {
         // announcement card date is inside the message
@@ -94,7 +93,6 @@ export default {
       }
       return this.raw?.date
     },
-    channel() { return this.raw?.channel },
     classes() {
       return [
         this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
