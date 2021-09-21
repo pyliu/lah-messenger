@@ -70,7 +70,7 @@
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
 
       //- 輸入訊息UI
-      transition(name="listY" mode="out-in"): b-input-group.p-1.mt-n1(v-if="showInputGroup" size="sm")
+      transition(name="listY" mode="out-in"): b-input-group.p-1(v-if="showInputGroup" size="sm")
         b-textarea(
           ref="textarea"
           v-model="text"
