@@ -108,7 +108,7 @@ export default {
     avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` },
     replyTitle () {
       const clean = this.message.replace(/(<([^>]+)>)/gi, '')
-      return clean.length > 24 ? `${clean.substring(0, 24)} ... ` : clean
+      return clean.replace(/%[A-F\d]{2}/g, 'U').length > 20 ? `${clean.substring(0, 20)} ... ` : clean
     }
   },
   methods: {
