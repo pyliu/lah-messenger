@@ -46,9 +46,10 @@
               :key="`connected_user_${user.userid}_${idx}`"
               :src="userAvatarSrc(user)"
               :title="user.username"
-              button
               :badge="user.userid === userid"
               badge-variant="success"
+              button
+              @click="avatarClick($event, user)"
             )
           span.mr-4(v-if="connectedUsersCount >= 13") ... ({{ connectedUsersCount }})
           b-avatar.mr-4(
@@ -56,9 +57,10 @@
             button
             :src="userAvatarSrc(connectedUsers[0])"
             title="我"
-            badge
-            badge-variant="success"
             size="2rem"
+            badge-variant="success"
+            badge
+              @click="avatarClick($event, connectedUsers[0])"
           )
 
         //- chatting channel board
@@ -329,6 +331,18 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
+    avatarClick (event, user) {
+      event.stopPropagation()
+      this.modal(this.$createElement('user-card', {
+        props: {
+          id: user.userid,
+          name: user.username
+        }
+      }), {
+        title: `${user.userid} ${user.username}`,
+        size: 'xl'
+      })
+    },
     upload () { this.showModalById('upload-modal') },
     loadUserMapData() {
       // refresh user name mapping from API server

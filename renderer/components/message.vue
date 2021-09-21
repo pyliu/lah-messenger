@@ -8,9 +8,11 @@
     .s-75.font-weight-bold.align-middle(v-if="!mine && !system")
       b-avatar.my-auto.mr-1(
         v-if="['remote'].includes(type) || isAnnouncement"
-        size="1.25rem"
         :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
+        size="1.25rem"
         variant="primary"
+        button
+        @click="avatarClick($event)"
       )
       span.mr-1 {{ sender }}
       em {{ from }}
@@ -121,6 +123,18 @@ export default {
     }
   },
   methods: {
+    avatarClick (event) {
+      event.stopPropagation()
+      this.modal(this.$createElement('user-card', {
+        props: {
+          id: this.raw.sender,
+          name: this.sender
+        }
+      }), {
+        title: `${this.raw.sender} ${this.sender}`,
+        size: 'xl'
+      })
+    },
     emitReply () {
       this.$emit('reply', this.raw)
     },
