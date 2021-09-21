@@ -4,7 +4,7 @@
       b-icon(icon="slash-circle" animation="spin")
     h4.center(v-else-if="!found")
       b-icon(icon="exclamation-circle-fill" variant="danger")
-      span 找不到使用者資料
+      span.ml-1 找不到使用者資料
     b-card(v-else)
       b-row
         b-col(md="6")
