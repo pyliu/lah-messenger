@@ -276,6 +276,9 @@ export default {
     notifyChannels () { return ['announcement', `announcement_${this.department}`] }
   },
   watch: {
+    connectText (val) {
+      this.$store.commit('statusText', val)
+    },
     currentChannel(nVal, oVal) {
       this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
       // comment out to prevent mess in/out system message in chat room

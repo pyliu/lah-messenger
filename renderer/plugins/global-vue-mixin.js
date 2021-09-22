@@ -12,9 +12,11 @@ const empty = function(value) {
 // inject to all Vue instances
 Vue.mixin({
   data: () => ({
-    isBusy: false
+    isBusy: false,
+    debugMessage: ''
   }),
   watch: {
+    debugMessage (val) { this.$store.commit('statusText', val) },
     isBusy (flag) {
       if (flag) {
         this.toggleBusy({
@@ -65,7 +67,8 @@ Vue.mixin({
       'imageMementoCacheKey',
       'connectedUsers',
       'connectedUsersReverse',
-      'connectedUsersCount'
+      'connectedUsersCount',
+      'statusText'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },
@@ -606,5 +609,9 @@ Vue.mixin({
     log () { this.$config.isDev && console.log(this.time(), ...arguments ) },
     warn () { this.$config.isDev && console.warn(this.time(), ...arguments ) },
     err () { this.$config.isDev && console.error(this.time(), ...arguments ) },
+    debug () {
+      this.debugMessage = String(arguments[0])
+      this.log(arguments)
+    }
   }
 })

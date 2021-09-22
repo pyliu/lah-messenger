@@ -75,7 +75,8 @@ const state = () => ({
     'supervisor': 0
   },
   participatedChannels: [],
-  connectedUsers: []
+  connectedUsers: [],
+  statusText: ''
 })
 
 const getters = {
@@ -118,7 +119,8 @@ const getters = {
   imageMementoCacheKey: state => 'imageMementoCached',
   connectedUsers: state => state.connectedUsers,
   connectedUsersReverse: state => state.connectedUsers.reverse(),
-  connectedUsersCount: state => state.connectedUsers.length
+  connectedUsersCount: state => state.connectedUsers.length,
+  statusText: state => state.statusText
 }
 
 // only sync operation
@@ -249,6 +251,9 @@ const mutations = {
   },
   connectedUsers (state, array) {
     state.connectedUsers = [...array]
+  },
+  statusText (state, string) {
+    state.statusText = string
   }
 }
 

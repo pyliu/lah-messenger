@@ -129,6 +129,8 @@ export default {
       console.log(val)
     },
     uploadImage (file) {
+      this.debug(file)
+      !file && this.debug('選定的上傳檔案是空的')
       file && this.upload()
     }
   },
@@ -229,6 +231,7 @@ export default {
     },
     drop(event) {
       event.preventDefault();
+      this.debug(event.dataTransfer)
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('公告信差版面不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {

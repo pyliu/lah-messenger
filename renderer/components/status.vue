@@ -10,14 +10,12 @@
 
 <script>
 export default {
-  props: {
-    statusText: { type: String, default: '' }
-  },
   data: () => ({
     clearTimer: null,
     displayText: ''
   }),
   watch: {
+    // from $store
     statusText (val) {
       clearTimeout(this.clearTimer)
       this.displayText = this.empty(this.userid) ? '等待擷取目前登入使用者ID' : val
