@@ -170,7 +170,7 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
         // update ip user mapping to API server
         payload.ip = net.address
         axios.post(
-          `http://${payload.api_host}:${payload.api_port}${payload.api_uri}`,
+          payload.api,
           qs.stringify(payload)
         ).then(({ data }) => {
           data.status < 1 && !isProd && console.warn(data.message, payload.ip)

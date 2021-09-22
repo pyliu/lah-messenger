@@ -104,7 +104,8 @@ export default {
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
+    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory },
+    uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
   },
   watch: {
     messageCount (dontcare) {
@@ -178,7 +179,7 @@ export default {
         formData.append('width', 380)
         formData.append('height', 290)
         formData.append('quality', 75)
-        this.$upload.post(this.$consts.API.FILE.BASE64, formData).then(({ data }) => {
+        this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
           if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
             this.pickedEncodingData = `${data.uri}${data.encoded}`
             this.$store.commit('addImageMemento', this.pickedEncodingData)

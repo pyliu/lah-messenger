@@ -336,7 +336,7 @@ export default {
     upload () { this.showModalById('upload-modal') },
     loadUserMapData() {
       // refresh user name mapping from API server
-      const queryEP = `http://${this.apiHost}:${this.apiPort}${this.$consts.API.JSON.USER}`
+      const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
       this.$axios.post(queryEP, {
         type: 'user_mapping'
       }).then(({ data }) => {
@@ -468,9 +468,7 @@ export default {
     },
     reportToAPIServer () {
       this.ipcRenderer.invoke('add-ip-entry', {
-        api_host: this.wsHost,
-        api_port: this.apiPort,
-        api_uri: this.$consts.API.JSON.IP,
+        api: `${this.apiQueryUrl}${this.$consts.API.JSON.IP}`,
         type: 'add_user_ip_entry',
         note: `${this.domain} ${this.department}`,
         added_type: 'DYNAMIC',
