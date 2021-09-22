@@ -551,7 +551,7 @@ export default {
               this.messages[json.payload.channel].splice(found_idx, 1)
             }
             this.log(json.message)
-            this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
+            // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
             this.err(json)
             this.alert(`${json.message}`)
