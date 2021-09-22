@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  .d-flex.small
+  .d-flex.small.align-items-end
     b-textarea(
       ref="msgTextarea"
       v-model="message"
@@ -12,48 +12,49 @@ div
       no-auto-shrink
       autofocus
     )
-    b-button.mx-1(
-      @click="send"
-      size="sm"
-      :disabled="isEmpty"
-      variant="outline-primary"
-    )
-      //- b-icon.mr-1(icon="cursor" v-if="!isEmpty")
-      span 送出
-  p.preview(v-if="!isEmpty" v-html="mdMessage")
+    .d-flex.flex-column.mx-1
+      b-button.mb-1.icon-btn(
+        @click="upload"
+        size="sm"
+        variant="outline-success"
+        title="附加圖片"
+        disabled
+      )
+        b-icon(icon="images")
+      b-button.icon-btn(
+        @click="send"
+        size="sm"
+        :disabled="isEmpty"
+        variant="outline-primary"
+        title="送出"
+      )
+        b-icon(icon="cursor")
+  //- .preview(v-if="!isEmpty" v-html="mdMessage")
 </template>
 
 <script>
-import DOMPurify from "dompurify"
-import Markd from "marked"
-
 export default {
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
+    reply: { type: String, default: '' }
   },
   data: () => ({
     message: '',
   }),
   computed: {
-    mdMessage() {
-      if (this.$utils.empty(this.message) || !DOMPurify.sanitize) {
-        return ''
-      }
-      return DOMPurify.sanitize(Markd(this.message.replaceAll('\n', '<br/>')))
-    },
-    isEmpty() { return this.$utils.empty(this.message) },
-    toName() { return this.userMap[this.to] || '' },
-    avatarSrc() { return `${this.apiQueryUrl}/get_user_img.php?id=${this.to}_avatar&name=${this.toName}_avatar` },
+    isEmpty () { return this.$utils.empty(this.message) },
+    toName () { return this.userMap[this.to] || this.to },
+    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.to}_avatar&name=${this.toName}_avatar` },
   },
   methods: {
-    send() {
+    send () {
       if (this.websocket && !this.isEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.to }))
         // also send to own channel to simulate talking between eachothers
-        const sendToAvatar = `<span class="b-avatar-img my-auto"><img src="${this.avatarSrc}" alt="avatar" class="avatar"></span>`
+        const sendToAvatar = `<span class="b-avatar-img"><img src="${this.avatarSrc}" alt="avatar" class="avatar my-auto"></span>`
         this.websocket.send(
-          this.packMessage(`@${this.toName} ${sendToAvatar}<hr/> ${this.message.replaceAll('\n', '<br/>')}`, {
+          this.packMessage(`${sendToAvatar} ${this.toName} - ${this.reply} <hr style="margin:5px"/> ${this.message}`, {
             channel: this.userid
           })
         )
@@ -62,11 +63,17 @@ export default {
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
       this.$emit("sent", this.message)
     },
+    upload () {}
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.icon-btn {
+  width: 48px;
+  height: 32px;
+  white-space: nowrap;
+}
 .preview {
   display: inline-block;
   border-radius: 5px;
@@ -77,6 +84,5 @@ export default {
   text-align: left;
   box-sizing: border-box;
   margin-top: 1rem;
-  margin-bottom: 0rem !important;
 }
 </style>

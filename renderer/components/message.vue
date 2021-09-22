@@ -44,10 +44,11 @@
         )
         b-icon.clickableIcon(
           v-if="!isAnnouncement && !mine"
-          icon="arrow-return-left"
+          icon="reply-fill"
           title="回覆此訊息"
+          font-scale="1.5"
+          flip-h
           @click="isMyChannel ? reply() : emitReply()"
-          flip-v 
         )
         div {{ mtime }}
 
@@ -131,7 +132,8 @@ export default {
       this.modal(this.$createElement('message-input', {
         props: {
           text: this.message,
-          to: this.senderId
+          to: this.senderId,
+          reply: this.replyTitle || ' ... '
         },
         on: {
           sent: () => { this.hideModalById('message-reply-modal') }
@@ -176,9 +178,8 @@ export default {
 
 <style lang="scss" scoped>
 .clickableIcon:hover {
-  font-size: .75rem;
   font-weight: bold;
-  color: red;
+  color: blue;
 }
 .msg-item {
   position: relative;
