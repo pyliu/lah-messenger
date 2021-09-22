@@ -170,6 +170,7 @@ export default {
       } else if (this.uploadImage?.type === 'image/jpeg') {
         this.isBusy = true
         this.pickedEncodingData = ''
+        const filename = this.uploadImage.name
         const formData = new FormData()
         formData.append('file', this.uploadImage)
         formData.append('width', 380)
@@ -185,7 +186,7 @@ export default {
             if (this.$utils.statusCheck(data.status)) {
               if (directly) {
                 // send the image right away
-                this.sendImage(this.pickedEncodingData, this.uploadImage.name, this.currentChannel)
+                this.sendImage(this.pickedEncodingData, filename, this.currentChannel)
               }
             } else {
               this.warning(data.message, { title: '上傳圖檔結果' })
