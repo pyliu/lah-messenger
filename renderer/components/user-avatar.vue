@@ -2,6 +2,7 @@
   b-avatar(
     :src="avatarSrc"
     :title="userMap[userData.userid] || userData.username || userData.userid"
+    :size="size"
     button
     @click="click"
   )
@@ -14,7 +15,8 @@ export default {
   name: 'UserAvatar',
   components: { UserCard },
   props: {
-    userData: { type: Object, require: true }
+    userData: { type: Object, require: true },
+    size: { type: String, default: ''}
   },
   data: () => ({
   }),
