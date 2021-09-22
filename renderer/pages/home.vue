@@ -463,6 +463,7 @@ export default {
             userid: this.userid,
             username: this.nickname,
             dept: this.department,
+            timestamp: +new Date()
           }),
           channel: 'system'
         })
