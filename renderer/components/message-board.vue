@@ -200,7 +200,7 @@ export default {
           this.$utils.error(err)
         }).finally(() => {
           this.isBusy = false
-          this.uploadImage = undefined
+          // this.uploadImage = undefined
         })
       } else {
         this.warning('僅支援JPEG圖檔上傳')
@@ -231,7 +231,7 @@ export default {
     },
     drop(event) {
       event.preventDefault();
-      this.debug(event.dataTransfer)
+      // this.debug(event.dataTransfer)
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('公告信差版面不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {
