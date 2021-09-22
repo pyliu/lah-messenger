@@ -59,9 +59,10 @@
 <script>
 import announcementCard from '~/components/announcement-card.vue'
 import UserCard from '~/components/user-card.vue'
+import MessageInput from '~/components/message-input.vue'
 
 export default {
-  components: { announcementCard, UserCard },
+  components: { announcementCard, UserCard, MessageInput },
   props: {
     raw: { type: Object, required: true },
     prev: { type: Object, default: undefined }
