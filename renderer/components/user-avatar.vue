@@ -16,7 +16,7 @@ export default {
   components: { UserCard },
   props: {
     userData: { type: Object, require: true },
-    size: { type: String, default: ''}
+    size: { type: String, default: '2rem'}
   },
   data: () => ({
   }),

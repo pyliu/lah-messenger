@@ -51,7 +51,6 @@
           user-avatar.mr-4(
             v-if="connectedUsersCount === 1"
             :user-data="connectedUsers[0]"
-            size="2rem"
           )
 
         //- chatting channel board
