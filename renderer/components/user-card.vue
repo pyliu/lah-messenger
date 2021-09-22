@@ -93,7 +93,7 @@ export default {
       return this.avatarSrc.replaceAll('_avatar', '')
     },
     queryUrl () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
-    avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.id}_avatar&name=${this.name}_avatar` }
+    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.id}_avatar&name=${this.name}_avatar` }
   },
   fetch () {
     this.isBusy = false

@@ -44,7 +44,7 @@ export default {
     },
     isEmpty() { return this.$utils.empty(this.message) },
     toName() { return this.userMap[this.to] || "" },
-    avatarSrc() { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.to}_avatar&name=${this.toName}_avatar` },
+    avatarSrc() { return `${this.apiQueryUrl}/get_user_img.php?id=${this.to}_avatar&name=${this.toName}_avatar` },
   },
   methods: {
     send() {

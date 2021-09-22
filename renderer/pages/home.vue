@@ -938,7 +938,7 @@ export default {
       this.ipcRenderer.invoke('injectUserinfo', userinfo)
     },
     userAvatarSrc (user) {
-      return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${user?.userid}_avatar&name=${user?.username}_avatar`
+      return `${this.apiQueryUrl}/get_user_img.php?id=${user?.userid}_avatar&name=${user?.username}_avatar`
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')
