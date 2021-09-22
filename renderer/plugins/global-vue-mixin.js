@@ -62,7 +62,10 @@ Vue.mixin({
       'currentChannel',
       'imageMemento',
       'imageMementoCapacity',
-      'imageMementoCacheKey'
+      'imageMementoCacheKey',
+      'connectedUsers',
+      'connectedUsersReverse',
+      'connectedUsersCount'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },
@@ -73,7 +76,8 @@ Vue.mixin({
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' },
-    apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` }
+    apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` },
+    feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` }
   },
   methods: {
     ...mapActions([
@@ -103,7 +107,6 @@ Vue.mixin({
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
-      this.queryChatChannelOnlineClients()
     },
     queryChatChannelOnlineClients () {
       const jsonString = JSON.stringify({

@@ -74,7 +74,8 @@ const state = () => ({
     'hr': 0,
     'supervisor': 0
   },
-  participatedChannels: []
+  participatedChannels: [],
+  connectedUsers: []
 })
 
 const getters = {
@@ -114,7 +115,10 @@ const getters = {
   fetchingHistory: state => state.fetchingHistory,
   imageMementoCapacity: state =>state.imageMementoCapacity,
   imageMemento: state => state.imageMemento,
-  imageMementoCacheKey: state => 'imageMementoCached'
+  imageMementoCacheKey: state => 'imageMementoCached',
+  connectedUsers: state => state.connectedUsers,
+  connectedUsersReverse: state => state.connectedUsers.reverse(),
+  connectedUsersCount: state => state.connectedUsers.length
 }
 
 // only sync operation
@@ -242,6 +246,9 @@ const mutations = {
         return state.imageMemento.indexOf(item) == pos;
     })]
     this.$config.isDev && console.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
+  },
+  connectedUsers (state, array) {
+    state.connectedUsers = [...array]
   }
 }
 

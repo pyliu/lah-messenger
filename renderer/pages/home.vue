@@ -38,30 +38,19 @@
           .mr-auto
             b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
             span {{ getChannelName($store.getters.currentChannel) }} 
+          
           //- show online user badges
           b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="connectedUsersOverlapRatio")
-            b-avatar(
-              v-for="(user, idx) in connectedUsers"
+            user-avatar(
+              v-for="(user, idx) in connectedUsersReverse"
               v-if="idx < 13"
               :key="`connected_user_${user.userid}_${idx}`"
-              :src="userAvatarSrc(user)"
-              :title="user.username"
-              :class="connectedUsersCount < 12 ? ['ml-1'] : []"
-              :badge="user.userid === userid"
-              badge-variant="success"
-              button
-              @click="avatarClick($event, user)"
+              :user-data="user"
             )
           span.mr-4(v-if="connectedUsersCount >= 13") ... ({{ connectedUsersCount }})
-          b-avatar.mr-4(
+          user-avatar.mr-4(
             v-if="connectedUsersCount === 1"
-            button
-            :src="userAvatarSrc(connectedUsers[0])"
-            title="我"
-            size="2rem"
-            badge-variant="success"
-            badge
-              @click="avatarClick($event, connectedUsers[0])"
+            :user-data="connectedUsers[0]"
           )
 
         //- chatting channel board
@@ -206,8 +195,7 @@ export default {
     connecting: false,
     asking: false,
     reconnectMs: 20 * 1000,
-    back: false,
-    connectedUsers: []
+    back: false
   }),
   fetch () {
     this.$localForage.getItem('userMap').then((obj) => {
@@ -225,11 +213,9 @@ export default {
     })
   },
   computed: {
-    connectedUsersCount () { return this.connectedUsers.length },
     connectedUsersOverlapRatio () {
       return this.connectedUsers.length < 13 ? 0.0 : 0.4
     },
-
 
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
     showMessageBoard () { return this.currentChannel !== 'chat' },
@@ -301,9 +287,15 @@ export default {
         this.$store.commit("resetUnread", nVal || this.userid)
         this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
       }
+      
       // release from channel items
       this.messages[oVal] && (this.messages[oVal].length = 0)
       this.latestMessage()
+
+      // chatting needs to query online users to show avatar
+      if (!this.showUnreadChannels.includes(nVal)) {
+        this.queryChatChannelOnlineClients()
+      }
     },
     wsHost(val) {
       this.resetReconnectTimer()
@@ -338,18 +330,6 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
-    avatarClick (event, user) {
-      event.stopPropagation()
-      this.modal(this.$createElement('user-card', {
-        props: {
-          id: user.userid,
-          name: user.username
-        }
-      }), {
-        title: `${user.username}`,
-        size: 'xl'
-      })
-    },
     upload () { this.showModalById('upload-modal') },
     loadUserMapData() {
       // refresh user name mapping from API server
@@ -591,7 +571,7 @@ export default {
           this.connectText = `${json.message}`
           break;
         case 'online':
-          this.connectedUsers = [...json.payload.users]
+          this.$store.commit('connectedUsers', json.payload.users)
           this.connectText = `${json.message}`
           break;
         default:
@@ -936,9 +916,6 @@ export default {
       this.register()
       // inject userinfo to electron mainWindow as well
       this.ipcRenderer.invoke('injectUserinfo', userinfo)
-    },
-    userAvatarSrc (user) {
-      return `${this.apiQueryUrl}/get_user_img.php?id=${user?.userid}_avatar&name=${user?.username}_avatar`
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')
