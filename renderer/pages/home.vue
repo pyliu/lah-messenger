@@ -46,6 +46,7 @@
               :key="`connected_user_${user.userid}_${idx}`"
               :src="userAvatarSrc(user)"
               :title="user.username"
+              :class="connectedUsersCount < 12 ? ['ml-1'] : []"
               :badge="user.userid === userid"
               badge-variant="success"
               button
@@ -163,10 +164,12 @@
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
+import UserCard from '~/components/user-card.vue'
 
 export default {
   transition: 'list',
   head: { title: `桃園地政事務所` },
+  components: { UserCard },
   data: () => ({
     image: null,
     text: '',
@@ -224,7 +227,7 @@ export default {
   computed: {
     connectedUsersCount () { return this.connectedUsers.length },
     connectedUsersOverlapRatio () {
-      return this.connectedUsers.length < 13 ? -0.1 : 0.4
+      return this.connectedUsers.length < 13 ? 0.0 : 0.4
     },
 
 

@@ -92,14 +92,13 @@ export default {
     photoSrc () {
       return this.avatarSrc.replaceAll('_avatar', '')
     },
-    avatarSrc () {
-      return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.id}_avatar&name=${this.name}_avatar`
-    }
+    queryUrl () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
+    avatarSrc () { return `http://${this.apiHost}:${this.apiPort}/get_user_img.php?id=${this.id}_avatar&name=${this.name}_avatar` }
   },
   fetch () {
     this.isBusy = false
     this.loading = true
-    this.$axios.post(this.$consts.API.JSON.USER, {
+    this.$axios.post(this.queryUrl, {
       type: 'user_info',
       id: this.id,
       name: this.name

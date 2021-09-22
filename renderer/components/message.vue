@@ -58,8 +58,10 @@
 
 <script>
 import announcementCard from '~/components/announcement-card.vue'
+import UserCard from '~/components/user-card.vue'
+
 export default {
-  components: { announcementCard },
+  components: { announcementCard, UserCard },
   props: {
     raw: { type: Object, required: true },
     prev: { type: Object, default: undefined }
@@ -195,7 +197,7 @@ export default {
 
   &.mine {
     p {
-      background: rgb(129, 240, 148);
+      background: rgb(214, 247, 220);
       color: rgb(0, 0, 0);
       margin-bottom: 0rem !important;
     }
