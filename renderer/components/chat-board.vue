@@ -9,7 +9,7 @@
     h5.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a(:href="`${feQueryUrl}/message`") 信差] / #[a(:href="`${feQueryUrl}/notification`") 公告] 訊息請至 #[a(:href="feQueryUrl") 地政智慧管控系統]
     h5 #[b-icon(icon="people-fill" variant="success")] 線上使用者({{ connectedUsersCount }})
     //- show online user badges
-    b-avatar-group.mx-auto(size="4rem" :overlap="0.0")
+    b-avatar-group.center(size="4rem" :overlap="0.0")
       user-avatar.m-1(
         v-for="(user, idx) in connectedUsersReverse"
         :key="`avatar_${user.userid}_${idx}`"
