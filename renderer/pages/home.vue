@@ -39,7 +39,7 @@
             b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="1.25" title="返回列表")
             span {{ getChannelName($store.getters.currentChannel) }} 
           //- show online user badges
-          b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="0.4")
+          b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="connectedUsersOverlapRatio")
             b-avatar(
               v-for="(user, idx) in connectedUsers"
               v-if="idx < 13"
@@ -223,6 +223,10 @@ export default {
   },
   computed: {
     connectedUsersCount () { return this.connectedUsers.length },
+    connectedUsersOverlapRatio () {
+      return this.connectedUsers.length < 13 ? -0.1 : 0.4
+    },
+
 
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
     showMessageBoard () { return this.currentChannel !== 'chat' },
