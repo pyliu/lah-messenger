@@ -120,7 +120,7 @@ Vue.mixin({
         }),
         channel: 'system'
       })
-      this.websocket.send(jsonString)
+      this.websocket && this.websocket.send(jsonString)
     },
     clearReconnectTimer() {
       if (this.timer !== null) {
