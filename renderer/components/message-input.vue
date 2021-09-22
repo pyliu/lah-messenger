@@ -30,20 +30,20 @@ import Markd from "marked"
 export default {
   props: {
     to: { type: String, required: true },
-    text: { type: String, default: "" },
+    text: { type: String, default: '' },
   },
   data: () => ({
-    message: "",
+    message: '',
   }),
   computed: {
     mdMessage() {
       if (this.$utils.empty(this.message) || !DOMPurify.sanitize) {
-        return ""
+        return ''
       }
       return DOMPurify.sanitize(Markd(this.message.replaceAll('\n', '<br/>')))
     },
     isEmpty() { return this.$utils.empty(this.message) },
-    toName() { return this.userMap[this.to] || "" },
+    toName() { return this.userMap[this.to] || '' },
     avatarSrc() { return `${this.apiQueryUrl}/get_user_img.php?id=${this.to}_avatar&name=${this.toName}_avatar` },
   },
   methods: {
@@ -58,7 +58,7 @@ export default {
           })
         )
       }
-      this.message = ""
+      this.message = ''
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
       this.$emit("sent", this.message)
     },
