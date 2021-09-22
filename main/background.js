@@ -173,7 +173,7 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
           `http://${payload.api_host}:${payload.api_port}${payload.api_uri}`,
           qs.stringify(payload)
         ).then(({ data }) => {
-          data.status < 1 && notify(data.message, payload.ip)
+          data.status < 1 && !isProd && console.warn(data.message, payload.ip)
         }).catch(error => {
           console.error(error)
           notify(error.message, payload.ip)
@@ -307,12 +307,12 @@ ipcMain.handle('userinfo', async (event, arg) => {
 })
 
 ipcMain.handle('ad-user-query', async (event, config) => {
-  if (!isProd) {
-    return {
-      description: 'pyliu',
-      group: 'inf'
-    }
-  }
+  // if (!isProd) {
+  //   return {
+  //     description: 'pyliu',
+  //     group: 'inf'
+  //   }
+  // }
   const ActiveDirectory = require('activedirectory2').promiseWrapper
   // expect config: {
   //     url: `ldap://${this.adHost}`,
