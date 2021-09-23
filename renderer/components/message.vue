@@ -30,7 +30,7 @@
       )
 
       //- remote or system message
-      p(v-else-if="!mine" v-html="message" @click="reply")
+      p(v-else-if="!mine" v-html="message")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
