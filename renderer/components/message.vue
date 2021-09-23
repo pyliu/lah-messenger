@@ -35,7 +35,7 @@
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
         b-icon.mr-1.clickableIcon(
-          v-if="mine"
+          v-if="removable"
           icon="x-circle"
           variant="danger"
           title="移除這則訊息"
@@ -113,6 +113,11 @@ export default {
     replyTitle () {
       const clean = this.message.replace(/(<([^>]+)>)/gi, '')
       return clean.replace(/%[A-F\d]{2}/g, 'U').length > 20 ? `${clean.substring(0, 20)} ... ` : clean
+    },
+    removable () {
+      const createdate = this.raw.date
+      const today = this.date()
+      return this.mine && today === createdate
     }
   },
   methods: {
