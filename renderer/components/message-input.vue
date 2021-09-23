@@ -54,7 +54,7 @@ export default {
         const replyHeader = this.packReplyHeader(this.to, this.toName)
         // also send to own channel to simulate talking between eachothers
         this.websocket.send(
-          this.packMessage(`${replyHeader} ${this.message}`, {
+          this.packMessage(`${replyHeader} ${this.empty(this.reply) ? '' : `- ${this.reply}`} ${this.message}`, {
             channel: this.userid
           })
         )
