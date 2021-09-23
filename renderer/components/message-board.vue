@@ -127,8 +127,7 @@ export default {
       this.scrollBehavior = flag ? 'first' : 'last'
     },
     uploadImage (file) {
-      !file && this.debug('選定的上傳檔案是空的')
-      file && this.upload()
+      file ? this.upload() : this.debug('選定的上傳檔案是空的')
     }
   },
   methods: {
