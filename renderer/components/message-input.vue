@@ -51,10 +51,10 @@ export default {
     send () {
       if (this.websocket && !this.isEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.to }))
-        const replyHeader = this.packReplyHeader(this.to, this.toName)
+        const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
         // also send to own channel to simulate talking between eachothers
         this.websocket.send(
-          this.packMessage(`${replyHeader} ${this.empty(this.reply) ? '' : `- ${this.reply}`} ${this.message}`, {
+          this.packMessage(`${replyHeader} ${this.message}`, {
             channel: this.userid
           })
         )
