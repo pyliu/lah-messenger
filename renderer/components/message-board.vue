@@ -136,6 +136,8 @@ export default {
     }
   },
   methods: {
+    delayAttention () {/* placeholder for attention */},
+    delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     loadHistoryMessage () {
       if (this.fetchingHistory) {
         this.warning(`讀取之前訊息中，請稍待 ... `)
@@ -162,8 +164,6 @@ export default {
         this.log(`尚未連線無法取得 ${this.currentChannel} 之前訊息資料`)
       }
     },
-    delayAttention () {/* placeholder for attention */},
-    delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     upload (directly = false) {
       if (!this.uploadImage) {
         this.warn('uploadImage無值，無法上傳檔案', this.uploadImage)
@@ -243,9 +243,6 @@ export default {
       }
       // Clean up
       event.currentTarget.classList.remove('bg-dropable');
-    },
-    scroll () {
-      scrollTop = $event.target.scrollTop
     }
   },
   created () {
