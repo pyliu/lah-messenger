@@ -178,6 +178,7 @@ export default {
 
 <style lang="scss" scoped>
 .clickableIcon:hover {
+  font-size: .75rem;
   font-weight: bold;
   color: blue;
 }
