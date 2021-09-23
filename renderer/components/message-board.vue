@@ -215,16 +215,17 @@ export default {
     dragover (event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
-      if (!event.currentTarget.classList.contains('bg-dropable')) {
-        event.currentTarget.classList.add('bg-dropable');
+      if (!event.currentTarget.classList.contains('dropable')) {
+        event.currentTarget.classList.add('dropable');
       }
     },
     dragleave (event) {
       // Clean up
-      event.currentTarget.classList.remove('bg-dropable');
+      event.currentTarget.classList.remove('dropable');
     },
     drop (event) {
-      event.preventDefault();
+      event.stopPropagation() // Stops some browsers from redirecting
+      event.preventDefault()
       // this.debug(event.dataTransfer)
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('公告信差版面不支援JPEG直接上傳')
@@ -235,7 +236,7 @@ export default {
         this.log('僅支援拖放實體檔案')
       }
       // Clean up
-      event.currentTarget.classList.remove('bg-dropable');
+      event.currentTarget.classList.remove('dropable');
     }
   },
   created () {
@@ -253,11 +254,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.bg-dropable {
-  background-color: rgb(227, 255, 236);
-  font-weight: bolder;
-}
-
 .memento:hover {
   border: 5px dashed gray;
   padding: 2px;
