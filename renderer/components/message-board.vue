@@ -98,14 +98,10 @@ export default {
       if (this.isAnnouncement || this.isDepartment || this.isMine) {
         return 'announcement-container'
       }
-      // if (this.isMine) {
-      //   return 'personal-container'
-      // }
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory },
-    uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
+    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
   },
   watch: {
     messageCount (n, o) {

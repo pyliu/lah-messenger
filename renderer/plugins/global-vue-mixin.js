@@ -65,6 +65,7 @@ Vue.mixin({
       'imageMemento',
       'imageMementoCapacity',
       'imageMementoCacheKey',
+      'latestImageMemento',
       'connectedUsers',
       'connectedUsersReverse',
       'connectedUsersCount',
@@ -80,7 +81,8 @@ Vue.mixin({
     belongToHr () { return this.userdept === 'hr' },
     belongToSupervisor () { return this.userdept === 'supervisor' },
     apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` },
-    feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` }
+    feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` },
+    uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
   },
   methods: {
     ...mapActions([

@@ -1,5 +1,4 @@
 import trim from 'lodash/trim'
-import { stat } from 'original-fs'
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -116,6 +115,7 @@ const getters = {
   fetchingHistory: state => state.fetchingHistory,
   imageMementoCapacity: state =>state.imageMementoCapacity,
   imageMemento: state => state.imageMemento,
+  latestImageMemento: state => state.imageMemento.length > 0 ? state.imageMemento[state.imageMemento.length - 1] : undefined,
   imageMementoCacheKey: state => 'imageMementoCached',
   connectedUsers: state => state.connectedUsers,
   connectedUsersReverse: state => state.connectedUsers.reverse(),

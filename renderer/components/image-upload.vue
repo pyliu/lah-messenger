@@ -12,23 +12,22 @@
       accept="image/jpeg"
     ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
     hr
-    h6 
-      img.mt-n1(src="~/assets/img/preview_black_24dp.svg")
-      span 選定預覽
-    .d-flex(v-if="!$utils.empty(encoded)")
+    h6.d-flex.align-items-center
+      img.my-auto(src="~/assets/img/preview_black_24dp.svg")
+      span.mr-auto 選定預覽
+      b-button.ml-1(
+        @click="publish"
+        variant="outline-success"
+        title="選定圖片"
+        size="sm"
+        v-if="!empty(encoded)"
+      ): b-icon(icon="plus" scale="1.5")
+    .d-flex.align-items-end(v-if="!empty(encoded)")
       b-img(
         :src="encoded"
         thumbnail
         fluid
       )
-      b-button.ml-1(
-        @click="publish"
-        style="max-height: 48px"
-        variant="outline-success"
-        title="選定圖片"
-      )
-        //- img(src="~/assets/img/send_black_24dp.svg")
-        b-icon(icon="check")
     hr
     h6
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
@@ -50,6 +49,7 @@
 export default {
   props: {
     to: { type: String, required: true },
+    rightaway: { type: Boolean, default: false },
     modalId: { type: String, default: undefined }
   },
   data: () => ({
@@ -57,7 +57,8 @@ export default {
     encoded: ''
   }),
   computed: {
-    name () { return this.userMap[this.to] || this.to }
+    name () { return this.userMap[this.to] || this.to },
+
   },
   watch: {
     uploadFile (file) {
@@ -72,21 +73,18 @@ export default {
         const filename = this.uploadFile.name
         const formData = new FormData()
         formData.append('file', this.uploadFile)
-        formData.append('width', 380)
-        formData.append('height', 290)
+        formData.append('width', 430)
+        formData.append('height', 330)
         formData.append('quality', 75)
         this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
-          if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
+          if (!this.empty(data.encoded) && !this.empty(data.uri)) {
             this.encoded = `${data.uri}${data.encoded}`
             this.$store.commit('addImageMemento', this.encoded)
             this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
               this.err('快取上傳圖檔失敗', err)
             })
             if (this.$utils.statusCheck(data.status)) {
-              if (directly) {
-                // send the image right away
-                this.sendImage(this.encoded, filename, this.currentChannel)
-              }
+              this.rightaway && this.sendImage(this.encoded, `給${this.name}`, this.to)
             } else {
               this.warning(data.message, { title: '上傳圖檔結果' })
             }
