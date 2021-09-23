@@ -381,6 +381,7 @@ Vue.mixin({
       if (document && !document.hidden) {
         return new Promise((resolve, reject) => {
           if (typeof msg !== 'string' && typeof opts !== 'object') {
+            this.err(msg, opts)
             reject(`notify 傳入參數有誤: msg:${msg}, opts: ${opts}`)
           } else {
             const defDelay = (opts.variant === 'danger' ? 7500 : (opts.variant === 'warning' ? 6250 : 5000))
@@ -397,8 +398,10 @@ Vue.mixin({
             this.makeToast(msg, opts).then((config) => {
               resolve(config)
             }).catch((err) => {
-              this.$utils.error(err)
+              this.err(err)
               reject(err)
+            }).finally(() => {
+              opts.type === 'danger' ? this.err(msg, opts) : this.log(msg, opts)
             })
           }
         })
@@ -414,6 +417,7 @@ Vue.mixin({
           variant: 'warning'
         }, opts)
         this.notify(message, merged)
+        this.warn(message, merged)
       }
     },
     alert (message, opts = {}) {
