@@ -51,10 +51,10 @@ export default {
     send () {
       if (this.websocket && !this.isEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.to }))
+        const replyHeader = this.packReplyHeader(this.to, this.toName)
         // also send to own channel to simulate talking between eachothers
-        const sendToAvatar = `<span class="b-avatar-img"><img src="${this.avatarSrc}" alt="avatar" class="avatar my-auto"></span>`
         this.websocket.send(
-          this.packMessage(`${sendToAvatar} ${this.toName} - ${this.reply} <hr style="margin:5px"/> ${this.message}`, {
+          this.packMessage(`${replyHeader} ${this.message}`, {
             channel: this.userid
           })
         )

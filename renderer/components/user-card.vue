@@ -125,9 +125,11 @@ export default {
     sendMessage () {
       if (this.websocket && !this.isMessageEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.userData.id }))
-        // also send to own channel to simulate talking between eachothers
-        const to = `<span class="b-avatar-img my-auto"><img src="${this.avatarSrc}" alt="avatar" class="avatar"></span>`
-        this.websocket.send(this.packMessage(`${to} ${this.userData.name}<hr/>${this.message}`, { channel: this.userid }))
+        // no additional message to self
+        if (this.userid !== this.id) {
+          const replyHeader = this.packReplyHeader(this.id, this.userData.name)
+          this.websocket.send(this.packMessage(`${replyHeader} ${this.message}`, { channel: this.userid }))
+        }
       }
       this.message = ''
       this.$refs.userText && this.$refs.userText.focus()
