@@ -24,7 +24,7 @@ export default {
     uid () { return this.userData?.userid },
     uname () { return this.userData?.username || this.userMap[this.userData?.userid] || this.userData?.userid },
     avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` },
-    tip () { return this.userData.timestamp ? '登入時間：' + this.$utils.tsAd(this.userData.timestamp).split(' ')[1] : '無 timestamp' }
+    tip () { return this.userData.timestamp ? `${this.uname} 登入時間：${this.$utils.tsAd(this.userData.timestamp).split(' ')[1]}` : this.uname }
   },
   methods: {
     click (event) {
