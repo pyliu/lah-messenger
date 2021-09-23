@@ -560,10 +560,10 @@ Vue.mixin({
           // Do other things once the value has been saved.
         }).catch((err) => {
           // This code runs if there were any errors
-          this.$utils.error(err)
+          this.err(err)
         })
       } catch (err) {
-        this.$utils.error(err)
+        this.err(err)
         return false
       }
       return true

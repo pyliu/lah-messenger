@@ -180,7 +180,7 @@ export default {
             this.pickedEncodingData = `${data.uri}${data.encoded}`
             this.$store.commit('addImageMemento', this.pickedEncodingData)
             this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-              this.$utils.error('快取上傳圖檔失敗', err);
+              this.err('快取上傳圖檔失敗', err);
             })
             if (this.$utils.statusCheck(data.status)) {
               if (directly) {
@@ -194,7 +194,7 @@ export default {
             this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
           }
         }).catch((err) => {
-          this.$utils.error(err)
+          this.err(err)
         }).finally(() => {
           this.isBusy = false
           // this.uploadImage = undefined

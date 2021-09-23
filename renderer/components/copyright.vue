@@ -31,7 +31,7 @@ export default {
     this.show = true
     this.timeout(() => (this.show = false), this.leave_time).then((handle) => {
       // save the handle here if you want to control timeout func
-    }).catch((err) => this.$utils.error(err))
+    }).catch((err) => this.err(err))
   },
 };
 </script>
