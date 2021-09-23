@@ -180,7 +180,7 @@ export default {
 .clickableIcon:hover {
   font-size: .75rem;
   font-weight: bold;
-  color: blue;
+  color: rgb(255, 0, 0);
 }
 .msg-item {
   position: relative;
