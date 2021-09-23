@@ -5,7 +5,7 @@
     @drop="drop"
   )
     b-file(
-      v-model="image"
+      v-model="uploadFile"
       placeholder="僅支援上傳JPEG圖檔"
       drop-placeholder="放開以設定上傳檔案"
       browse-text="瀏覽"
@@ -24,11 +24,11 @@
       b-button.ml-1(
         @click="publish"
         style="max-height: 48px"
-        variant="outline-primary"
-        title="直接送出選擇的圖片"
+        variant="outline-success"
+        title="選定圖片"
       )
         //- img(src="~/assets/img/send_black_24dp.svg")
-        b-icon(icon="cursor")
+        b-icon(icon="check")
     hr
     h6
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
@@ -53,25 +53,25 @@ export default {
     modalId: { type: String, default: undefined }
   },
   data: () => ({
-    image: undefined,
+    uploadFile: undefined,
     encoded: ''
   }),
   computed: {
     name () { return this.userMap[this.to] || this.to }
   },
   watch: {
-    image (file) {
+    uploadFile (file) {
       file && this.upload()
     }
   },
   methods: {
     upload () {
-      if (this.image?.type === 'image/jpeg') {
+      if (this.uploadFile?.type === 'image/jpeg') {
         this.isBusy = true
         this.encoded = ''
-        const filename = this.image.name
+        const filename = this.uploadFile.name
         const formData = new FormData()
-        formData.append('file', this.image)
+        formData.append('file', this.uploadFile)
         formData.append('width', 380)
         formData.append('height', 290)
         formData.append('quality', 75)
@@ -103,9 +103,10 @@ export default {
       }
     },
     publish () {
-      this.sendImage(this.encoded, `給${this.name}`, this.to)
+      // this.sendImage(this.encoded, `給${this.name}`, this.to)
+      this.$emit('publish', this.encoded)
       this.encoded = ''
-      this.image = undefined
+      this.uploadFile = undefined
       this.hideModalById(this.modalId)
     },
     dragover (event) {
@@ -121,7 +122,7 @@ export default {
       event.stopPropagation() // Stops some browsers from redirecting
       event.preventDefault()
       if (event.dataTransfer.files.length > 0) {
-        this.image = event.dataTransfer.files[0]
+        this.uploadFile = event.dataTransfer.files[0]
       } else {
         this.log('僅支援拖放實體檔案')
       }

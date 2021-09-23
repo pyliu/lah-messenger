@@ -18,7 +18,6 @@ div
         size="sm"
         variant="outline-success"
         title="附加圖片"
-        disabled
       )
         b-icon(icon="images")
       b-button.icon-btn(
@@ -29,11 +28,27 @@ div
         title="送出"
       )
         b-icon(icon="cursor")
-  //- .preview(v-if="!isEmpty" v-html="mdMessage")
+  
+  h6.my-2
+    img.mt-n1(src="~/assets/img/preview_black_24dp.svg")
+    span 附加圖片
+  .d-flex.flex-wrap
+    b-img.memento.m-1(
+      v-for="(base64data, idx) in selected"
+      v-if="!empty(base64data)"
+      :key="`imgAttached_${idx}`"
+      :src="base64data"
+      thumbnail
+      fluid
+      title="刪除這張圖片"
+      style="max-width: 122.5px"
+    )
 </template>
 
 <script>
+import ImageUpload from '~/components/image-upload.vue'
 export default {
+  components: { ImageUpload },
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
@@ -41,13 +56,33 @@ export default {
   },
   data: () => ({
     message: '',
+    images: new Set()
   }),
   computed: {
     isEmpty () { return this.$utils.empty(this.message) },
-    toName () { return this.userMap[this.to] || this.to }
+    toName () { return this.userMap[this.to] || this.to },
+    selected () { return Array.from(this.images) }
   },
   methods: {
-    pick () {},
+    pick () {
+      this.modal(this.$createElement('image-upload', {
+        props: {
+          to: this.to,
+          modalId: 'image-upload-modal'
+        },
+        on: {
+          publish: (base64data) => {
+            // received publish event from image-upload component
+            this.images.add(base64data)
+            this.log('Got publish event, now Set size is', this.images.size)
+          }
+        }
+      }), {
+        id: 'image-upload-modal',
+        size: 'xl',
+        title: `傳送圖片給 ${this.toName}`
+      })
+    },
     send () {
       if (this.websocket && !this.isEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.to }))
@@ -73,15 +108,9 @@ export default {
   height: 32px;
   white-space: nowrap;
 }
-.preview {
-  display: inline-block;
-  border-radius: 5px;
-  background: #e6e9e9;
-  color: rgb(10, 10, 10);
-  padding: 5px;
-  width: 85%;
-  text-align: left;
-  box-sizing: border-box;
-  margin-top: 1rem;
+.memento:hover {
+  border: 5px dashed gray;
+  padding: 2px;
+  cursor: pointer;
 }
 </style>
