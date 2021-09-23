@@ -33,13 +33,18 @@ export default {
       { id: 'hr', name: '人事室' },
       { id: 'supervisor', name: '主任祕書室' },
       { id: 'lds', name: '全所' },
-    ]
+    ],
+    onlineTimer: undefined
   }),
   computed: {
     isChat () { return this.currentChannel === 'chat'}
   },
   created () {
     this.connectedUsersCount === 0 && this.queryChatChannelOnlineClients()
+    this.onlineTimer = setInterval(() => this.queryChatChannelOnlineClients(), 5 * 60 * 1000)
+  },
+  beforeDestroy() {
+    clearInterval(this.onlineTimer) 
   }
 };
 </script>
