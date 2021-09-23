@@ -4,7 +4,7 @@ div
     ref="msgTextarea"
     v-model="message"
     debounce="200"
-    placeholder="... 回復內容 ...",
+    placeholder="... 訊息內容 ...",
     size="sm"
     rows="5"
     no-resize
@@ -79,18 +79,20 @@ export default {
         let imgMdText = this.images.map((base64, idx) => {
           return `![給${this.toName}${idx}](${base64})`
         }).join('<hr style="margin:5px"/>')
-        if (!this.empty(imgMdText)) {
+        if (!this.empty(this.message) && !this.empty(imgMdText)) {
           imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
         }
         // send to target
-        this.websocket.send(this.packMessage(`${this.message} ${imgMdText}`, { channel: this.to }))
-        const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
-        // also send to own channel to simulate talking between eachothers
-        this.websocket.send(
-          this.packMessage(`${replyHeader} ${this.message} ${imgMdText}`, {
-            channel: this.userid
-          })
-        )
+        this.websocket.send(this.packMessage(`${this.message}${imgMdText}`, { channel: this.to }))
+        if (this.to !== this.userid) {
+          const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
+          // also send to own channel to simulate talking between eachothers
+          this.websocket.send(
+            this.packMessage(`${replyHeader} ${this.message} ${imgMdText}`, {
+              channel: this.userid
+            })
+          )
+        }
       }
       this.$emit("sent", this.message)
       this.message = ''
