@@ -165,14 +165,27 @@ export default ({ $axios, store }, inject) => {
       })
     },
     now () {
-      // e.g. 2020-11-06 13:39:23
       const now = new Date()
+      // e.g. 2020-11-06 13:39:23
       return now.getFullYear() + '-' +
         ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
         ('0' + now.getDate()).slice(-2) + ' ' +
         ('0' + now.getHours()).slice(-2) + ':' +
         ('0' + now.getMinutes()).slice(-2) + ':' +
         ('0' + now.getSeconds()).slice(-2)
+    },
+    tsAd (ts) {
+      if (ts) {
+        const d = new Date(ts)
+        // e.g. 2021-09-23 12:40:23
+        return d.getFullYear() + '-' +
+          ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+          ('0' + d.getDate()).slice(-2) + ' ' +
+          ('0' + d.getHours()).slice(-2) + ':' +
+          ('0' + d.getMinutes()).slice(-2) + ':' +
+          ('0' + d.getSeconds()).slice(-2)
+      }
+      return 'timestamp is not provided'
     },
     isIPv4 (str) {
       if (isEmpty(str)) {

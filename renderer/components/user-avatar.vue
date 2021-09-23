@@ -1,7 +1,7 @@
 <template lang="pug">
   b-avatar(
     :src="avatarSrc"
-    :title="userMap[userData.userid] || userData.username || userData.userid"
+    :title="tip"
     :size="size"
     button
     @click="click"
@@ -21,42 +21,22 @@ export default {
   data: () => ({
   }),
   computed: {
-    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.userData?.userid || this.id}_avatar&name=${this.userData?.username}_avatar` }
-  },
-  fetch () {
-    // if (this.$utils.empty(this.userData)) {
-    //   this.$axios.post(this.queryUrl, {
-    //     type: 'user_info',
-    //     id: this.id
-    //   }).then(({ data }) => {
-    //     if (this.$utils.statusCheck(data.status)) {
-    //       if (data.data_count > 1) {
-    //         this.userData = {...data.raw.find((item, idx, array) => {
-    //           return (item.authority & this.$consts.AUTHORITY.DISABLED) !== this.$consts.AUTHORITY.DISABLED
-    //         }) || {}}
-    //       } else {
-    //         this.userData = {...data.raw[0]}
-    //       }
-    //     } else {
-    //       this.warn(data.message)
-    //     }
-    //   }).catch((err) => {
-    //     this.err(err)
-    //   }).finally(() => {
-    //     this.isBusy = false
-    //   })
-    // }
+    uid () { return this.userData?.userid },
+    uname () { return this.userData?.username || this.userMap[this.userData?.userid] || this.userData?.userid },
+    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` },
+    tip () { return this.userData.timestamp ? '登入時間：' + this.$utils.tsAd(this.userData.timestamp).split(' ')[1] : '無 timestamp' }
   },
   methods: {
     click (event) {
       event.stopPropagation()
+      event.preventDefault()
       this.modal(this.$createElement('user-card', {
         props: {
-          id: this.userData.userid,
-          name: this.userData.username
+          id: this.uid,
+          name: this.uname
         }
       }), {
-        title: `${this.userMap[this.userData.userid] || this.userData.username || this.userData.userid}`,
+        title: this.uname,
         size: 'xl'
       })
     }
