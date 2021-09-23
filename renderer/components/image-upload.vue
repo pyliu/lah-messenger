@@ -1,5 +1,6 @@
 <template lang="pug">
   div(
+    ref="container"
     @dragover="dragover"
     @dragleave="dragleave"
     @drop="drop"
@@ -12,7 +13,7 @@
       accept="image/jpeg"
     ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
     hr
-    h6.d-flex.align-items-center
+    h6.d-flex.align-items-center(ref="previewImg")
       img.my-auto(src="~/assets/img/preview_black_24dp.svg")
       span.mr-auto 選定預覽
       b-button.ml-1(
@@ -32,17 +33,18 @@
     h6
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
       span 歷史圖片
-    b-img.memento.my-1(
-      v-for="(memento, idx) in imageMemento"
-      v-if="!$utils.empty(memento)"
-      :key="`imgMemento_${idx}`"
-      :src="memento"
-      thumbnail
-      fluid
-      title="挑選這張圖片"
-      style="max-width: 122.5px"
-      @click="encoded = memento"
-    )
+    .d-flex.flex-wrap.align-items-center.justify-content-center
+      b-img.memento.my-1.mx-1(
+        v-for="(memento, idx) in imageMemento"
+        v-if="!$utils.empty(memento)"
+        :key="`imgMemento_${idx}`"
+        :src="memento"
+        thumbnail
+        fluid
+        title="挑選這張圖片"
+        style="max-width: 135px"
+        @click="pick(memento)"
+      )
 </template>
 
 <script>
@@ -126,6 +128,16 @@ export default {
       }
       // Clean up
       event.currentTarget.classList.remove('dropable')
+    },
+    pick (memento) {
+      this.encoded = memento
+      this.$nextTick(() => {
+        if (this.$refs.previewImg?.scrollIntoView) {
+          this.$refs.previewImg.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+        } else {
+          this.$refs.container.scrollTop = 0
+        }
+      })
     }
   }
 }

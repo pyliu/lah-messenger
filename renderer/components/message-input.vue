@@ -26,7 +26,7 @@ div
       variant="success"
       title="附加圖片"
     ): b-icon(icon="images")
-  .d-flex.flex-wrap
+  .d-flex.flex-wrap.align-items-center
     b-img.memento.m-1(
       v-for="(base64data, idx) in images"
       :key="`imgAttached_${idx}`"
