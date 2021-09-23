@@ -10,7 +10,7 @@
     h5 #[b-icon(icon="people-fill")] 線上使用者 #[b-badge(pill variant="success") {{ connectedUsersCount }}]
     //- show online user badges
     b-avatar-group(size="3rem" :overlap="0.0"): .d-flex.justify-content-center.flex-wrap: user-avatar.m-1(
-      v-for="(user, idx) in connectedUsersReverse"
+      v-for="(user, idx) in connectedUsers"
       :key="`avatar_${user.userid}_${idx}`"
       :user-data="user"
     )

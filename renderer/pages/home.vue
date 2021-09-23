@@ -42,7 +42,7 @@
           //- show online user badges
           b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="connectedUsersOverlapRatio")
             user-avatar(
-              v-for="(user, idx) in connectedUsersReverse"
+              v-for="(user, idx) in connectedUsers"
               v-if="idx < 13"
               :key="`connected_user_${user.userid}_${idx}`"
               :user-data="user"
