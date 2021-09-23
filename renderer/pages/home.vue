@@ -695,11 +695,11 @@ export default {
               } else if (incoming.message && incoming.sender !== 'system') {
                 // add unread stats
                 if (parseInt(this.unread[channel]) === NaN) {
-                  this.$store.dispatch("resetUnread", channel)
+                  this.resetUnread(channel)
                 }
                 // channel got new message then pluses the counter
                 if (receivedId > lastReadId) {
-                  this.currentChannel !== channel && this.$store.dispatch("plusUnread", channel)
+                  this.currentChannel !== channel && this.plusUnread(channel)
                   if (this.showUnreadChannels.includes(channel)) {
                     // tell electron window the channels got unread message
                     this.ipcRenderer.invoke('unread', channel)
