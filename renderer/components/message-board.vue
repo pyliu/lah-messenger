@@ -126,11 +126,7 @@ export default {
     fetchingHistory (flag) {
       this.scrollBehavior = flag ? 'first' : 'last'
     },
-    lastEncodedImage (val) {
-      console.log(val)
-    },
     uploadImage (file) {
-      this.debug(file)
       !file && this.debug('選定的上傳檔案是空的')
       file && this.upload()
     }
