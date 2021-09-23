@@ -109,7 +109,7 @@ export default {
   },
   watch: {
     messageCount (n, o) {
-      // watch list to display the first/last message
+      // watch list count to scroll viewport to display the first/last message
       n > o && this.$nextTick(() => {
         const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
         if (this.$refs.box && target) {
