@@ -176,6 +176,9 @@ Vue.mixin({
     packImage(base64, alt, channel) {
       return this.packMessage(`![${alt}](${base64})`, { channel: channel || this.currentChannel })
     },
+    sendImage (base64, alt, channel) {
+      this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
+    },
     getChannelName(channelId) {
       switch (channelId) {
         case 'announcement': return '公告'

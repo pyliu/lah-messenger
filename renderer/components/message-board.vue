@@ -212,9 +212,6 @@ export default {
         }
       })
     },
-    sendImage (base64, alt, channel) {
-      this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
-    },
     dragover (event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files

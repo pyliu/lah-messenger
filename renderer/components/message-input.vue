@@ -62,9 +62,8 @@ export default {
       this.message = ''
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
       this.$emit("sent", this.message)
-    },
-    upload () {}
-  },
+    }
+  }
 }
 </script>
 
