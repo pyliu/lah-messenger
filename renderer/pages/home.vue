@@ -75,7 +75,7 @@
         b-button.mx-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" v-if="valid")
           span 傳送
-        b-button(@click="upload" variant="outline-success" title="傳送圖片")
+        b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
 
 
@@ -333,7 +333,24 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
-    upload () { this.showModalById('upload-modal') },
+    pick () {
+      this.modal(this.$createElement('image-upload', {
+        props: {
+          to: this.currentChannel,
+          modalId: 'image-upload-modal'
+        },
+        on: {
+          publish: (base64EncodedData) => {
+            // received publish event from image-upload component
+            this.sendImage(base64EncodedData, '上傳圖片', this.currentChannel)
+          }
+        }
+      }), {
+        id: 'image-upload-modal',
+        size: 'xl',
+        title: `直接傳送圖片`
+      })
+    },
     loadUserMapData() {
       // refresh user name mapping from API server
       const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`

@@ -236,10 +236,10 @@ const mutations = {
     }
   },
   addImageMemento (state, base64data) {
-    this.$config.isDev && console.log(timestamp(), `新增 image data 到 store。 [Vuex::addImageMemento]`, state.imageMemento)
+    this.$config.isDev && console.log(timestamp(), `新增 image data 到 store。 [Vuex::addImageMemento]`)
     if (state.imageMemento.length >= state.imageMementoCapacity) {
       const removed = state.imageMemento.shift()
-      this.$config.isDev && console.log(timestamp(), `移除 image data。 [Vuex::addImageMemento]`, removed)
+      this.$config.isDev && console.log(timestamp(), `移除最早的 image data。 [Vuex::addImageMemento]`)
       state.imageMemento.length = state.imageMementoCapacity
     }
     state.imageMemento.push(base64data)

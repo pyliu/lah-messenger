@@ -18,62 +18,6 @@
           @reply="$emit('reply', $event)"
           @remove="$emit('remove', $event)"
         )
-
-    b-modal(
-      id="upload-modal"
-      hide-footer
-      centered
-      size="xl"
-      scrollable
-      no-close-on-backdrop
-    )
-      template(#modal-title) #[b-icon(icon="upload")] 圖片管理
-      //- template(#default="{ ok, cancel, hide }")
-      div(
-        @dragover="dragover"
-        @dragleave="dragleave"
-        @drop="drop"
-      )
-        b-file(
-          v-model="uploadImage"
-          placeholder="*.jpg"
-          drop-placeholder="放開以設定上傳檔案"
-          browse-text="瀏覽"
-          accept="image/jpeg"
-        ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
-        hr
-        h6 
-          img.mt-n1(src="~/assets/img/preview_black_24dp.svg")
-          span 選定預覽
-        .d-flex(v-if="!$utils.empty(pickedEncodingData)")
-          b-img(
-            :src="pickedEncodingData"
-            thumbnail
-            fluid
-          )
-          b-button.ml-1(
-            @click="publish"
-            style="max-height: 48px"
-            variant="outline-primary"
-            title="直接送出選擇的圖片"
-          )
-            //- img(src="~/assets/img/send_black_24dp.svg")
-            b-icon(icon="box-arrow-up")
-        hr
-        h6
-          img.mt-n1(src="~/assets/img/history_black_24dp.svg")
-          span 歷史圖片
-        b-img.memento.my-1(
-          v-for="(memento, idx) in imageMemento"
-          v-if="!$utils.empty(memento)"
-          :key="`imgMemento_${idx}`"
-          :src="memento"
-          thumbnail
-          fluid
-          title="挑選這張圖片"
-          style="max-width: 122.5px"
-          @click="pickedEncodingData = memento"
-        )
 </template>
 
 <script>
