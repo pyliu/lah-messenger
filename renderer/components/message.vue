@@ -141,7 +141,7 @@ export default {
       }), {
         id: 'message-reply-modal',
         size: 'xl',
-        title: `回復：${this.sender} - ${this.replyTitle || ' ... '}`
+        title: `回覆：${this.sender} - ${this.replyTitle || ' ... '}`
       })
     },
     emitReply () {
