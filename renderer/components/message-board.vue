@@ -80,7 +80,7 @@
 import debounce from 'lodash/debounce'
 export default {
   props: {
-    list: { type: Array, required: true },
+    list: { type: Array, required: true }
   },
   data: () => ({
     displayOldMessageArrow: false,
@@ -108,9 +108,9 @@ export default {
     uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
   },
   watch: {
-    messageCount (dontcare) {
+    messageCount (n, o) {
       // watch list to display the first/last message
-      this.$nextTick(() => {
+      n > o && this.$nextTick(() => {
         const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
         if (this.$refs.box && target) {
           const message = target[0]
@@ -219,18 +219,18 @@ export default {
     sendImage (base64, alt, channel) {
       this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
     },
-    dragover(event) {
+    dragover (event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
       if (!event.currentTarget.classList.contains('bg-dropable')) {
         event.currentTarget.classList.add('bg-dropable');
       }
     },
-    dragleave(event) {
+    dragleave (event) {
       // Clean up
       event.currentTarget.classList.remove('bg-dropable');
     },
-    drop(event) {
+    drop (event) {
       event.preventDefault();
       // this.debug(event.dataTransfer)
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
@@ -243,6 +243,9 @@ export default {
       }
       // Clean up
       event.currentTarget.classList.remove('bg-dropable');
+    },
+    scroll () {
+      scrollTop = $event.target.scrollTop
     }
   },
   created () {
