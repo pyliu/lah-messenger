@@ -31,9 +31,10 @@ div
       v-for="(base64data, idx) in images"
       :key="`imgAttached_${idx}`"
       :src="base64data"
+      @click="remove(base64data)"
       thumbnail
       fluid
-      title="刪除這張圖片"
+      v-b-tooltip="'刪除這張圖片'"
       style="width: 138.5px"
     )
 </template>
@@ -97,6 +98,12 @@ export default {
       this.$emit("sent", this.message)
       this.message = ''
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
+    },
+    remove (base64data) {
+      var index = this.images.indexOf(base64data)
+      if (index > -1) {
+        this.images.splice(index, 1)
+      }
     }
   }
 }
@@ -104,7 +111,7 @@ export default {
 
 <style lang="scss" scoped>
 .memento:hover {
-  border: 5px dashed gray;
+  border: 5px dashed rgb(194, 6, 6);
   padding: 2px;
   cursor: pointer;
 }
