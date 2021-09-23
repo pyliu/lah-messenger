@@ -14,7 +14,7 @@ div
     )
     .d-flex.flex-column.mx-1
       b-button.mb-1.icon-btn(
-        @click="upload"
+        @click="pick"
         size="sm"
         variant="outline-success"
         title="附加圖片"
@@ -47,6 +47,7 @@ export default {
     toName () { return this.userMap[this.to] || this.to }
   },
   methods: {
+    pick () {},
     send () {
       if (this.websocket && !this.isEmpty) {
         this.websocket.send(this.packMessage(this.message, { channel: this.to }))
