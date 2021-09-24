@@ -228,6 +228,9 @@ export default ({ $axios, store }, inject) => {
       }
       return `${dateObj.getFullYear() - 1911}${("0" + (dateObj.getMonth()+1)).slice(-2)}${("0" + dateObj.getDate()).slice(-2)}`
     },
+    length (chinese) {
+      return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
+    },
     log: console.log.bind(console),
     warn: console.warn.bind(console),
     assert: console.assert.bind(console),

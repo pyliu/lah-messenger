@@ -184,6 +184,7 @@ Vue.mixin({
           from: this.ip,
           message: text,
           channel: this.currentChannel,
+          priority: 3
         },
         ...opts,
       })

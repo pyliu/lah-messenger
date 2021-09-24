@@ -1,6 +1,11 @@
 <template lang="pug">
 div
-  b-textarea(
+  .d-flex(v-if="isAnnouncementChannel")
+    b-input-group.mr-auto(size="sm" prepend="標題")
+      b-input(v-model="messageTitle" placeholder=" ... 必要欄位 ..." v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 84 個字元`")
+    b-input-group.priority.ml-1(size="sm" prepend="緊急程度")
+      b-select(v-model="priority" :options="priorityOpts")
+  b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
     debounce="200"
@@ -12,7 +17,7 @@ div
     autofocus
   )
   
-  .my-2.d-flex.align-items-center.justify-content-end
+  .d-flex.align-items-center.justify-content-end
     b-button(
       @click="send"
       size="sm"
@@ -49,12 +54,21 @@ export default {
     reply: { type: String, default: '' }
   },
   data: () => ({
+    messageTitle: '',
+    priority: 3,
     message: '',
-    images: []
+    images: [],
+    priorityOpts: [
+      { text: '最高', value: 0 },
+      { text: '高', value: 1 },
+      { text: '中', value: 2 },
+      { text: '正常', value: 3 }
+    ]
   }),
   computed: {
     isEmpty () { return this.empty(this.message) && this.empty(this.images) },
-    toName () { return this.userMap[this.to] || this.to }
+    toName () { return this.userMap[this.to] || this.to },
+    isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') }
   },
   methods: {
     pick () {
@@ -84,13 +98,19 @@ export default {
           imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
         }
         // send to target
-        this.websocket.send(this.packMessage(`${this.message}${imgMdText}`, { channel: this.to }))
+        this.websocket.send(this.packMessage(`${this.message}${imgMdText}`, {
+          channel: this.to,
+          title: this.messageTitle,
+          priority: this.priority
+        }))
         if (this.to !== this.userid && !this.to?.startsWith('announcement')) {
           const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
             this.packMessage(`${replyHeader} ${this.message} ${imgMdText}`, {
-              channel: this.userid
+              channel: this.userid,
+              title: this.messageTitle,
+              priority: this.priority
             })
           )
         }
@@ -114,5 +134,8 @@ export default {
   border: 5px dashed rgb(194, 6, 6);
   padding: 2px;
   cursor: pointer;
+}
+.priority {
+  max-width: 145px;
 }
 </style>
