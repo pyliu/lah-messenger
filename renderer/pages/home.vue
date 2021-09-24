@@ -209,7 +209,7 @@ export default {
     })
     // restore image memento
     this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
-      this.$config.isDev && console.log('回復已上傳的圖檔', arr)
+      this.$config.isDev && console.log('回復已上傳的圖檔', `${arr.length}筆`)
       this.$store.commit('imageMemento', arr || [])
     })
     // restore message memento
