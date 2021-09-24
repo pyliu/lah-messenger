@@ -77,6 +77,7 @@ export default {
     isAnnouncement() { return this.currentChannel.startsWith('announcement') },
     isMyChannel() { return this.currentChannel === this.userid },
     mine() { return this.raw ? this.userid === this.senderId : false },
+    sendByMe () { return this.userid === this.senderId },
     system() { return this.raw ? 'system' === this.sender : false },
     id() { return this.raw?.id },
     type() { return this.raw?.type },
@@ -117,7 +118,7 @@ export default {
     removable () {
       const createdate = this.raw.date
       const today = this.date()
-      return this.mine && today === createdate
+      return (this.mine || this.sendByMe) && today === createdate
     }
   },
   methods: {
