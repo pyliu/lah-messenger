@@ -271,7 +271,7 @@ export default {
   z-index: 1001;
   position: fixed;
   opacity: 0.5;
-  left: -45px;
+  left: -50px;
   top: 120px;
   &:hover {
     transition: all .5s;
