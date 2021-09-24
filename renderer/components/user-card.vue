@@ -28,25 +28,6 @@
             div(v-if="userData.unit") 部門：{{ userData.unit }}
             div(v-if="userData.work") 工作：{{ userData.work }}
           b-button(variant="outline-primary" @click="open") 留言
-          //- .d-flex.small
-          //-   b-textarea(
-          //-     ref="userText"
-          //-     v-model="message"
-          //-     debounce="200"
-          //-     placeholder="... 留言給他/她 ..."
-          //-     size="sm"
-          //-     @keyup.enter.exact="sendMessage"
-          //-     no-resize
-          //-     no-auto-shrink
-          //-     autofocus
-          //-   )
-          //-   b-button.mx-1(
-          //-     @click="sendMessage"
-          //-     size="sm"
-          //-     :disabled="isMessageEmpty"
-          //-     variant="outline-primary"
-          //-   ): span 傳送
-
       .d-flex.flex-column(md="6")
         b-link(@click="photoClick" title="放大顯示")
           b-img-lazy.shadow(
@@ -138,18 +119,6 @@ export default {
         title: `給 ${this.userData.id} ${this.userData.name}`
       })
     },
-    // sendMessage () {
-    //   if (this.websocket && !this.isMessageEmpty) {
-    //     this.websocket.send(this.packMessage(this.message, { channel: this.userData.id }))
-    //     // no additional message to self
-    //     if (this.userid !== this.id) {
-    //       const replyHeader = this.packReplyHeader(this.id, this.userData.name)
-    //       this.websocket.send(this.packMessage(`${replyHeader} ${this.message}`, { channel: this.userid }))
-    //     }
-    //   }
-    //   this.message = ''
-    //   this.$refs.userText && this.$refs.userText.focus()
-    // },
     photoClick () {
       this.modal(this.$createElement('b-img', {
         attrs: {
