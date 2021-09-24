@@ -22,6 +22,14 @@ const timestamp = (full = false) => {
 }
 
 const state = () => ({
+  authority: {
+    isAdmin: false,
+    isChief: false,
+    isDisabled: false,
+    isRAE: false,
+    isUserMgtStaff: false,
+    isNotifyMgtStaff: false
+  },
   userMap: {},
   userinfo: {
     address: [],
@@ -81,6 +89,7 @@ const state = () => ({
 })
 
 const getters = {
+  authority: state => state.authority,
   websocket: state => state.websocket,
   connected: state => state.websocket && state.websocket.readyState === 1,
   disconnected: state => empty(state.websocket) || state.websocket.readyState === 3,
@@ -163,6 +172,9 @@ const getters = {
 
 // only sync operation
 const mutations = {
+  authority (state, payloadObj) {
+    state.authority = { ...state.authority, ...payloadObj }
+  },
   websocket (state, ws) {
     state.websocket && state.websocket.close()
     state.websocket = ws

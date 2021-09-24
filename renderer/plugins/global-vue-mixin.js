@@ -33,6 +33,7 @@ Vue.mixin({
   },
   computed: {
     ...mapGetters([
+      'authority',
       'websocket',
       'connected',
       'disconnected',

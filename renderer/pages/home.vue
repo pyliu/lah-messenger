@@ -217,6 +217,8 @@ export default {
       this.$config.isDev && console.log('回復已儲存的訊息', arr)
       this.$store.commit('messageMemento', arr || [])
     })
+    // todo: checking api server for the user authority
+    this.loadAuthority()
   },
   computed: {
     connectedUsersOverlapRatio () {
@@ -357,7 +359,24 @@ export default {
         title: `直接傳送圖片`
       })
     },
-    loadUserMapData() {
+    loadAuthority () {
+      // load user authority from API server
+      const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
+      this.$axios.post(queryEP, {
+        type: 'authentication'
+      }).then(({ data }) => {
+        if (this.$utils.statusCheck(data.status)) {
+          this.$store.commit('authority', data.authority)
+          this.$localForage.setItem('authority', data.authority)
+        } else {
+          this.warning(data.message)
+        }
+      }).catch((err) => {
+        this.alert(err.toString())
+      }).finally(() => {
+      })
+    },
+    loadUserMapData () {
       // refresh user name mapping from API server
       const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
       this.$axios.post(queryEP, {

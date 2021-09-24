@@ -8,7 +8,7 @@
       @drop="drop"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel)" @click="openMessageInput" variant="outline-primary"): b-icon(icon="chat-right-text")
+      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel) && isAuthorized" @click="openMessageInput" variant="outline-primary"): b-icon(icon="chat-right-text")
       transition-group(name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
@@ -38,6 +38,7 @@ export default {
     pickedEncodingData: ''
   }),
   computed: {
+    isAuthorized () { return this.authority.isAdmin || this.authority.isNotifyMgtStaff },
     isMine () { return this.userid === this.currentChannel },
     isChat () { return !this.isAnnouncement && !this.isMine },
     isAnnouncement () { return this.currentChannel === 'announcement' },
