@@ -217,8 +217,6 @@ export default {
       this.$config.isDev && console.log('回復已儲存的訊息', arr)
       this.$store.commit('messageMemento', arr || [])
     })
-    // todo: checking api server for the user authority
-    this.loadAuthority()
   },
   computed: {
     connectedUsersOverlapRatio () {
@@ -360,7 +358,7 @@ export default {
       })
     },
     loadAuthority () {
-      // load user authority from API server
+      // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
       const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
       this.$axios.post(queryEP, {
         type: 'authentication'
@@ -374,6 +372,7 @@ export default {
       }).catch((err) => {
         this.alert(err.toString())
       }).finally(() => {
+        this.log('authority', this.authority)
       })
     },
     loadUserMapData () {
@@ -1025,6 +1024,8 @@ export default {
         this.connect()
       }
       this.ipcRenderer.invoke('home-ready')
+      // checking api server for the user authority
+      this.loadAuthority()
     })
   },
   beforeDestroy () {

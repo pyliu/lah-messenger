@@ -1,10 +1,16 @@
 <template lang="pug">
 div
   .d-flex(v-if="isAnnouncementChannel")
-    b-input-group.mr-auto(size="sm" prepend="標題")
-      b-input(v-model="messageTitle" placeholder=" ... 必要欄位 ..." v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 84 個字元`")
-    b-input-group.priority.ml-1(size="sm" prepend="緊急程度")
-      b-select(v-model="priority" :options="priorityOpts")
+    b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
+      v-model="messageTitle"
+      placeholder=" ... 必要欄位 ..."
+      v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 84 個字元`"
+      :state="!empty(messageTitle)"
+    )
+    b-input-group.priority.ml-1(size="sm" prepend="緊急程度"): b-select(
+      v-model="priority"
+      :options="priorityOpts"
+    )
   b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
@@ -21,8 +27,8 @@ div
     b-button(
       @click="send"
       size="sm"
-      :disabled="isEmpty"
-      :variant="isEmpty ? 'outline-primary' : 'primary'"
+      :disabled="notValid"
+      :variant="notValid ? 'outline-primary' : 'primary'"
       title="送出"
     ): b-icon(icon="cursor" rotate="45")
     b-button.ml-1(
@@ -66,7 +72,12 @@ export default {
     ]
   }),
   computed: {
-    isEmpty () { return this.empty(this.message) && this.empty(this.images) },
+    notValid () {
+      if (this.isAnnouncementChannel && this.empty(this.messageTitle)) {
+        return true
+      }
+      return this.empty(this.message) && this.empty(this.images)
+    },
     toName () { return this.userMap[this.to] || this.to },
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') }
   },
@@ -90,7 +101,7 @@ export default {
       })
     },
     send () {
-      if (this.websocket && !this.isEmpty) {
+      if (this.websocket && !this.notValid) {
         let imgMdText = this.images.map((base64, idx) => {
           return `![給${this.toName}${idx}](${base64})`
         }).join('<hr style="margin:5px"/>')

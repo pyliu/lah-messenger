@@ -8,7 +8,13 @@
       @drop="drop"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel) && isAuthorized" @click="openMessageInput" variant="outline-primary"): b-icon(icon="chat-right-text")
+      b-button.leave-message-btn(
+        v-if="!chatRooms.includes(currentChannel) && isAuthorized"
+        @click="openMessageInput"
+        size="lg"
+        variant="primary"
+        :title="`發布訊息@${currentChannelName}`"
+      ): b-icon(icon="chat-right-text" flip-h)
       transition-group(name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
@@ -242,6 +248,7 @@ export default {
 }
 
 .old-message-arrow {
+  transition: all .5s;
   z-index: 1001;
   cursor: pointer;
   position: fixed;
@@ -249,21 +256,22 @@ export default {
   right: 15px;
   top: 75px;
   &:hover {
-    transition: all .5s;
     opacity: 1.0;
     color: #007bff !important;
   }
 }
 
 .leave-message-btn {
+  transition: all 1s;
   z-index: 1001;
   position: fixed;
-  opacity: 0.2;
-  right: 25px;
+  opacity: 0.5;
+  left: -45px;
   top: 120px;
   &:hover {
     transition: all .5s;
     opacity: 1.0;
+    left: 0px;
   }
 }
 </style>
