@@ -62,6 +62,7 @@ Vue.mixin({
       'participatedChannels',
       'platform',
       'currentChannel',
+      'currentChannelName',
       'imageMemento',
       'imageMementoCapacity',
       'imageMementoCacheKey',

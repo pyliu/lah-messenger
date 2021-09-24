@@ -108,6 +108,34 @@ const getters = {
   ip: state => state.userinfo.ipv4,
   address: state => state.userinfo.address,
   currentChannel: state => String(state.currentChannel),
+  currentChannelName: state => {
+    const channelId = String(state.currentChannel)
+    switch (channelId) {
+      case 'announcement': return '公告'
+      case 'announcement_inf': return '資訊課公告'
+      case 'announcement_reg': return '登記課公告'
+      case 'announcement_val': return '地價課公告'
+      case 'announcement_sur': return '測量課公告'
+      case 'announcement_adm': return '行政課公告'
+      case 'announcement_hr': return '人事室公告'
+      case 'announcement_acc': return '會計室公告'
+      case 'announcement_supervisor': return '主任秘書室公告'
+      case 'lds': return '全所聊天室'
+      case 'inf': return '資訊課聊天室'
+      case 'reg': return '登記課聊天室'
+      case 'sur': return '測量課聊天室'
+      case 'adm': return '行政課聊天室'
+      case 'val': return '地價課聊天室'
+      case 'hr': return '人事室聊天室'
+      case 'acc': return '會計室聊天室'
+      case 'supervisor': return '主任祕書室聊天室'
+      default:
+        if (channelId === state.userinfo.userid.toUpperCase()) {
+          return '我的頻道'
+        }
+        return `無法辨識的頻道 ${channelId}`
+    }
+  },
   participatedChannels: state => state.participatedChannels,
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
   effect: state => state.effect,
