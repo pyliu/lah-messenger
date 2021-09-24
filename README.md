@@ -1,4 +1,4 @@
-<div class="d-flex"><img src="snap2.jpg" style="max-width: 400px"><img src="snap.jpg" style="max-width: 400px"></div>
+<div class="d-flex"><img src="snap2.jpg" style="max-width: 400px" class="img-thumbnail"><img src="snap.jpg" style="max-width: 400px" class="img-thumbnail"></div>
 
 ## Dev Usage
 
