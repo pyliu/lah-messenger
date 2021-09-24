@@ -197,6 +197,7 @@ export default {
     back: false
   }),
   fetch () {
+    // restore usermap
     this.$localForage.getItem('userMap').then((obj) => {
       this.$config.isDev && console.log(`從快取中取得使用者對應表`, obj)
       obj && this.$store.commit('userMap', obj)
@@ -206,9 +207,15 @@ export default {
       this.$config.isDev && console.log(`4hrs後重新更新使用者對應表`)
       setTimeout(() => this.loadUserMapData(), 4 * 60 * 60 * 1000)
     })
+    // restore image memento
     this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
       this.$config.isDev && console.log('回復已上傳的圖檔', arr)
       this.$store.commit('imageMemento', arr || [])
+    })
+    // restore message memento
+    this.$localForage.getItem(this.messageMementoCacheKey).then((arr) => {
+      this.$config.isDev && console.log('回復已儲存的訊息', arr)
+      this.$store.commit('messageMemento', arr || [])
     })
   },
   computed: {
