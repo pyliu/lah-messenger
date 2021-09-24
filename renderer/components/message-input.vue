@@ -85,7 +85,7 @@ export default {
         }
         // send to target
         this.websocket.send(this.packMessage(`${this.message}${imgMdText}`, { channel: this.to }))
-        if (this.to !== this.userid) {
+        if (this.to !== this.userid && !this.to?.startsWith('announcement')) {
           const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(

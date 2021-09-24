@@ -1,0 +1,21 @@
+{
+    channel: "announcement_inf",
+    date: "2021-09-24",
+    from: "192.168.88.51",
+    id: 13,
+    message: {
+        content: "tt",
+        create_datetime: "2021-09-24 13:10:13",
+        expire_datetime: "",
+        flag: 0,
+        from_ip: "192.168.88.51",
+        id: 13,
+        priority: 3,
+        sender: "10013859",
+        title: "dontcare"
+    },
+    prepend: false,
+    sender: "系統推播",
+    time: "13:48:43",
+    type: "remote"
+}

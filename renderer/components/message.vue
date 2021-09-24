@@ -6,7 +6,7 @@
     ): p(v-html="mdate")
 
     .s-75.font-weight-bold.align-middle(
-      v-if="!mine && !system"
+      v-if="!myMessage && !system"
       @click="avatarClick($event)"
       :style="{ cursor: 'pointer' }"
       title="顯示使用者卡片"
@@ -26,11 +26,11 @@
       //- special card message for announcement
       announcement-card(
         v-if="isAnnouncement"
-        :data-json="raw['message']"
+        :data-json="announcementPayload"
       )
 
       //- remote or system message
-      p(v-else-if="!mine" v-html="message")
+      p(v-else-if="!myMessage" v-html="message")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
@@ -43,17 +43,17 @@
           @click="remove"
         )
         b-icon.clickableIcon(
-          v-if="!isAnnouncement && !mine"
+          v-if="!isAnnouncement && !myMessage"
           icon="reply-fill"
           title="回覆此訊息"
           font-scale="1.5"
           flip-h
           @click="isMyChannel ? reply() : emitReply()"
         )
-        div {{ mtime }}
+        div(v-if="!isAnnouncement") {{ mtime }}
 
       //- my message
-      p(v-if="mine" v-html="message")
+      p(v-if="myMessage" v-html="message")
 
 </template>
 
@@ -73,12 +73,14 @@ export default {
     return {}
   },
   computed: {
+    announcementPayload () { return this.raw?.message },
+    isAnnouncement() { return typeof this.announcementPayload === 'object' },
+    myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
+
     showMdate() { return this.prevMdate !== this.mdate },
-    isAnnouncement() { return this.currentChannel.startsWith('announcement') },
     isMyChannel() { return this.currentChannel === this.userid },
-    mine() { return this.raw ? this.userid === this.senderId : false },
-    sendByMe () { return this.userid === this.senderId },
-    system() { return this.raw ? 'system' === this.sender : false },
+    myMessage() { return this.userid === this.senderId },
+    system() { return 'system' === this.sender },
     id() { return this.raw?.id },
     type() { return this.raw?.type },
     message() { return this.raw?.message },
@@ -106,8 +108,8 @@ export default {
     },
     classes() {
       return [
-        this.mine ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
-        this.mine ? 'mine' : this.system ? 'system' : '',
+        this.myMessage ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
+        this.myMessage ? 'mine' : this.system ? 'system' : '',
       ]
     },
     avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` },
@@ -116,9 +118,15 @@ export default {
       return clean.replace(/%[A-F\d]{2}/g, 'U').length > 20 ? `${clean.substring(0, 20)} ... ` : clean
     },
     removable () {
-      const createdate = this.raw.date
-      const today = this.date()
-      return (this.mine || this.sendByMe) && today === createdate
+      if (this.myAnnouncement) {
+        // for management, not strict the time passed
+        return true
+      }
+      const nowTs = +new Date()
+      const msgTs = +new Date(`${this.raw.date} ${this.raw.time}`)
+      const offset = nowTs - msgTs
+      // my message and wthin a day
+      return this.myMessage && offset <= 86400000
     }
   },
   methods: {
@@ -184,9 +192,12 @@ export default {
 
 <style lang="scss" scoped>
 .clickableIcon:hover {
-  font-size: .75rem;
-  font-weight: bold;
-  color: rgb(0, 81, 255);
+  z-index: 1002;
+  &:hover {
+    font-size: .75rem;
+    font-weight: bold;
+    color: rgb(0, 81, 255);
+  }
 }
 .msg-item {
   position: relative;

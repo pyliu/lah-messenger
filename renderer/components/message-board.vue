@@ -8,7 +8,7 @@
       @drop="drop"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel)" @click="openMessageInput" variant="outline-primary"): b-icon(icon="cursor" rotate="45")
+      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel)" @click="openMessageInput" variant="outline-primary"): b-icon(icon="chat-right-text")
       transition-group(name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
@@ -258,8 +258,8 @@ export default {
   z-index: 1001;
   position: fixed;
   opacity: 0.2;
-  left: 10px;
-  top: calc(100vh - 75px);
+  right: 25px;
+  top: 120px;
   &:hover {
     transition: all .5s;
     opacity: 1.0;
