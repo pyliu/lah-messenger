@@ -44,7 +44,12 @@ export default {
     pickedEncodingData: ''
   }),
   computed: {
-    isAuthorized () { return this.authority.isAdmin || this.authority.isNotifyMgtStaff },
+    isAuthorized () {
+      if (this.currentChannel === this.userid) {
+        return true
+      }
+      return this.authority.isAdmin || this.authority.isNotifyMgtStaff
+    },
     isMine () { return this.userid === this.currentChannel },
     isChat () { return !this.isAnnouncement && !this.isMine },
     isAnnouncement () { return this.currentChannel === 'announcement' },
