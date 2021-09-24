@@ -73,8 +73,7 @@
           autofocus
         )
         b-button.mx-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
-          b-icon(icon="cursor" v-if="valid")
-          span 傳送
+          b-icon(icon="cursor" rotate="45")
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
 

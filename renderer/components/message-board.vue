@@ -8,6 +8,7 @@
       @drop="drop"
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
+      b-button.leave-message-btn(v-if="!chatRooms.includes(currentChannel)" @click="openMessageInput" variant="outline-primary"): b-icon(icon="cursor" rotate="45")
       transition-group(name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
@@ -22,7 +23,10 @@
 
 <script>
 import debounce from 'lodash/debounce'
+import MessageInput from '~/components/message-input.vue'
+
 export default {
+  components: { MessageInput },
   props: {
     list: { type: Array, required: true }
   },
@@ -176,6 +180,20 @@ export default {
       }
       // Clean up
       event.currentTarget.classList.remove('dropable');
+    },
+    openMessageInput () {
+      this.modal(this.$createElement('message-input', {
+        props: {
+          to: this.currentChannel
+        },
+        on: {
+          sent: () => { this.hideModalById('message-input-modal') }
+        }
+      }), {
+        id: 'message-input-modal',
+        size: 'xl',
+        title: `發訊息到 ${this.currentChannelName}`
+      })
     }
   },
   created () {
@@ -233,6 +251,18 @@ export default {
     transition: all .5s;
     opacity: 1.0;
     color: #007bff !important;
+  }
+}
+
+.leave-message-btn {
+  z-index: 1001;
+  position: fixed;
+  opacity: 0.2;
+  left: 10px;
+  top: calc(100vh - 75px);
+  &:hover {
+    transition: all .5s;
+    opacity: 1.0;
   }
 }
 </style>

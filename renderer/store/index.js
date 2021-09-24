@@ -136,6 +136,7 @@ const getters = {
         return `無法辨識的頻道 ${channelId}`
     }
   },
+  chatRooms: state => [ 'lds', 'adm', 'inf', 'val', 'reg', 'sur', 'acc', 'hr', 'supervisor' ],
   participatedChannels: state => state.participatedChannels,
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
   effect: state => state.effect,

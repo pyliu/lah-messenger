@@ -63,6 +63,7 @@ Vue.mixin({
       'platform',
       'currentChannel',
       'currentChannelName',
+      'chatRooms',
       'imageMemento',
       'imageMementoCapacity',
       'imageMementoCacheKey',
