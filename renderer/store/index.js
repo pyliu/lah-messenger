@@ -48,6 +48,8 @@ const state = () => ({
   timer: null,
   imageMementoCapacity: 30,
   imageMemento: [],
+  messageMementoCapacity: 30,
+  messageMemento: [],
   currentChannel: 'chat',
   messages: {
     'lds': [],
@@ -142,10 +144,17 @@ const getters = {
   effect: state => state.effect,
   history: state => parseInt(state.history),
   fetchingHistory: state => state.fetchingHistory,
+
   imageMementoCapacity: state =>state.imageMementoCapacity,
   imageMemento: state => state.imageMemento,
   latestImageMemento: state => state.imageMemento.length > 0 ? state.imageMemento[state.imageMemento.length - 1] : undefined,
   imageMementoCacheKey: state => 'imageMementoCached',
+  
+  messageMementoCapacity: state =>state.messageMementoCapacity,
+  messageMemento: state => state.messageMemento,
+  latestMessageMemento: state => state.messageMemento.length > 0 ? state.messageMemento[state.messageMemento.length - 1] : undefined,
+  messageMementoCacheKey: state => 'messageMementoCached',
+
   connectedUsers: state => state.connectedUsers,
   connectedUsersReverse: state => state.connectedUsers.reverse(),
   connectedUsersCount: state => state.connectedUsers.length,
@@ -277,6 +286,26 @@ const mutations = {
         return state.imageMemento.indexOf(item) == pos;
     })]
     this.$config.isDev && console.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
+  },
+  messageMementoCapacity (state, capacity) { state.messageMementoCapacity = parseInt(capacity) || 30 },
+  messageMemento (state, arr) {
+    if (Array.isArray(arr)) {
+      state.messageMemento = [...arr]
+    }
+  },
+  addMessageMemento (state, data) {
+    this.$config.isDev && console.log(timestamp(), `新增 message data 到 store。 [Vuex::addMessageMemento]`, data)
+    if (state.messageMemento.length >= state.messageMementoCapacity) {
+      const removed = state.messageMemento.shift()
+      this.$config.isDev && console.log(timestamp(), `移除最早的 message data。 [Vuex::addMessageMemento]`, removed)
+      state.messageMemento.length = state.messageMementoCapacity
+    }
+    state.messageMemento.push(data)
+    // remove duplication
+    state.messageMemento = [...state.messageMemento.filter(function(item, pos) {
+        return state.messageMemento.indexOf(item) == pos;
+    })]
+    this.$config.isDev && console.log(timestamp(), `現在暫存 message data 數量為 ${state.messageMemento.length}。 [Vuex::addMessageMemento]`)
   },
   connectedUsers (state, array) {
     state.connectedUsers = [...array]
