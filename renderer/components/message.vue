@@ -27,6 +27,8 @@
       announcement-card(
         v-if="isAnnouncement"
         :data-json="announcementPayload"
+        :channel="channel"
+        :message-id="id"
       )
 
       //- remote or system message
@@ -35,7 +37,7 @@
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
         b-icon.mr-1.clickableIcon(
-          v-if="removable"
+          v-if="messageRemovable"
           icon="x-circle"
           variant="danger"
           title="移除這則訊息"
@@ -117,11 +119,8 @@ export default {
       const clean = this.message.replace(/(<([^>]+)>)/gi, '')
       return clean.replace(/%[A-F\d]{2}/g, 'U').length > 20 ? `${clean.substring(0, 20)} ... ` : clean
     },
-    removable () {
-      if (this.myAnnouncement) {
-        // for management, not strict the time passed
-        return true
-      }
+    announcementRemovable () { return this.myAnnouncement },
+    messageRemovable () {
       const nowTs = +new Date()
       const msgTs = +new Date(`${this.raw.date} ${this.raw.time}`)
       const offset = nowTs - msgTs
@@ -191,7 +190,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.clickableIcon:hover {
+.clickableIcon {
+  transition: all .5s;
   z-index: 1002;
   &:hover {
     font-size: .75rem;

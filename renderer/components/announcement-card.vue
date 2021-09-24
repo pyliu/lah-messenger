@@ -5,9 +5,17 @@
     :header-text-variant="textVariant"
     :header="header"
   )
-    template(#header): .d-flex.justify-content-between.font-weight-bold
-      span {{ dataJson.title }}
-      span \#{{ dataJson.id }}
+    template(#header): .d-flex.font-weight-bold.align-items-center
+      span(style="width: 380px").mr-auto {{ dataJson.title }}
+      b-icon.ml-1.removeIcon(
+        v-if="mine"
+        icon="x-circle"
+        :variant="dataJson.priority > 0 ? 'danger' : 'light'"
+        title="移除這則公告"
+        scale="1.25"
+        @click="remove"
+      )
+      span.ml-1(v-else) \#{{ dataJson.id }}
     b-card-text(v-html="content")
     template(#footer): .d-flex.justify-content-between.small.text-muted
       span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
@@ -20,12 +28,12 @@ import Markd from 'marked'
 import isEmpty from 'lodash/isEmpty'
 export default {
   props: {
-    dataJson: { type: Object, required: true }
+    dataJson: { type: Object, required: true },
+    channel: { type: String, required: true }
   },
   computed: {
-    header () {
-      return this.dataJson.title
-    },
+    mine () { return this.$utils.equal(this.dataJson.sender, this.userid) },
+    header () { return this.dataJson.title },
     borderVariant () {
       const priority = parseInt(this.dataJson.priority)
       switch (priority) {
@@ -50,18 +58,57 @@ export default {
           return 'white'
       }
     },
-    sender () {
-      return this.userMap[this.dataJson.sender] || this.dataJson.sender
-    },
+    sender () { return this.userMap[this.dataJson.sender] || this.dataJson.sender },
     content () {
       if (isEmpty(this.dataJson.content) || !DOMPurify.sanitize) {
         return ''
       }
       return DOMPurify.sanitize(Markd(this.dataJson.content).replace(/<p>/gi, "<p style='margin-bottom:1rem'>"))
     }
+  },
+  // mounted () { this.log(this.dataJson, this.userid) },
+  methods: {
+    remove () {
+      this.confirm(`刪除公告 - 「${this.dataJson.title}」？`).then((YN) => {
+        if (YN) {
+          // TODO: send request to ws to remvoe the message from channel
+          this.sendRemoveMessage()
+          // to tell outter board removing this message in the list
+          this.$emit('remove', this.dataJson)
+        }
+      })
+    },
+    sendRemoveMessage () {
+      const jsonString = JSON.stringify({
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({
+          command: 'remove_message',
+          channel: this.channel,
+          id: this.dataJson.id
+        }),
+        channel: 'system'
+      })
+      this.websocket && this.websocket.send(jsonString)
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.removeIcon {
+  transition: all .5s;
+  z-index: 1001;
+  cursor: pointer;
+  position: relative;
+  opacity: 0.5;
+  font-weight: bold;
+  &:hover {
+    opacity: 1;
+    font-size: 1.25rem;
+    font-weight: bolder;
+  }
+}
 </style>

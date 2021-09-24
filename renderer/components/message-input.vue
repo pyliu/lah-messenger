@@ -4,8 +4,8 @@ div
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
       v-model="messageTitle"
       placeholder=" ... 必要欄位 ..."
-      v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 84 個字元`"
-      :state="!empty(messageTitle)"
+      v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 92 個字元`"
+      :state="titleValid"
     )
     b-input-group.priority.ml-1(size="sm" prepend="緊急程度"): b-select(
       v-model="priority"
@@ -72,8 +72,9 @@ export default {
     ]
   }),
   computed: {
+    titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
     notValid () {
-      if (this.isAnnouncementChannel && this.empty(this.messageTitle)) {
+      if (this.isAnnouncementChannel && !this.titleValid) {
         return true
       }
       return this.empty(this.message) && this.empty(this.images)
