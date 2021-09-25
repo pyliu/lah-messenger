@@ -21,7 +21,8 @@
           leave-active-class="animate__slideInDown"
           v-for="(item, idx) in list"
           :raw="item" :prev="list[idx - 1]"
-          :key="`msg-${idx}`" :ref="`msg-${idx}`"
+          :key="`msg-${idx}`"
+          :ref="`msg-${idx}`"
           @reply="$emit('reply', $event)"
           @remove="$emit('remove', $event)"
         )
@@ -215,9 +216,10 @@ export default {
   mounted () {
     setTimeout(() => {
       // this.ready = true
-      this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
+      // this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
+      
       this.displayOldMessageArrow = true
-    }, 800)
+    }, 1200)
   }
 };
 </script>

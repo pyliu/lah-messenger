@@ -13,7 +13,7 @@
       accept="image/jpeg"
     ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
     hr
-    h6.d-flex.align-items-center(ref="previewImg")
+    h6.d-flex.align-items-center(ref="selectPreview")
       img.my-auto(src="~/assets/img/preview_black_24dp.svg")
       span.mr-auto 選定預覽
       b-button.ml-1(
@@ -23,7 +23,7 @@
         size="sm"
         v-if="!empty(encoded)"
       ): b-icon(icon="plus" scale="1.5")
-    .d-flex.align-items-end(v-if="!empty(encoded)")
+    .d-flex.align-items-end(v-if="!empty(encoded)" ref="preview")
       b-img(
         :src="encoded"
         thumbnail
@@ -132,8 +132,9 @@ export default {
     pick (memento) {
       this.encoded = memento
       this.$nextTick(() => {
-        if (this.$refs.previewImg?.scrollIntoView) {
-          this.$refs.previewImg.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+        if (this.$refs.selectPreview?.scrollIntoView) {
+          this.$refs.selectPreview.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+          setTimeout(this.attention.bind(this, this.$refs.preview, { name: this.effect, speed: 'faster' }), 800)
         } else {
           this.$refs.container.scrollTop = 0
         }
