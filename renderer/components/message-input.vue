@@ -44,16 +44,17 @@ div
         title="附加圖片"
       ): b-icon(icon="images")
   .d-flex.flex-wrap.align-items-center
-    b-img.memento.m-1(
-      v-for="(base64data, idx) in images"
-      :key="`imgAttached_${idx}`"
-      :src="base64data"
-      @click="remove(base64data)"
-      thumbnail
-      fluid
-      v-b-tooltip="'刪除這張圖片'"
-      style="width: 138.5px"
-    )
+    transition-group(name="listY" mode="out-in")
+      b-img.memento.m-1(
+        v-for="(base64data, idx) in images"
+        :key="`imgAttached_${idx}`"
+        :src="base64data"
+        @click="remove(base64data)"
+        thumbnail
+        fluid
+        v-b-tooltip="'刪除這張圖片'"
+        style="width: 138.5px"
+      )
 </template>
 
 <script>
@@ -98,7 +99,7 @@ export default {
         on: {
           publish: (base64EncodedData) => {
             // received publish event from image-upload component and add latestimageMemento to Set
-            this.images.push(base64EncodedData)
+            this.images.indexOf(base64EncodedData) === -1 && this.images.push(base64EncodedData)
           }
         }
       }), {

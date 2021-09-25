@@ -122,12 +122,12 @@ blockquote p {
 
 .list-enter, .list-leave-to {
   @include opacity();
-  transform: translateX(-30px);
+  transform: translateX(-50px);
 }
 
 .listY-enter, .listY-leave-to {
   @include opacity();
-  transform: translateY(30px);
+  transform: translateY(-50px);
 }
 
 .bg-enter, .bg-leave-to {
