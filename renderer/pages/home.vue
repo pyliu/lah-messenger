@@ -153,11 +153,12 @@ import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import UserCard from '~/components/user-card.vue'
+import ImageUpload from '~/components/image-upload.vue'
 
 export default {
   transition: 'list',
   head: { title: `桃園地政事務所` },
-  components: { UserCard },
+  components: { UserCard, ImageUpload },
   data: () => ({
     image: null,
     text: '',
