@@ -198,13 +198,6 @@ export default {
     back: false
   }),
   async fetch () {
-    // restore usermap
-    const mapping = await this.getCache('userMapping')
-    if (mapping === false) {
-      this.loadUserMapData()
-    } else {
-      this.$store.commit('userMap', mapping)
-    }
     // restore image memento
     this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
       this.log('回復已上傳的圖檔', `${arr.length}筆`)
@@ -361,7 +354,7 @@ export default {
       }).then(({ data }) => {
         if (this.$utils.statusCheck(data.status)) {
           this.$store.commit('authority', data.authority)
-          this.$localForage.setItem('authority', data.authority)
+          this.setCache('userAuthority', data.data, 12 * 60 * 60 * 1000)
         } else {
           this.warning(data.message)
         }
@@ -1019,8 +1012,20 @@ export default {
         this.connect()
       }
       this.ipcRenderer.invoke('home-ready')
+      // restore usermap
+      const mapping = await this.getCache('userMapping')
+      if (mapping === false) {
+        this.loadUserMapData()
+      } else {
+        this.$store.commit('userMap', mapping)
+      }
       // checking api server for the user authority
-      this.loadAuthority()
+      const authority = await this.getCache('userAuthority')
+      if (authority === false) {
+        this.loadAuthority()
+      } else {
+        this.$store.commit('userAuthority', authority)
+      }
     })
   },
   beforeDestroy () {
