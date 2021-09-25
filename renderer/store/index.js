@@ -224,23 +224,23 @@ const mutations = {
   addChannel (state, channel) {
     if (!empty(channel)) {
       state.messages = { ...state.messages, ...{ [channel]: [] } }
-      this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
+      this.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
     }
   },
   resetUnread (state, channel) {
     if (!empty(channel)) {
       state.unread = { ...state.unread, ...{ [channel]: 0 } }
-      this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
+      this.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::resetUnread]`, state.unread)
     }
   },
   plusUnread (state, channel) {
     if (!empty(channel)) {
       if (typeof state.unread[channel] !== 'number') {
         state.unread = { ...state.unread, ...{ [channel]: 0 } }
-        this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+        this.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
       }
       state.unread[channel]++
-      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
+      this.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
     }
   },
   setUnread (state, payload) {
@@ -249,10 +249,10 @@ const mutations = {
     if (!empty(channel)) {
       if (typeof state.unread[channel] !== 'number') {
         state.unread = { ...state.unread, ...{ [channel]: 0 } }
-        this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
+        this.log(timestamp(), `新增/重設 ${channel} unread 頻道到 store。 [Vuex::plusUnread]`, state.unread)
       }
       state.unread[channel] = count
-      this.$config.isDev && console.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
+      this.log(timestamp(), `${channel} 頻道未讀計數增為 ${state.unread[channel]}。 [Vuex::plusUnread]`, state.unread)
     }
   },
   resetParticipatedChannel (state) {
@@ -267,16 +267,16 @@ const mutations = {
       // add/reset to messages list as well
       state.messages = { ...state.messages, ...{ [channelPayload.id]: [] } }
     } else {
-      this.$config.isDev && console.log(timestamp(), `[addParticipatedChannel] channelPayload is not correct`, channelPayload)
+      this.log(timestamp(), `[addParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
   },
   removeParticipatedChannel (state, channelPayload) {
     if (channelPayload.id) {
       state.participatedChannels = [ ...state.participatedChannels.filter(item => item.id !== channelPayload.id)]
       // remove the channel
-      !delete state.messages[[channelPayload.id]] && this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] delete ${channelPayload.id} failed`, channelPayload)
+      !delete state.messages[[channelPayload.id]] && this.log(timestamp(), `[removeParticipatedChannel] delete ${channelPayload.id} failed`, channelPayload)
     } else {
-      this.$config.isDev && console.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
+      this.log(timestamp(), `[removeParticipatedChannel] channelPayload is not correct`, channelPayload)
     }
   },
   imageMementoCapacity (state, capacity) { state.imageMementoCapacity = parseInt(capacity) || 30 },
@@ -286,10 +286,10 @@ const mutations = {
     }
   },
   addImageMemento (state, base64data) {
-    this.$config.isDev && console.log(timestamp(), `新增 image data 到 store。 [Vuex::addImageMemento]`)
+    this.log(timestamp(), `新增 image data 到 store。 [Vuex::addImageMemento]`)
     if (state.imageMemento.length >= state.imageMementoCapacity) {
       const removed = state.imageMemento.shift()
-      this.$config.isDev && console.log(timestamp(), `移除最早的 image data。 [Vuex::addImageMemento]`)
+      this.log(timestamp(), `移除最早的 image data。 [Vuex::addImageMemento]`)
       state.imageMemento.length = state.imageMementoCapacity
     }
     state.imageMemento.push(base64data)
@@ -297,7 +297,7 @@ const mutations = {
     state.imageMemento = [...state.imageMemento.filter(function(item, pos) {
         return state.imageMemento.indexOf(item) == pos;
     })]
-    this.$config.isDev && console.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
+    this.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
   },
   messageMementoCapacity (state, capacity) { state.messageMementoCapacity = parseInt(capacity) || 30 },
   messageMemento (state, arr) {
@@ -306,10 +306,10 @@ const mutations = {
     }
   },
   addMessageMemento (state, data) {
-    this.$config.isDev && console.log(timestamp(), `新增 message data 到 store。 [Vuex::addMessageMemento]`, data)
+    this.log(timestamp(), `新增 message data 到 store。 [Vuex::addMessageMemento]`, data)
     if (state.messageMemento.length >= state.messageMementoCapacity) {
       const removed = state.messageMemento.shift()
-      this.$config.isDev && console.log(timestamp(), `移除最早的 message data。 [Vuex::addMessageMemento]`, removed)
+      this.log(timestamp(), `移除最早的 message data。 [Vuex::addMessageMemento]`, removed)
       state.messageMemento.length = state.messageMementoCapacity
     }
     state.messageMemento.push(data)
@@ -317,7 +317,7 @@ const mutations = {
     state.messageMemento = [...state.messageMemento.filter(function(item, pos) {
         return state.messageMemento.indexOf(item) == pos;
     })]
-    this.$config.isDev && console.log(timestamp(), `現在暫存 message data 數量為 ${state.messageMemento.length}。 [Vuex::addMessageMemento]`)
+    this.log(timestamp(), `現在暫存 message data 數量為 ${state.messageMemento.length}。 [Vuex::addMessageMemento]`)
   },
   connectedUsers (state, array) {
     state.connectedUsers = [...array]

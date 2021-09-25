@@ -75,7 +75,7 @@
       b-input-group.my-2
         template(#prepend)
           b-icon.my-auto.mr-2(icon="badge-ad-fill" font-scale="2.25" variant="dark")
-          span.my-auto 目錄主機
+          span.my-auto ＡＤ主機
         b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
 
     copyright
@@ -91,10 +91,8 @@ export default {
   head: {
     title: `公告信差即時通-設定`
   },
-  asyncData ({ req, store, redirect, error }) {
-    return {
-      
-    }
+  fetch () {
+    this.restore()
   },
   data: () => ({
     adHost: '',
@@ -251,8 +249,8 @@ export default {
       }).then((result) => {
         const group = result.group
         const desc = result.description
-        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-        this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
+        this.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+        this.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
         const name = desc || this.userMap[this.userid] || this.userid
         this.$store.commit('username', name)
         this.$localForage.setItem('nickname', name)
@@ -264,7 +262,7 @@ export default {
         console.error(err)
         this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
       }).finally(() =>{
-        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+        this.log(this.time(), `透過AD查詢使用者中文姓名結束`)
         this.isBusy = false
       })
     }

@@ -86,7 +86,7 @@ Vue.mixin({
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' },
+    belongToSupervisor () { return ['supervisor', 'director', 'secretary'].includes(this.userdept)  },
     apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` },
     feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` },
     uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
@@ -136,7 +136,7 @@ Vue.mixin({
     },
     clearReconnectTimer() {
       if (this.timer !== null) {
-        this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
+        this.log(this.time(), "清除重新連線檢查定時器")
         clearInterval(this.timer)
         this.$store.commit('timer', null)
       }
@@ -426,7 +426,7 @@ Vue.mixin({
           }
         })
       }
-      this.$config.isDev && console.log(`document不可見，略過notify訊息`, msg)
+      this.log(`document不可見，略過notify訊息`, msg)
     },
     warning (message, opts = {}) {
       if (!empty(message)) {
@@ -630,7 +630,7 @@ Vue.mixin({
     async clearCache () {
       await this.$localForage.clear()
     },
-    log () { this.$config.isDev && console.log(this.time(), ...arguments ) },
+    log () { this.log(this.time(), ...arguments ) },
     warn () { this.$config.isDev && console.warn(this.time(), ...arguments ) },
     err () { this.$config.isDev && console.error(this.time(), ...arguments ) },
     debug () {

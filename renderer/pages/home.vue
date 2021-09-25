@@ -197,25 +197,22 @@ export default {
     reconnectMs: 20 * 1000,
     back: false
   }),
-  fetch () {
+  async fetch () {
     // restore usermap
-    this.$localForage.getItem('userMap').then((obj) => {
-      this.$config.isDev && console.log(`從快取中取得使用者對應表`, obj)
-      obj && this.$store.commit('userMap', obj)
-      !obj && this.$config.isDev && console.log(`無快取使用者對應表，直接重新讀取!`)
-      !obj && this.loadUserMapData()
-    }).finally(() => {
-      this.$config.isDev && console.log(`4hrs後重新更新使用者對應表`)
-      setTimeout(() => this.loadUserMapData(), 4 * 60 * 60 * 1000)
-    })
+    const mapping = await this.getCache('userMapping')
+    if (mapping === false) {
+      this.loadUserMapData()
+    } else {
+      this.$store.commit('userMap', mapping)
+    }
     // restore image memento
     this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
-      this.$config.isDev && console.log('回復已上傳的圖檔', `${arr.length}筆`)
+      this.log('回復已上傳的圖檔', `${arr.length}筆`)
       this.$store.commit('imageMemento', arr || [])
     })
     // restore message memento
     this.$localForage.getItem(this.messageMementoCacheKey).then((arr) => {
-      this.$config.isDev && console.log('回復已儲存的訊息', arr)
+      this.log('回復已儲存的訊息', arr)
       this.$store.commit('messageMemento', arr || [])
     })
   },
@@ -241,26 +238,26 @@ export default {
     isSupervisor () { return this.currentChannel === 'supervisor' },
     isLds () { return this.currentChannel === 'lds' },
 
-    wsConnStr() {
-      return `ws://${this.wsHost}:${this.wsPort}`
-    },
-    valid() { return !isEmpty(trim(this.text)) },
-    validAdHost() { return this.$utils.isIPv4(this.adHost) === false ? false : null },
-    validAdPassword() { return this.empty(this.adPassword) ? false : null },
-    validHost() { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
-    validPort() {
+    wsConnStr () { return `ws://${this.wsHost}:${this.wsPort}` },
+    // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
+    userQueryStr () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
+    valid () { return !isEmpty(trim(this.text)) },
+    validAdHost () { return this.$utils.isIPv4(this.adHost) === false ? false : null },
+    validAdPassword () { return this.empty(this.adPassword) ? false : null },
+    validHost () { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
+    validPort () {
       const i = parseInt(trim(this.wsPort))
       return i < 1025 || i > 65535 || this.empty(this.wsPort) ? false : null
     },
-    validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
-    validInformation() { return !isEmpty(this.userid) && this.validDepartment === null && this.validPort === null && this.validHost === null },
-    list() {
+    validDepartment () { return isEmpty(trim(this.department)) === true ? false : null },
+    validInformation () { return !isEmpty(this.userid) && this.validDepartment === null && this.validPort === null && this.validHost === null },
+    list () {
       return this.messages[this.currentChannel] || []
     },
 
-    stickyChannels() { return ['announcement', this.userid, 'chat', ...this.departmentChannels.map(item => item.value) ] },
-    showUnreadChannels() { return ['announcement', this.userid, , `announcement_${this.department}`] },
-    inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
+    stickyChannels () { return ['announcement', this.userid, 'chat', ...this.departmentChannels.map(item => item.value) ] },
+    showUnreadChannels () { return ['announcement', this.userid, , `announcement_${this.department}`] },
+    inChatting () { return !this.stickyChannels.includes(this.currentChannel) },
     
     showChatUnread () {
       return this.chatUnread > 0 || this.chatUnread === '99+'
@@ -287,15 +284,15 @@ export default {
       this.$store.commit('statusText', val)
     },
     currentChannel(nVal, oVal) {
-      this.$config.isDev && console.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
+      this.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`)
       // comment out to prevent mess in/out system message in chat room
       // this.delaySendChannelActivity(oVal, nVal)
 
       if (!(nVal in this.messages)) {
         this.$store.commit("addChannel", nVal || this.userid)
-        this.$config.isDev && console.log(this.time(), `add channel ${nVal} to $store!`)
+        this.log(this.time(), `add channel ${nVal} to $store!`)
         this.$store.commit("resetUnread", nVal || this.userid)
-        this.$config.isDev && console.log(this.time(), `add unread ${nVal} to $store!`)
+        this.log(this.time(), `add unread ${nVal} to $store!`)
       }
       
       // release from channel items
@@ -359,9 +356,7 @@ export default {
       })
     },
     loadAuthority () {
-      // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
-      const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
-      this.$axios.post(queryEP, {
+      this.$axios.post(this.userQueryStr, {
         type: 'authentication'
       }).then(({ data }) => {
         if (this.$utils.statusCheck(data.status)) {
@@ -378,13 +373,12 @@ export default {
     },
     loadUserMapData () {
       // refresh user name mapping from API server
-      const queryEP = `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`
-      this.$axios.post(queryEP, {
+      this.$axios.post(this.userQueryStr, {
         type: 'user_mapping'
       }).then(({ data }) => {
         if (this.$utils.statusCheck(data.status)) {
           this.$store.commit('userMap', data.data)
-          this.$localForage.setItem('userMap', data.data)
+          this.setCache('userMap', data.data, 12 * 60 * 60 * 1000)
         } else {
           this.warning(data.message)
         }
@@ -416,7 +410,7 @@ export default {
     },
     sendChannelActivity(oVal, nVal) {
       if (this.connected) {
-        this.$config.isDev && console.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
+        this.log(`準備送出 ${oVal} / ${nVal} 活動訊息`)
         // delaySendChannelActivity will debounce 5000ms then checking if it need to send the message 
         const oCName = this.getChannelName(oVal)
         const nCName = this.getChannelName(nVal)
@@ -496,7 +490,7 @@ export default {
         // also update IP entry to API server
         this.reportToAPIServer()
       } else {
-        this.$config.isDev && console.log(
+        this.log(
           this.time(),
           "尚未連線無法登錄客戶端資料", {
             ip: this.ip,
@@ -558,7 +552,7 @@ export default {
     },
     handleAckMessage (json) {
       const cmd = json.command
-      this.$config.isDev && console.log(this.time(), `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`, json)
+      this.log(this.time(), `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`, json)
       switch (cmd) {
         case 'register':
           json.success && this.queryMyChannel() && this.queryStickyChannelUnreadCount()
@@ -639,10 +633,10 @@ export default {
     },
     handleSystemMessage (json) {
       const action = json.action
-      this.$config.isDev && console.log(this.time(), `處理系統訊息 ${action} [home::handleSystemMessage]`, json)
+      this.log(this.time(), `處理系統訊息 ${action} [home::handleSystemMessage]`, json)
       switch (action) {
         default:
-          this.$config.isDev && console.log(this.time(), `未支援的命令 ${action}`, json)
+          this.log(this.time(), `未支援的命令 ${action}`, json)
       }
       
     },
@@ -653,7 +647,7 @@ export default {
     }, 
     connect () {
       if (this.connected) {
-        this.$config.isDev && console.log(this.time(), "已連線，略過檢查")
+        this.log(this.time(), "已連線，略過檢查")
         this.connectText = ''
         this.reconnectMs = 20 * 1000
         this.resetReconnectTimer()
@@ -667,7 +661,7 @@ export default {
             ws.onopen = (e) => {
               // ws to Vuex store
               this.$store.commit('websocket', ws)
-              this.$config.isDev && console.log(this.time(), "已連線", e)
+              this.log(this.time(), "已連線", e)
               // set client info to remote ws server
               this.register()
 
@@ -701,7 +695,7 @@ export default {
               this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
               this.connectText = `收到 ${this.getChannelName(channel)} 訊息`
-              this.$config.isDev && console.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
+              this.log(this.time(), `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming['id']} 資料`, incoming)
 
               if (incoming.type === 'ack') {
                 this.handleAckMessage(incoming.message)
@@ -793,7 +787,7 @@ export default {
         })
         this.websocket.send(jsonString)
       } else {
-        this.$config.isDev && console.log(
+        this.log(
           this.time(),
           `尚未連線無法取得 ${channel} 最新訊息資料`
         )
@@ -804,9 +798,9 @@ export default {
       this.clearReconnectTimer()
       // in home.vue, checks connection every 20s (default)
       if (this.timer === null && this.$route.name === 'home') {
-        this.$config.isDev && console.log(this.time(), "啟動重新連線檢查定時器", this.reconnectMs / 1000, 'secs')
+        this.log(this.time(), "啟動重新連線檢查定時器", this.reconnectMs / 1000, 'secs')
         this.$store.commit('timer', setInterval(() => {
-          this.$config.isDev && console.log(this.time(), "檢查連線狀態 ... ")
+          this.log(this.time(), "檢查連線狀態 ... ")
           this.connectText = '檢查連線狀態'
           this.connect()
         }, this.reconnectMs))
@@ -814,7 +808,7 @@ export default {
     },
     async invokeNotification (incoming) {
       const channel = incoming.channel
-      this.$config.isDev && console.log(this.time(), '確認是否需要傳送通知', channel)
+      this.log(this.time(), '確認是否需要傳送通知', channel)
 
       if (this.notifyChannels.includes(channel)) {
         /**
@@ -846,7 +840,7 @@ export default {
         const id = incoming.message.id
         let lastReadId = await this.getCache(cacheKey)
         isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-        this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+        this.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
         if (id > lastReadId) {
           this.setCache(cacheKey, id)
           this.invokeIPCNotification(title, {
@@ -878,7 +872,7 @@ export default {
         const id = incoming.id
         let lastReadId = await this.getCache(cacheKey)
         isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-        this.$config.isDev && console.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+        this.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
         if (id > lastReadId) {
           this.setCache(cacheKey, id)
           // don't send notification wehn sender is myself or current channel is own channel
@@ -904,7 +898,7 @@ export default {
       this.nickname = this.userMap[this.userid] || this.userid
       if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.$utils.isIPv4(this.adHost))) {
         this.asking = true
-        this.$config.isDev && console.log(this.time(), `透過AD查詢使用者資訊`)
+        this.log(this.time(), `透過AD查詢使用者資訊`)
         const sAMAccountName = `${this.userid}@${this.domain}`
         this.ipcRenderer.invoke('ad-user-query', {
           url: `ldap://${this.adHost}`,
@@ -914,8 +908,8 @@ export default {
         }).then((result) => {
           const group = result.group
           const desc = result.description
-          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
-          this.$config.isDev && console.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
+          this.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
+          this.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
           const name = desc || this.userMap[this.userid] || this.userid
           this.$store.commit('username', name)
           this.$localForage.setItem('nickname', name)
@@ -927,7 +921,7 @@ export default {
           console.error(err)
           this.alert(`AD查詢失敗，密碼錯誤!?`, { title: `ldap://${this.adHost}`, subtitle: sAMAccountName })
         }).finally(() =>{
-          this.$config.isDev && console.log(this.time(), `透過AD查詢使用者中文姓名結束`)
+          this.log(this.time(), `透過AD查詢使用者中文姓名結束`)
           this.asking = false
         })
       }
@@ -983,9 +977,9 @@ export default {
   created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
       this.$store.commit("addChannel", this.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
+      this.log(this.time(), `add channel ${this.currentChannel} to $store! [messageMixin::created]`)
       this.$store.commit("resetUnread", this.currentChannel)
-      this.$config.isDev && console.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
+      this.log(this.time(), `add unread ${this.currentChannel} to $store! [messageMixin::created]`)
     }
     this.ipcRendererSetup()
     this.queryUserInfo()
