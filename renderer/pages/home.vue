@@ -1024,7 +1024,7 @@ export default {
       if (authority === false) {
         this.loadAuthority()
       } else {
-        this.$store.commit('userAuthority', authority)
+        this.$store.commit('authority', authority)
       }
     })
   },
