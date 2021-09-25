@@ -121,6 +121,9 @@ export default {
     },
     announcementRemovable () { return this.myAnnouncement },
     messageRemovable () {
+      if (this.isMyChannel && this.myMessage) {
+        return true
+      }
       const nowTs = +new Date()
       const msgTs = +new Date(`${this.raw.date} ${this.raw.time}`)
       const offset = nowTs - msgTs
