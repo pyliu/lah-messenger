@@ -31,18 +31,18 @@ div
         title="預覽"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
       b-button.mx-1(
+        @click="pick"
+        size="sm"
+        variant="outline-success"
+        title="附加圖片"
+      ): b-icon(icon="images")
+      b-button(
         @click="send"
         size="sm"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
         title="送出"
       ): b-icon(icon="cursor" rotate="45")
-      b-button(
-        @click="pick"
-        size="sm"
-        variant="success"
-        title="附加圖片"
-      ): b-icon(icon="images")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -87,7 +87,8 @@ export default {
       return this.empty(this.message) && this.empty(this.images)
     },
     toName () { return this.userMap[this.to] || this.to },
-    isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') }
+    isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
+    modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` }
   },
   methods: {
     pick () {
@@ -105,7 +106,7 @@ export default {
       }), {
         id: 'image-upload-modal',
         size: 'xl',
-        title: `傳送圖片給 ${this.toName}`
+        title: this.modalTitle
       })
     },
     send () {
