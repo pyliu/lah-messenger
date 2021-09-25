@@ -24,19 +24,25 @@ div
   )
   
   .d-flex.align-items-center.justify-content-end
-    b-button(
-      @click="send"
-      size="sm"
-      :disabled="notValid"
-      :variant="notValid ? 'outline-primary' : 'primary'"
-      title="送出"
-    ): b-icon(icon="cursor" rotate="45")
-    b-button.ml-1(
-      @click="pick"
-      size="sm"
-      variant="success"
-      title="附加圖片"
-    ): b-icon(icon="images")
+    b-button-group(size="sm")
+      b-button(
+        size="sm"
+        variant="outline-secondary"
+        title="預覽"
+      ): b-img(src="~/assets/img/preview_black_24dp.svg")
+      b-button.mx-1(
+        @click="send"
+        size="sm"
+        :disabled="notValid"
+        :variant="notValid ? 'outline-primary' : 'primary'"
+        title="送出"
+      ): b-icon(icon="cursor" rotate="45")
+      b-button(
+        @click="pick"
+        size="sm"
+        variant="success"
+        title="附加圖片"
+      ): b-icon(icon="images")
   .d-flex.flex-wrap.align-items-center
     b-img.memento.m-1(
       v-for="(base64data, idx) in images"
