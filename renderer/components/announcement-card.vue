@@ -10,7 +10,6 @@
       b-icon.ml-1.removeIcon(
         v-if="mine"
         icon="x-circle"
-        :variant="dataJson.priority > 0 ? 'danger' : 'light'"
         title="移除這則公告"
         scale="1.25"
         @click="remove"
@@ -103,12 +102,12 @@ export default {
   z-index: 1001;
   cursor: pointer;
   position: relative;
-  opacity: 0.5;
-  font-weight: bold;
+  font-weight: 500;
+  color: white;
   &:hover {
-    opacity: 1;
     font-size: 1.25rem;
-    font-weight: bolder;
+    font-weight: 900;
+    color: red;
   }
 }
 </style>
