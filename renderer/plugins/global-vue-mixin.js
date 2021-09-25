@@ -86,7 +86,7 @@ Vue.mixin({
     belongToSur () { return this.userdept === 'sur' },
     belongToAcc () { return this.userdept === 'acc' },
     belongToHr () { return this.userdept === 'hr' },
-    belongToSupervisor () { return this.userdept === 'supervisor' },
+    belongToSupervisor () { return ['supervisor', 'director', 'secretary'].includes(this.userdept)  },
     apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` },
     feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` },
     uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
@@ -421,7 +421,7 @@ Vue.mixin({
               this.err(err)
               reject(err)
             }).finally(() => {
-              opts.type === 'danger' ? this.err(msg, opts) : this.log(msg, opts)
+              opts.type === 'danger' ? this.err(msg, opts) : this.$config.isDev && console.log(msg, opts)
             })
           }
         })
@@ -635,7 +635,7 @@ Vue.mixin({
     err () { this.$config.isDev && console.error(this.time(), ...arguments ) },
     debug () {
       this.debugMessage = String(arguments[0])
-      this.log(arguments)
+      this.$config.isDev && console.log(arguments)
     }
   }
 })
