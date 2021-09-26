@@ -110,7 +110,4 @@ export default {
     color: red;
   }
 }
-.card-text img {
-  max-width: 400px;
-}
 </style>

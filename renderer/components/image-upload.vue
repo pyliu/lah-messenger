@@ -34,17 +34,22 @@
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
       span 歷史圖片
     .d-flex.flex-wrap.align-items-center.justify-content-center
-      b-img.memento.my-1.mx-1(
-        v-for="(memento, idx) in imageMemento"
-        v-if="!$utils.empty(memento)"
-        :key="`imgMemento_${idx}`"
-        :src="memento"
-        thumbnail
-        fluid
-        title="挑選這張圖片"
-        style="max-width: 135px"
-        @click="pick(memento)"
-      )
+      .memento-item(v-for="(memento, idx) in imageMemento")
+        b-img.memento.my-1.mx-1(
+          v-if="!empty(memento)"
+          :key="`imgMemento_${idx}`"
+          :src="memento"
+          thumbnail
+          fluid
+          title="挑選這張圖片"
+          @click="pick(memento)"
+        )
+        b-icon.removeIcon(
+          icon="x-circle"
+          title="移除這張照片"
+          scale="1.25"
+          @click="remove(memento)"
+        )
 </template>
 
 <script>
@@ -139,15 +144,42 @@ export default {
           this.$refs.container.scrollTop = 0
         }
       })
+    },
+    remove (memento) {
+      const idx = this.imageMemento.indexOf(memento)
+      if (idx !== -1) {
+        this.imageMemento.splice(idx, 1)
+        this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
+          this.err('刪除圖檔失敗', err);
+        })
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.memento:hover {
-  border: 5px dashed gray;
-  padding: 2px;
-  cursor: pointer;
+.memento-item {
+  max-width: 135px;
+  margin: 5px;
+  .memento:hover {
+    border: 5px dashed gray;
+    padding: 2px;
+    cursor: pointer;
+  }
+  .removeIcon {
+    transition: all .5s;
+    z-index: 1001;
+    cursor: pointer;
+    font-weight: 500;
+    color: red;
+    position: relative;
+    top: -90px;
+    right: -110px;
+    &:hover {
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+  }
 }
 </style>
