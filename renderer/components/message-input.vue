@@ -156,7 +156,8 @@ export default {
       this.modal(this.$createElement(ImageUpload, {
         props: {
           to: this.to,
-          modalId: 'image-upload-modal'
+          modalId: 'image-upload-modal',
+          skipPreview: true
         },
         on: {
           publish: (base64EncodedData) => {

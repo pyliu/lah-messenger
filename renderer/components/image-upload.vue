@@ -15,11 +15,11 @@
     hr
     h6.d-flex.align-items-center(ref="selectPreview")
       img.my-auto(src="~/assets/img/preview_black_24dp.svg")
-      span.mr-auto 選定預覽
+      span.mr-auto 預覽
       b-button.ml-1(
         @click="publish"
         variant="outline-success"
-        title="選定圖片"
+        title="預覽圖片"
         size="sm"
         v-if="!empty(encoded)"
       ): b-icon(icon="plus" scale="1.5")
@@ -34,10 +34,12 @@
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
       span 歷史圖片
     .d-flex.flex-wrap.align-items-center.justify-content-start
-      .memento-item(v-for="(memento, idx) in imageMemento")
+      .memento-item(
+        v-for="(memento, idx) in imageMemento"
+        v-if="!empty(memento)"
+        :key="`imgMemento_${idx}`"
+      )
         b-img.memento.my-1.mx-1(
-          v-if="!empty(memento)"
-          :key="`imgMemento_${idx}`"
           :src="memento"
           thumbnail
           fluid
@@ -57,6 +59,7 @@ export default {
   props: {
     to: { type: String, required: true },
     rightaway: { type: Boolean, default: false },
+    skipPreview: { type: Boolean, default: false },
     modalId: { type: String, default: undefined }
   },
   data: () => ({
@@ -136,19 +139,24 @@ export default {
     },
     pick (memento) {
       this.encoded = memento
-      this.$nextTick(() => {
-        if (this.$refs.selectPreview?.scrollIntoView) {
-          this.$refs.selectPreview.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
-          setTimeout(this.attention.bind(this, this.$refs.preview, { name: this.effect, speed: 'faster' }), 800)
-        } else {
-          this.$refs.container.scrollTop = 0
-        }
-      })
+      if (this.skipPreview) {
+        this.publish()
+      } else {
+        this.$nextTick(() => {
+          if (this.$refs.selectPreview?.scrollIntoView) {
+            this.$refs.selectPreview.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+            setTimeout(this.attention.bind(this, this.$refs.preview, { name: this.effect, speed: 'faster' }), 800)
+          } else {
+            this.$refs.container.scrollTop = 0
+          }
+        })
+      }
     },
     remove (memento) {
-      this.$utils._.remove(this.imageMemento, function(n) {
-        return n === memento
+      this.$utils._.remove(this.imageMemento, (imageData) => {
+        return this.$utils.equal(imageData, memento)
       })
+      this.$store.commit('imageMemento', this.imageMemento)
       this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
         this.alert(`刪除圖檔失敗 (${err.toString()})`)
       })
