@@ -152,13 +152,12 @@
 import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
-import UserCard from '~/components/user-card.vue'
 import ImageUpload from '~/components/image-upload.vue'
 
 export default {
   transition: 'list',
   head: { title: `桃園地政事務所` },
-  components: { UserCard, ImageUpload },
+  components: { ImageUpload },
   data: () => ({
     image: null,
     text: '',
@@ -331,7 +330,7 @@ export default {
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
     pick () {
-      this.modal(this.$createElement('image-upload', {
+      this.modal(this.$createElement(ImageUpload, {
         props: {
           to: this.currentChannel,
           modalId: 'image-upload-modal'

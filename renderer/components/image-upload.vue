@@ -146,13 +146,12 @@ export default {
       })
     },
     remove (memento) {
-      const idx = this.imageMemento.indexOf(memento)
-      if (idx !== -1) {
-        this.imageMemento.splice(idx, 1)
-        this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-          this.alert(`刪除圖檔失敗 (${err.toString()})`)
-        })
-      }
+      this.$utils._.remove(this.imageMemento, function(n) {
+        return n === memento
+      })
+      this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
+        this.alert(`刪除圖檔失敗 (${err.toString()})`)
+      })
     }
   }
 }

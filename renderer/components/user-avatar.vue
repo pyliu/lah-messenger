@@ -30,7 +30,7 @@ export default {
     click (event) {
       event.stopPropagation()
       event.preventDefault()
-      this.modal(this.$createElement('user-card', {
+      this.modal(this.$createElement(UserCard, {
         props: {
           id: this.uid,
           name: this.uname

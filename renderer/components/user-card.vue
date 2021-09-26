@@ -106,7 +106,7 @@ export default {
   },
   methods: {
     open () {
-      this.modal(this.$createElement('message-input', {
+      this.modal(this.$createElement(MessageInput, {
         props: {
           to: this.userData.id
         },

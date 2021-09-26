@@ -133,7 +133,7 @@ export default {
   methods: {
     avatarClick (event) {
       event.stopPropagation()
-      this.modal(this.$createElement('user-card', {
+      this.modal(this.$createElement(UserCard, {
         props: {
           id: this.raw.sender,
           name: this.sender
@@ -144,7 +144,7 @@ export default {
       })
     },
     reply () {
-      this.modal(this.$createElement('message-input', {
+      this.modal(this.$createElement(MessageInput, {
         props: {
           text: this.message,
           to: this.senderId,

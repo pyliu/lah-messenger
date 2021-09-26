@@ -66,6 +66,7 @@ import DOMPurify from 'dompurify'
 import Markd from 'marked'
 
 export default {
+  name: 'MessageInput',
   components: { ImageUpload, AnnouncementCard, Message },
   props: {
     to: { type: String, required: true },
@@ -139,20 +140,20 @@ export default {
         title: '預覽'
       }
       if (this.currentChannel.startsWith('announcement')) {
-        this.modal(this.$createElement('announcement-card', {
+        this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
             channel: this.to
           }
         }), modalOpts)
       } else {
-        this.modal(this.$createElement('message', {
+        this.modal(this.$createElement(Message, {
           props: { raw: this.messageJson  }
         }), modalOpts)
       }
     },
     pick () {
-      this.modal(this.$createElement('image-upload', {
+      this.modal(this.$createElement(ImageUpload, {
         props: {
           to: this.to,
           modalId: 'image-upload-modal'

@@ -195,7 +195,7 @@ export default {
       event.currentTarget.classList.remove('dropable');
     },
     openMessageInput () {
-      this.modal(this.$createElement('message-input', {
+      this.modal(this.$createElement(MessageInput, {
         props: {
           to: this.currentChannel
         },

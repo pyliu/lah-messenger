@@ -5,7 +5,7 @@
     :header-text-variant="textVariant"
     :header="header"
   )
-    template(#header): .d-flex.font-weight-bold.align-items-center
+    template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
       span(style="width: 380px").mr-auto {{ dataJson.title }}
       b-icon.ml-1.removeIcon(
         v-if="mine && dataJson.id > 0"
@@ -14,7 +14,7 @@
         scale="1.25"
         @click="remove"
       )
-      span.ml-1(v-else) \#{{ dataJson.id }}
+      span.ml-1 \#{{ dataJson.id }}
     b-card-text(v-html="content")
     template(#footer): .d-flex.justify-content-between.small.text-muted
       span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
@@ -101,9 +101,11 @@ export default {
   transition: all .5s;
   z-index: 1001;
   cursor: pointer;
-  position: relative;
   font-weight: 500;
   color: white;
+  position: absolute;
+  right: 2px;
+  top: 2px;
   &:hover {
     font-size: 1.25rem;
     font-weight: 900;
