@@ -33,7 +33,7 @@
     h6
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
       span 歷史圖片
-    .d-flex.flex-wrap.align-items-center.justify-content-center
+    .d-flex.flex-wrap.align-items-center.justify-content-start
       .memento-item(v-for="(memento, idx) in imageMemento")
         b-img.memento.my-1.mx-1(
           v-if="!empty(memento)"
@@ -150,7 +150,7 @@ export default {
       if (idx !== -1) {
         this.imageMemento.splice(idx, 1)
         this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-          this.err('刪除圖檔失敗', err);
+          this.alert(`刪除圖檔失敗 (${err.toString()})`)
         })
       }
     }
@@ -160,8 +160,9 @@ export default {
 
 <style lang="scss" scoped>
 .memento-item {
+  position: relative;
   max-width: 135px;
-  margin: 5px;
+  margin: 2px;
   .memento:hover {
     border: 5px dashed gray;
     padding: 2px;
@@ -173,9 +174,9 @@ export default {
     cursor: pointer;
     font-weight: 500;
     color: red;
-    position: relative;
-    top: -90px;
-    right: -110px;
+    position: absolute;
+    top: 0;
+    right: 0;
     &:hover {
       font-size: 1.25rem;
       font-weight: 900;
