@@ -6,7 +6,7 @@
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 
       //- h5.my-2 此處為群組聊天看板，可以隨時留信息到各房間
-    h5.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a(:href="`${feQueryUrl}/message`") 信差] / #[a(:href="`${feQueryUrl}/notification`") 公告] 訊息可至 #[a(:href="feQueryUrl") 地政智慧管控系統]
+    h5.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a(:href="`${feQueryUrl}/message`") 信差] / #[a(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a(:href="feQueryUrl") 地政智慧管控系統]
     h5 #[b-icon(icon="people-fill")] 線上使用者 #[b-badge(pill variant="success") {{ connectedUsersCount }}]
     //- show online user badges
     b-avatar-group(size="3rem" :overlap="0.0"): .d-flex.justify-content-center.flex-wrap: user-avatar.m-1(

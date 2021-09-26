@@ -1,4 +1,6 @@
 import trim from 'lodash/trim'
+import uniqWith from 'lodash/uniqWith'
+import isEqual from 'lodash/isEqual'
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -294,9 +296,7 @@ const mutations = {
     }
     state.imageMemento.push(base64data)
     // remove duplication
-    state.imageMemento = [...state.imageMemento.filter(function(item, pos) {
-        return state.imageMemento.indexOf(item) == pos;
-    })]
+    state.imageMemento = [...uniqWith(state.imageMemento, isEqual)]
     this.$config.isDev && console.log(timestamp(), `現在暫存 image data 數量為 ${state.imageMemento.length}。 [Vuex::addImageMemento]`)
   },
   messageMementoCapacity (state, capacity) { state.messageMementoCapacity = parseInt(capacity) || 30 },

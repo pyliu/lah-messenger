@@ -33,25 +33,25 @@
     h6
       img.mt-n1(src="~/assets/img/history_black_24dp.svg")
       span 歷史圖片
-    .d-flex.flex-wrap.align-items-center.justify-content-start
-      .memento-item(
-        v-for="(memento, idx) in imageMemento"
-        v-if="!empty(memento)"
-        :key="`imgMemento_${idx}`"
+      b-badge(pill) {{ imageMemento.length }}
+    .d-flex.flex-wrap.align-items-center.justify-content-start: .memento-item(
+      v-for="(memento, idx) in imageMementoReverse"
+      v-if="!empty(memento)"
+      :key="`imgMemento_${idx}`"
+    )
+      b-img.memento.my-1.mx-1(
+        :src="memento"
+        thumbnail
+        fluid
+        title="挑選這張圖片"
+        @click="pick(memento)"
       )
-        b-img.memento.my-1.mx-1(
-          :src="memento"
-          thumbnail
-          fluid
-          title="挑選這張圖片"
-          @click="pick(memento)"
-        )
-        b-icon.removeIcon(
-          icon="x-circle"
-          title="移除這張照片"
-          scale="1.25"
-          @click="remove(memento)"
-        )
+      b-icon.removeIcon(
+        icon="x-circle"
+        title="移除這張照片"
+        scale="1.25"
+        @click="remove(memento)"
+      )
 </template>
 
 <script>
@@ -68,7 +68,7 @@ export default {
   }),
   computed: {
     name () { return this.userMap[this.to] || this.to },
-
+    imageMementoReverse () { return [...this.imageMemento].reverse() }
   },
   watch: {
     uploadFile (file) {
@@ -95,9 +95,6 @@ export default {
           if (!this.empty(data.encoded) && !this.empty(data.uri)) {
             this.encoded = `${data.uri}${data.encoded}`
             this.$store.commit('addImageMemento', this.encoded)
-            this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-              this.err('快取上傳圖檔失敗', err)
-            })
             if (this.$utils.statusCheck(data.status)) {
               this.rightaway && this.sendImage(this.encoded, `給${this.name}`, this.to)
             } else {
