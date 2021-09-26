@@ -29,6 +29,7 @@ div
         size="sm"
         variant="outline-secondary"
         title="預覽"
+        @click="preview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
       b-button.mx-1(
         @click="pick"
@@ -59,8 +60,10 @@ div
 
 <script>
 import ImageUpload from '~/components/image-upload.vue'
+import AnnouncementCard from '~/components/announcement-card.vue'
+
 export default {
-  components: { ImageUpload },
+  components: { ImageUpload, AnnouncementCard },
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
@@ -88,9 +91,43 @@ export default {
     },
     toName () { return this.userMap[this.to] || this.to },
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
-    modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` }
+    modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
+    mergedMessage () {
+        let imgMdText = this.images.map((base64, idx) => {
+          return `![給${this.toName}${idx}](${base64})`
+        }).join('<hr style="margin:5px"/>')
+        if (!this.empty(this.message) && !this.empty(imgMdText)) {
+          imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
+        }
+        return `${this.message}${imgMdText}`
+    },
+    previewJson () {
+      // announcement-card required json
+      return {
+        content: this.mergedMessage,
+        create_datetime: `${this.date()} ${this.time()}`,
+        expire_datetime: '',
+        flag: 0,
+        from_ip: '',
+        id: 0,
+        priority: this.priority,
+        sender: this.userid,
+        title: this.messageTitle
+      }
+    }
   },
   methods: {
+    preview () {
+      this.modal(this.$createElement('announcement-card', {
+        props: {
+          dataJson: this.previewJson,
+          channel: this.to
+        }
+      }), {
+        size: 'xl',
+        title: '預覽'
+      })
+    },
     pick () {
       this.modal(this.$createElement('image-upload', {
         props: {
@@ -111,14 +148,8 @@ export default {
     },
     send () {
       if (this.websocket && !this.notValid) {
-        let imgMdText = this.images.map((base64, idx) => {
-          return `![給${this.toName}${idx}](${base64})`
-        }).join('<hr style="margin:5px"/>')
-        if (!this.empty(this.message) && !this.empty(imgMdText)) {
-          imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
-        }
         // send to target
-        this.websocket.send(this.packMessage(`${this.message}${imgMdText}`, {
+        this.websocket.send(this.packMessage(this.mergedMessage, {
           channel: this.to,
           title: this.messageTitle,
           priority: this.priority
@@ -127,7 +158,7 @@ export default {
           const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
-            this.packMessage(`${replyHeader} ${this.message} ${imgMdText}`, {
+            this.packMessage(`${replyHeader} ${this.mergedMessage}`, {
               channel: this.userid,
               title: this.messageTitle,
               priority: this.priority

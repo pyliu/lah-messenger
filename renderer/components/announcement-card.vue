@@ -8,7 +8,7 @@
     template(#header): .d-flex.font-weight-bold.align-items-center
       span(style="width: 380px").mr-auto {{ dataJson.title }}
       b-icon.ml-1.removeIcon(
-        v-if="mine"
+        v-if="mine && dataJson.id > 0"
         icon="x-circle"
         title="移除這則公告"
         scale="1.25"
@@ -65,7 +65,7 @@ export default {
       return DOMPurify.sanitize(Markd(this.dataJson.content).replace(/<p>/gi, "<p style='margin-bottom:1rem'>"))
     }
   },
-  // mounted () { this.log(this.dataJson, this.userid) },
+  // mounted () { this.log(this.dataJson, this.channel, this.userid) },
   methods: {
     remove () {
       this.confirm(`刪除公告 - 「${this.dataJson.title}」？`).then((YN) => {
