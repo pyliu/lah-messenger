@@ -2,7 +2,7 @@
   .mb-1
     //- show date if the message has previous days' message
     .d-flex.msg-item.justify-content-center.system.date(
-      v-if="showMdate"
+      v-if="showMdate && id > 0"
     ): p(v-html="mdate")
 
     .s-75.font-weight-bold.align-middle(
@@ -121,9 +121,8 @@ export default {
     },
     announcementRemovable () { return this.myAnnouncement },
     messageRemovable () {
-      if (this.isMyChannel && this.myMessage) {
-        return true
-      }
+      if (this.id < 1) { return false }
+      if (this.isMyChannel && this.myMessage) { return true }
       const nowTs = +new Date()
       const msgTs = +new Date(`${this.raw.date} ${this.raw.time}`)
       const offset = nowTs - msgTs

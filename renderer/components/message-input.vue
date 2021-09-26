@@ -61,9 +61,12 @@ div
 <script>
 import ImageUpload from '~/components/image-upload.vue'
 import AnnouncementCard from '~/components/announcement-card.vue'
+import Message from '~/components/message.vue'
+import DOMPurify from 'dompurify'
+import Markd from 'marked'
 
 export default {
-  components: { ImageUpload, AnnouncementCard },
+  components: { ImageUpload, AnnouncementCard, Message },
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
@@ -101,32 +104,52 @@ export default {
         }
         return `${this.message}${imgMdText}`
     },
-    previewJson () {
+    markdMergedMessage () { return DOMPurify?.sanitize(Markd(this.mergedMessage).replace(/<p>/gi, "<p style='margin-bottom:1rem'>")) },
+    announcementJson () {
       // announcement-card required json
       return {
-        content: this.mergedMessage,
+        id: 0,
         create_datetime: `${this.date()} ${this.time()}`,
         expire_datetime: '',
+        title: this.messageTitle,
+        content: this.mergedMessage,
         flag: 0,
         from_ip: '',
-        id: 0,
         priority: this.priority,
+        sender: this.userid
+      }
+    },
+    messageJson () {
+      return {
+        id: 0,
+        channel: this.to,
+        date: this.date(),
+        time: this.time(),
+        message: this.markdMergedMessage,
+        prepend: false,
         sender: this.userid,
-        title: this.messageTitle
+        type: "remote"
       }
     }
   },
   methods: {
     preview () {
-      this.modal(this.$createElement('announcement-card', {
-        props: {
-          dataJson: this.previewJson,
-          channel: this.to
-        }
-      }), {
+      const modalOpts = {
         size: 'xl',
         title: '預覽'
-      })
+      }
+      if (this.currentChannel.startsWith('announcement')) {
+        this.modal(this.$createElement('announcement-card', {
+          props: {
+            dataJson: this.announcementJson,
+            channel: this.to
+          }
+        }), modalOpts)
+      } else {
+        this.modal(this.$createElement('message', {
+          props: { raw: this.messageJson  }
+        }), modalOpts)
+      }
     },
     pick () {
       this.modal(this.$createElement('image-upload', {
