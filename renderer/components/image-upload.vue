@@ -75,8 +75,8 @@ export default {
         const filename = this.uploadFile.name
         const formData = new FormData()
         formData.append('file', this.uploadFile)
-        formData.append('width', 430)
-        formData.append('height', 330)
+        formData.append('width', 400)
+        formData.append('height', 300)
         formData.append('quality', 75)
         this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
           if (!this.empty(data.encoded) && !this.empty(data.uri)) {
