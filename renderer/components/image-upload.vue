@@ -111,7 +111,6 @@ export default {
       }
     },
     publish () {
-      // this.sendImage(this.encoded, `給${this.name}`, this.to)
       this.$emit('publish', this.encoded)
       this.encoded = ''
       this.uploadFile = undefined
