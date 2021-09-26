@@ -1,10 +1,5 @@
 import $ from 'jquery'
-import isEqual from 'lodash/isEqual'
-import isEmpty from 'lodash/isEmpty'
-import debounce from 'lodash/debounce'
-import remove from 'lodash/remove'
-import filter from 'lodash/filter'
-import reject from 'lodash/reject'
+import _ from 'lodash'
 import _md5 from 'md5'
 import uploadAxios from 'axios'
 
@@ -93,12 +88,10 @@ export default ({ $axios, store }, inject) => {
     /**
      * lodash ...
      */
-    empty: isEmpty, // '0' is not empty
-    equal: isEqual,
-    debounce, // _.debounce(func, wait, options)
-    remove, // _.remove(array, function)
-    filter, // _.filter(array, function)
-    reject, // reverse filter
+    _,
+    empty: _.isEmpty, // '0' is not empty
+    equal: _.isEqual,
+    debounce: _.debounce, // _.debounce(func, wait, options)
     md5: _md5,
     /**
      * usage in Vue
@@ -108,7 +101,7 @@ export default ({ $axios, store }, inject) => {
      */
     animated (selector, opts, prefix = 'animate__') {
       return new Promise((resolve, reject) => {
-        if (isEmpty(selector)) {
+        if (_.isEmpty(selector)) {
           reject(`selector is empty.`)
         } else if (process.client) {
           const patternLen = consts.animateAttentionSeekers.length
@@ -188,7 +181,7 @@ export default ({ $axios, store }, inject) => {
       return 'timestamp is not provided'
     },
     isIPv4 (str) {
-      if (isEmpty(str)) {
+      if (_.isEmpty(str)) {
         return false
       }
       const regex = new RegExp(`^(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}$`, 'g')
