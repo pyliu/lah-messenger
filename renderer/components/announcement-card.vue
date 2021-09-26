@@ -4,7 +4,6 @@
     :header-bg-variant="borderVariant"
     :header-text-variant="textVariant"
     :header="header"
-    no-body
   )
     template(#header): .d-flex.font-weight-bold.align-items-center
       span(style="width: 380px").mr-auto {{ dataJson.title }}
@@ -16,7 +15,7 @@
         @click="remove"
       )
       span.ml-1(v-else) \#{{ dataJson.id }}
-    b-card-text.p-2(v-html="content")
+    b-card-text(v-html="content")
     template(#footer): .d-flex.justify-content-between.small.text-muted
       span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
       span {{ dataJson.create_datetime }}
