@@ -73,6 +73,11 @@ export default {
   watch: {
     uploadFile (file) {
       file && this.upload()
+    },
+    imageMemento (arr) {
+      this.$localForage.setItem(this.imageMementoCacheKey, arr).catch((err) => {
+        this.alert(`刪除圖檔失敗 (${err.toString()})`)
+      })
     }
   },
   methods: {
@@ -116,6 +121,27 @@ export default {
       this.uploadFile = undefined
       this.hideModalById(this.modalId)
     },
+    pick (memento) {
+      this.encoded = memento
+      if (this.skipPreview) {
+        this.publish()
+      } else {
+        this.$nextTick(() => {
+          if (this.$refs.selectPreview?.scrollIntoView) {
+            this.$refs.selectPreview.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+            setTimeout(this.attention.bind(this, this.$refs.preview, { name: this.effect, speed: 'faster' }), 800)
+          } else {
+            this.$refs.container.scrollTop = 0
+          }
+        })
+      }
+    },
+    remove (memento) {
+      const removed = this.$utils._.remove(this.imageMemento, (imageData) => {
+        return this.$utils.equal(imageData, memento)
+      })
+      this.$store.commit('imageMemento', this.imageMemento)
+    },
     dragover (event) {
       event.stopPropagation() // Stops some browsers from redirecting
       event.preventDefault()
@@ -135,30 +161,6 @@ export default {
       }
       // Clean up
       event.currentTarget.classList.remove('dropable')
-    },
-    pick (memento) {
-      this.encoded = memento
-      if (this.skipPreview) {
-        this.publish()
-      } else {
-        this.$nextTick(() => {
-          if (this.$refs.selectPreview?.scrollIntoView) {
-            this.$refs.selectPreview.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
-            setTimeout(this.attention.bind(this, this.$refs.preview, { name: this.effect, speed: 'faster' }), 800)
-          } else {
-            this.$refs.container.scrollTop = 0
-          }
-        })
-      }
-    },
-    remove (memento) {
-      this.$utils._.remove(this.imageMemento, (imageData) => {
-        return this.$utils.equal(imageData, memento)
-      })
-      this.$store.commit('imageMemento', this.imageMemento)
-      this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-        this.alert(`刪除圖檔失敗 (${err.toString()})`)
-      })
     }
   }
 }
