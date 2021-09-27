@@ -270,9 +270,7 @@ export default {
   mounted () {
     this.restore()
     this.clearReconnectTimer()
-  },
-  destroyed () {
-    this.closeWebsocket()
+    this.setCurrentChannel('chat')
   }
 }
 </script>

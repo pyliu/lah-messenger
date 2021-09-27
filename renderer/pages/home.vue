@@ -65,8 +65,10 @@
           ref="textarea"
           v-model="text"
           debounce="200"
-          placeholder="... Shift + Enter 換行 ..."
-          @keyup.enter.exact="send"
+          placeholder="... Ctrl + Enter 送出 ..."
+          @keyup.enter.ctrl="send"
+          @keyup.enter.shift="send"
+          @keyup.enter.alt="send"
           @keydown="delayConnect"
           no-resize
           no-auto-shrink
@@ -1026,11 +1028,6 @@ export default {
         this.$store.commit('authority', authority)
       }
     })
-  },
-  beforeDestroy () {
-    // remove timer if user is going to leave the page
-    this.clearReconnectTimer()
-    this.closeWebsocket()
   }
 }
 </script>
