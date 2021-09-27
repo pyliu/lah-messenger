@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  lah-transition(v-if="preview"): .d-flex.justify-content-between.p-1.preview.mb-1(v-if="!empty(mergedMessage)")
+  lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mb-1(v-if="!empty(mergedMessage)")
     span.text-white.font-weight-bold 預覽
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
     message.mr-2(v-else :raw="messageJson")
@@ -28,10 +28,11 @@ div
     autofocus
   )
   
-  .d-flex.align-items-center.justify-content-end
+  .d-flex.align-items-center.justify-content-between
+    b-checkbox(v-model="realtime" switch) 即時預覽
     b-button-group(size="sm")
       b-button(
-        v-if="!preview"
+        v-if="!realtime"
         size="sm"
         variant="outline-secondary"
         title="預覽"
@@ -81,6 +82,7 @@ export default {
     preview: { type: Boolean, default: true }
   },
   data: () => ({
+    realtime: true,
     messageTitle: '',
     priority: 3,
     message: '',
@@ -92,6 +94,9 @@ export default {
       { text: '正常', value: 3 }
     ]
   }),
+  fetch () {
+    this.realtime = this.preview
+  },
   computed: {
     titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
     notValid () {
