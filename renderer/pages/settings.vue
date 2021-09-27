@@ -271,6 +271,9 @@ export default {
     this.restore()
     this.clearReconnectTimer()
     this.setCurrentChannel('chat')
+  },
+  destroyed () {
+    this.closeWebsocket()
   }
 }
 </script>

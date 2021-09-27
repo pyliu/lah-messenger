@@ -1028,6 +1028,11 @@ export default {
         this.$store.commit('authority', authority)
       }
     })
+  },
+  beforeDestroy () {
+    // remove timer if user is going to leave the page
+    this.clearReconnectTimer()
+    this.closeWebsocket()
   }
 }
 </script>
