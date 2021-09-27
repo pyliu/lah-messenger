@@ -38,7 +38,8 @@ div
         title="預覽"
         @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
-      b-button.mx-1(
+      //- b-button.mx-1(@click="emojiPickup" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
+      b-button.mr-1(
         @click="pick"
         size="sm"
         variant="outline-success"
