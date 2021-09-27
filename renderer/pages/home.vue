@@ -352,7 +352,7 @@ export default {
     },
     inputText (dontcare) {
       if (this.$refs.floatPreview) {
-        this.$refs.floatPreview.style.top = '-' + (this.$refs.floatPreview.offsetHeight + 10) + 'px'
+        this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
       }
     }
   },
@@ -1091,7 +1091,7 @@ export default {
 .float-preview {
   z-index: 1001;
   position:absolute;
-  top: -70px;
+  top: -80px;
   opacity: .85;
   border-radius: 15px;
   background-color: gray;
