@@ -3,7 +3,7 @@ div
   lah-transition(v-if="preview"): .d-flex.justify-content-between.p-1.preview.mb-1(v-if="!empty(mergedMessage)")
     span.text-white.font-weight-bold 預覽
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2(v-else :raw="messageJson" style="opacity: 1 !important; max-width: 100%;")
+    message.mr-2(v-else :raw="messageJson")
 
   .d-flex(v-if="isAnnouncementChannel")
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(

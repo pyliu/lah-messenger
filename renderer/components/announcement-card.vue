@@ -1,5 +1,5 @@
 <template lang="pug">
-  b-card(
+  b-card.announcement-card(
     :header-border-variant="borderVariant"
     :header-bg-variant="borderVariant"
     :header-text-variant="textVariant"

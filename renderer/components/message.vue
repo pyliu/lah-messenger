@@ -55,7 +55,7 @@
         div(v-if="!isAnnouncement") {{ mtime }}
 
       //- my message
-      p(v-if="myMessage" v-html="message")
+      p.my-message(v-if="myMessage" v-html="message")
 
 </template>
 

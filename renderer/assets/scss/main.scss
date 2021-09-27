@@ -97,6 +97,20 @@ blockquote p {
   margin-bottom: 0;
 }
 
+.preview {
+  .announcement-card {
+    img {
+      max-width: 355px;
+    }
+  }
+  .my-message {
+    img {
+      max-width: 290px;
+      margin: 1px 10px 1px 1px;
+    }
+  }
+}
+
 .avatar {
   vertical-align: middle;
   width: 20px;
