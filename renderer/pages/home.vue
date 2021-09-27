@@ -60,11 +60,10 @@
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
 
       //- 輸入訊息UI
-      transition(name="listY" mode="out-in"): b-input-group.p-1(v-if="showInputGroup" size="sm")
+      transition(name="listY" mode="out-in"): b-input-group.p-1(v-if="showInputGroup" size="sm" style="position:relative")
         b-textarea(
           ref="textarea"
-          v-model="text"
-          debounce="200"
+          v-model="inputText"
           placeholder="... Ctrl + Enter 送出 ..."
           @keyup.enter.ctrl="send"
           @keyup.enter.shift="send"
@@ -78,6 +77,9 @@
           b-icon(icon="cursor" rotate="45")
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
+        lah-transition: .d-flex.justify-content-between.p-2.float-preview(v-if="!empty(inputText)" ref="floatPreview")
+          span.text-white.font-weight-bold 預覽
+          message(:raw="messagePreviewJson" style="opacity: 1 !important;")
 
 
     //- 連線主畫面
@@ -155,6 +157,8 @@ import trim from 'lodash/trim'
 import isEmpty from 'lodash/isEmpty'
 import debounce from 'lodash/debounce'
 import ImageUpload from '~/components/image-upload.vue'
+import DOMPurify from 'dompurify'
+import Markd from 'marked'
 
 export default {
   transition: 'list',
@@ -162,7 +166,7 @@ export default {
   components: { ImageUpload },
   data: () => ({
     image: null,
-    text: '',
+    inputText: '',
     connectText: '',
     adHost: '',
     adPassword: '',
@@ -235,7 +239,7 @@ export default {
     wsConnStr () { return `ws://${this.wsHost}:${this.wsPort}` },
     // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
     userQueryStr () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
-    valid () { return !isEmpty(trim(this.text)) },
+    valid () { return !isEmpty(trim(this.inputText)) },
     validAdHost () { return this.$utils.isIPv4(this.adHost) === false ? false : null },
     validAdPassword () { return this.empty(this.adPassword) ? false : null },
     validHost () { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
@@ -271,7 +275,25 @@ export default {
       return this.nickname === this.userid ? 'outline-primary' : 'success'
     },
     backFromSettings () { return this.$route.query.reconnect === 'true' },
-    notifyChannels () { return ['announcement', `announcement_${this.department}`] }
+    notifyChannels () { return ['announcement', `announcement_${this.department}`] },
+    
+    inputMessage () { return this.inputText?.replaceAll('\n', '<br/>')?.trimEnd('<br/>', '') },
+    markdMessage () {
+      if (!this.inputMessage) { return '' }
+      return DOMPurify?.sanitize(Markd(this.inputMessage))
+    },
+    messagePreviewJson () {
+      return {
+        id: 0,
+        channel: this.to,
+        date: this.date(),
+        time: this.time(),
+        message: this.markdMessage,
+        prepend: false,
+        sender: this.userid,
+        type: "mine"
+      }
+    }
   },
   watch: {
     connectText (val) {
@@ -297,6 +319,8 @@ export default {
       if (!this.showUnreadChannels.includes(nVal)) {
         this.queryChatChannelOnlineClients()
       }
+      // clear the input UI content
+      this.inputText = ''
     },
     wsHost(val) {
       this.resetReconnectTimer()
@@ -325,6 +349,11 @@ export default {
     },
     fetchingHistory(flag) {
       this.isBusy = flag
+    },
+    inputText (dontcare) {
+      if (this.$refs.floatPreview) {
+        this.$refs.floatPreview.style.top = '-' + (this.$refs.floatPreview.offsetHeight + 10) + 'px'
+      }
     }
   },
   methods: {
@@ -387,7 +416,7 @@ export default {
       const text = hrIdx === -1 ? raw['message'] : raw['message'].substring(hrIdx+4)
       const tmp = document.createElement('DIV')
       tmp.innerHTML = `@${sender} ${text}`
-      this.text = `${tmp.textContent || tmp.innerText || ''}\n***\n`
+      this.inputText = `${tmp.textContent || tmp.innerText || ''}\n***\n`
       this.$nextTick(() => {
         this.$refs.textarea.$el.scrollTop = 999999
         this.$refs.textarea?.focus()
@@ -418,7 +447,7 @@ export default {
     },
     send () {
       // detect local commands
-      const text = trim(this.text)
+      const text = trim(this.inputText)
       if (text === '@clearCache') {
         this.$localForage.clear().then((params) => {
           this.notify(`本機記憶資料已清除`, { type: 'success' })
@@ -427,8 +456,8 @@ export default {
         this.$router.push('/settings')
       }
 
-      if (this.sendTo(this.text, { channel: this.currentChannel })) {
-        this.text = ''
+      if (this.sendTo(this.inputText, { channel: this.currentChannel })) {
+        this.inputText = ''
       }
       this.$refs.textarea && this.$refs.textarea.focus()
     },
@@ -1059,6 +1088,15 @@ export default {
   right: .55rem;
   top: .55rem;
 }
+.float-preview {
+  z-index: 1001;
+  position:absolute;
+  top: -70px;
+  opacity: .85;
+  border-radius: 15px;
+  background-color: gray;
+  width: 95%;
+}
 @mixin notify() {
   position: absolute;
   top: 15px;
@@ -1074,7 +1112,7 @@ export default {
 }
 .notify-personal {
   @include notify();
-  left: 280px;
+  left: 265px;
 }
 .notify-chat {
   @include notify();

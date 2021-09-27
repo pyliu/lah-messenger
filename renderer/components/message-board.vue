@@ -71,7 +71,7 @@ export default {
         const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
         if (this.$refs.box && target) {
           const message = target[0]
-          if (message.$el.scrollIntoView) {
+          if (message.$el.scrollIntoView && this.currentChannelMessageCount > 10) {
             message.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
           } else {
             this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight

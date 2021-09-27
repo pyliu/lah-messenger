@@ -64,6 +64,7 @@ Vue.mixin({
       'platform',
       'currentChannel',
       'currentChannelName',
+      'currentChannelMessageCount',
       'chatRooms',
       'imageMemento',
       'imageMementoCapacity',

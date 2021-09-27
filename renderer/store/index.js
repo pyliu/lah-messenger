@@ -121,6 +121,7 @@ const getters = {
   ip: state => state.userinfo.ipv4,
   address: state => state.userinfo.address,
   currentChannel: state => String(state.currentChannel),
+  currentChannelMessageCount: state => state.messages[state.currentChannel]?.length || 0,
   currentChannelName: state => {
     const channelId = String(state.currentChannel)
     switch (channelId) {
@@ -167,7 +168,7 @@ const getters = {
   messageMementoCacheKey: state => 'messageMementoCached',
 
   connectedUsers: state => state.connectedUsers,
-  connectedUsersReverse: state => state.connectedUsers.reverse(),
+  connectedUsersReverse: state => [...state.connectedUsers].reverse(),
   connectedUsersCount: state => state.connectedUsers.length,
   statusText: state => state.statusText
 }
