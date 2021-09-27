@@ -351,9 +351,11 @@ export default {
       this.isBusy = flag
     },
     inputText (dontcare) {
-      if (this.$refs.floatPreview) {
-        this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
-      }
+      this.$nextTick(() => {
+        if (this.$refs.floatPreview) {
+          this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
+        }
+      })
     }
   },
   methods: {
@@ -416,7 +418,11 @@ export default {
       const text = hrIdx === -1 ? raw['message'] : raw['message'].substring(hrIdx+4)
       const tmp = document.createElement('DIV')
       tmp.innerHTML = `@${sender} ${text}`
-      this.inputText = `${tmp.textContent || tmp.innerText || ''}\n***\n`
+      let innerText = tmp.textContent || tmp.innerText || ''
+      if (this.$utils.length(innerText) > 20) {
+        innerText = innerText.substring(0, 20) + ' ... '
+      }
+      this.inputText = `${innerText}\n***\n`
       this.$nextTick(() => {
         this.$refs.textarea.$el.scrollTop = 999999
         this.$refs.textarea?.focus()
