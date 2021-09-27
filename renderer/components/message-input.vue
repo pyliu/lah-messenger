@@ -35,7 +35,7 @@ div
         size="sm"
         variant="outline-secondary"
         title="預覽"
-        @click="preview"
+        @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
       b-button.mx-1(
         @click="pick"
@@ -141,7 +141,7 @@ export default {
     }
   },
   methods: {
-    preview () {
+    openPreview () {
       const modalOpts = {
         size: 'xl',
         title: '預覽'
