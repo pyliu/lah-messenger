@@ -1,5 +1,10 @@
 <template lang="pug">
 div
+  lah-transition(v-if="preview"): .d-flex.justify-content-between.p-1.preview.mb-1(v-if="!empty(mergedMessage)")
+    span.text-white.font-weight-bold 預覽
+    announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
+    message.mr-2(v-else :raw="messageJson" style="opacity: 1 !important; max-width: 100%;")
+
   .d-flex(v-if="isAnnouncementChannel")
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
       v-model="messageTitle"
@@ -26,6 +31,7 @@ div
   .d-flex.align-items-center.justify-content-end
     b-button-group(size="sm")
       b-button(
+        v-if="!preview"
         size="sm"
         variant="outline-secondary"
         title="預覽"
@@ -71,7 +77,8 @@ export default {
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
-    reply: { type: String, default: '' }
+    reply: { type: String, default: '' },
+    preview: { type: Boolean, default: true }
   },
   data: () => ({
     messageTitle: '',
@@ -139,7 +146,7 @@ export default {
         size: 'xl',
         title: '預覽'
       }
-      if (this.currentChannel.startsWith('announcement')) {
+      if (this.isAnnouncementChannel) {
         this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
@@ -213,5 +220,12 @@ export default {
 }
 .priority {
   max-width: 145px;
+}
+.preview {
+  z-index: 1001;
+  opacity: .85;
+  border-radius: 10px;
+  background-color: gray;
+  width: 100%;
 }
 </style>
