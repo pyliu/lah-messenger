@@ -75,12 +75,14 @@
         )
         b-button.ml-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" rotate="45")
-        b-button.mx-1(@click="emoji" variant="outline-secondary" title="挑選表情" disabled) #[span.h5 😄]
+        b-button.mx-1(@click="emojiPickup" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
         lah-transition: .d-flex.justify-content-between.p-2.float-preview(v-if="!empty(inputText)" ref="floatPreview")
           span.text-white.font-weight-bold 預覽
           message(:raw="messagePreviewJson" style="opacity: 1 !important;")
+        lah-transition(fade): .float-emoji(v-if="emoji")
+          emoji-pickup(@click="addEmoji")
 
 
     //- 連線主畫面
@@ -166,6 +168,7 @@ export default {
   head: { title: `桃園地政事務所` },
   components: { ImageUpload },
   data: () => ({
+    emoji: false,
     image: null,
     inputText: '',
     connectText: '',
@@ -363,8 +366,13 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
-    emoji () {
-      // TODO
+    emojiPickup () {
+      this.emoji = !this.emoji
+    },
+    addEmoji (emoji) {
+      this.emoji = false
+      this.inputText = this.inputText + emoji
+      this.$refs.textarea?.focus()
     },
     pick () {
       this.modal(this.$createElement(ImageUpload, {
@@ -1106,6 +1114,17 @@ export default {
   border-radius: 15px;
   background-color: gray;
   width: 95%;
+}
+.float-emoji {
+  z-index: 1002;
+  position:absolute;
+  top: calc(33vh - 66vh - 0px);
+  opacity: .85;
+  border-radius: 15px;
+  background-color: lightgrey;
+  width: 97.25vw;
+  height: 33vh;
+  overflow: auto;
 }
 @mixin notify() {
   position: absolute;
