@@ -62,7 +62,7 @@ export default {
       if (isEmpty(this.dataJson.content) || !DOMPurify.sanitize) {
         return ''
       }
-      return DOMPurify.sanitize(Markd(this.dataJson.content).replace(/<p>/gi, "<p style='margin-bottom:1rem'>"))
+      return DOMPurify.sanitize(Markd(this.dataJson.content.replaceAll('\n', '  \n')))
     }
   },
   // mounted () { this.log(this.dataJson, this.channel, this.userid) },

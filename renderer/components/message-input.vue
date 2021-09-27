@@ -105,7 +105,7 @@ export default {
         }
         return `${this.message}${imgMdText}`
     },
-    markdMergedMessage () { return DOMPurify?.sanitize(Markd(this.mergedMessage).replace(/<p>/gi, "<p style='margin-bottom:1rem'>")) },
+    markdMergedMessage () { return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n'))) },
     announcementJson () {
       // announcement-card required json
       return {

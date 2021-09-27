@@ -277,10 +277,10 @@ export default {
     backFromSettings () { return this.$route.query.reconnect === 'true' },
     notifyChannels () { return ['announcement', `announcement_${this.department}`] },
     
-    inputMessage () { return this.inputText?.replaceAll('\n', '<br/>')?.trimEnd('<br/>', '') },
     markdMessage () {
-      if (!this.inputMessage) { return '' }
-      return DOMPurify?.sanitize(Markd(this.inputMessage))
+      if (isEmpty(this.inputText)) { return '' }
+      // markd treat '\s{2}\n' to break line
+      return DOMPurify?.sanitize(Markd(this.inputText.replaceAll('\n', '  \n')))
     },
     messagePreviewJson () {
       return {
