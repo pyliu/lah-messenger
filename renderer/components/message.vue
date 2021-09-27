@@ -85,7 +85,7 @@ export default {
     system() { return 'system' === this.sender },
     id() { return this.raw?.id },
     type() { return this.raw?.type },
-    message() { return this.raw?.message },
+    message() { return this.$utils.emojify(this.raw?.message) },
     senderId() { return this.raw?.sender },
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },

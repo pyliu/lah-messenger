@@ -2,6 +2,7 @@ import $ from 'jquery'
 import _ from 'lodash'
 import _md5 from 'md5'
 import uploadAxios from 'axios'
+const emoji = require('node-emoji')
 
 export default ({ $axios, store }, inject) => {
   // global const variables, use this.$consts.xxxx to access them in Vue
@@ -85,6 +86,9 @@ export default ({ $axios, store }, inject) => {
 
   // like old fashion global functions, use this.$utils to access these methods in Vue
   const utility = {
+    emojify (msg) {
+      return emoji.emojify(msg)
+    },
     /**
      * lodash ...
      */
