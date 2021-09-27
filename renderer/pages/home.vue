@@ -73,8 +73,9 @@
           no-auto-shrink
           autofocus
         )
-        b-button.mx-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
+        b-button.ml-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
           b-icon(icon="cursor" rotate="45")
+        b-button.mx-1(@click="emoji" variant="outline-secondary" title="挑選表情" disabled) #[span.h5 😄]
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
         lah-transition: .d-flex.justify-content-between.p-2.float-preview(v-if="!empty(inputText)" ref="floatPreview")
@@ -362,6 +363,9 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
+    emoji () {
+      // TODO
+    },
     pick () {
       this.modal(this.$createElement(ImageUpload, {
         props: {
