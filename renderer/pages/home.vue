@@ -1079,7 +1079,6 @@ export default {
       } else {
         this.$store.commit('authority', authority)
       }
-      this.warn(this.notifySettings)
     })
   },
   beforeDestroy () {

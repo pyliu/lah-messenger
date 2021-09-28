@@ -247,7 +247,7 @@ export default {
       this.historyCount = await this.$localForage.getItem('history') || 10
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
       this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
-      this.notification = { ...this.notification, ...await this.$localForage.getItem('notifySettings') }
+      this.notification = { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') }
     },
     logout() {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {
