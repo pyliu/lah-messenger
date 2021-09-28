@@ -214,7 +214,7 @@ export default {
   async fetch () {
     // restore image memento
     this.$localForage.getItem(this.imageMementoCacheKey).then((arr) => {
-      this.log('回復已上傳的圖檔', `${arr.length}筆`)
+      this.log('回復已上傳的圖檔', `${arr?.length}筆`)
       this.$store.commit('imageMemento', arr || [])
     })
     // restore message memento
