@@ -284,7 +284,14 @@ export default {
       return this.nickname === this.userid ? 'outline-primary' : 'success'
     },
     backFromSettings () { return this.$route.query.reconnect === 'true' },
-    notifyChannels () { return ['announcement', `announcement_${this.department}`] },
+    notifyChannels () {
+      const channels = ['announcement', `announcement_${this.department}`]
+      if (this.notifySettings.chat) {
+        // add chatting channel to the list
+        return this.$utils._.concat(channels, ['lds', this.department])
+      }
+      return channels
+    },
     
     markdMessage () {
       if (isEmpty(this.inputText)) { return '' }
@@ -789,7 +796,7 @@ export default {
                   }
                 }
               }
-              
+              // determining wether the message should trigger the system notification
               this.invokeNotification(incoming)
 
               this.connecting = false
@@ -884,7 +891,7 @@ export default {
          */
         const cacheKey = `${channel}_last_id`
         const title = incoming.message.title
-        const id = incoming.message.id
+        const id = incoming.id || incoming.message.id
         let lastReadId = await this.getCache(cacheKey)
         isNaN(parseInt(lastReadId)) && (lastReadId = 0)
         this.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
