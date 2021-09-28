@@ -365,7 +365,8 @@ export default {
           this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
         }
       })
-    }
+    },
+    authority (val) { this.warn(val) }
   },
   methods: {
     delaySendChannelActivity: function noop () {},
