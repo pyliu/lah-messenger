@@ -39,7 +39,7 @@ export default {
     isChat () { return this.currentChannel === 'chat'}
   },
   created () {
-    this.connectedUsersCount === 0 && this.queryChatChannelOnlineClients()
+    this.queryChatChannelOnlineClients()
     this.onlineTimer = setInterval(() => this.queryChatChannelOnlineClients(), 5 * 60 * 1000)
   },
   beforeDestroy() {
