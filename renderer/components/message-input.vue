@@ -1,10 +1,5 @@
 <template lang="pug">
-div
-  lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mb-1(v-if="!empty(mergedMessage)")
-    span.text-white.font-weight-bold 預覽
-    announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2(v-else :raw="messageJson")
-
+div(style="position:relative")
   .d-flex(v-if="isAnnouncementChannel")
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
       v-model="messageTitle"
@@ -28,8 +23,9 @@ div
     autofocus
   )
   
-  .d-flex.align-items-center.justify-content-between
-    b-checkbox(v-model="realtime" switch) 即時預覽
+  .d-flex.align-items-center
+    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時預覽
+    div.mr-auto
     b-button-group(size="sm")
       b-button(
         v-if="!realtime"
@@ -38,7 +34,7 @@ div
         title="預覽"
         @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
-      //- b-button.mx-1(@click="emojiPickup" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
+      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
       b-button.mr-1(
         @click="pick"
         size="sm"
@@ -64,6 +60,15 @@ div
         v-b-tooltip="'刪除這張圖片'"
         style="width: 138.5px"
       )
+
+  lah-transition(fade): .float-emoji(v-if="emoji" ref="floatEmoji")
+    emoji-pickup(@click="addEmoji")
+
+  lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
+    span.text-white.font-weight-bold 預覽
+    announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
+    message.mr-2(v-else :raw="messageJson")
+
 </template>
 
 <script>
@@ -84,6 +89,7 @@ export default {
   },
   data: () => ({
     realtime: true,
+    emoji: false,
     messageTitle: '',
     priority: 3,
     message: '',
@@ -146,7 +152,19 @@ export default {
       }
     }
   },
+  watch: {
+    emoji (flag) {
+      this.$nextTick(() => {
+        flag && (this.$refs.floatEmoji.style.top = this.isAnnouncementChannel ? '20px' : '-20px')
+      })
+    }
+  },
   methods: {
+    addEmoji (emoji) {
+      this.message = this.message + emoji
+      this.$refs.msgTextarea?.focus()
+      this.emoji = false
+    },
     openPreview () {
       const modalOpts = {
         size: 'xl',
@@ -233,5 +251,16 @@ export default {
   border-radius: 10px;
   background-color: gray;
   width: 100%;
+}
+.float-emoji {
+  z-index: 1002;
+  position:absolute;
+  // top: -20px;
+  opacity: .85;
+  border-radius: 15px;
+  background-color: lightgrey;
+  width: 90vw;
+  height: 20vh;
+  overflow: auto;
 }
 </style>

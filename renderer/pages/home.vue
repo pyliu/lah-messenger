@@ -60,7 +60,12 @@
         transition(name="list" mode="out-in"): message-board(v-if="showMessageBoard" :list="list" @reply="reply")
 
       //- 輸入訊息UI
-      transition(name="listY" mode="out-in"): b-input-group.p-1(v-if="showInputGroup" size="sm" style="position:relative")
+      transition(name="listY" mode="out-in"): b-input-group.p-1(
+        v-if="showInputGroup"
+        size="sm" 
+        style="position:relative"
+        @keyup.esc.exact="emoji = false"
+      )
         b-textarea(
           ref="textarea"
           v-model="inputText"
@@ -73,7 +78,7 @@
           no-auto-shrink
           autofocus
         )
-        b-button.ml-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid")
+        b-button.ml-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid" title="傳送")
           b-icon(icon="cursor" rotate="45")
         b-button.mx-1(@click="emojiPickup" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
@@ -1122,7 +1127,7 @@ export default {
   opacity: .85;
   border-radius: 15px;
   background-color: lightgrey;
-  width: 97.25vw;
+  width: 97.2vw;
   height: 33vh;
   overflow: auto;
 }
