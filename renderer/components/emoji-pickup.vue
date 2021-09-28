@@ -25,9 +25,6 @@ export default {
   }),
   computed: {
     emojis () { return this.$utils._.compact([nodeEmoji.random().emoji, ...this.emoji.split(/\s+/), nodeEmoji.random().emoji]) }
-  },
-  mounted() {
-    
   }
 };
 </script>
