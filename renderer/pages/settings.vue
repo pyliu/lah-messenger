@@ -44,6 +44,14 @@
           b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
           span.my-auto 回朔數量
         b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
+      
+      b-input-group.my-2(title="通知啟用")
+        template(#prepend)
+          b-icon.my-auto.mr-2(icon="chat-square" font-scale="2.25" variant="secondary")
+          span.my-auto 通知開關
+        b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled title="全所、部門公告通知") 公告
+        b-checkbox.ml-2.my-auto(v-model="notification.personal" disabled title="個人通知") 個人
+        b-checkbox.ml-2.my-auto(v-model="notification.chat") 聊天室
 
     
     fieldset
@@ -105,6 +113,12 @@ export default {
     adPasswordIcon: 'eye-slash',
     nickname: '',
     historyCount: 10,
+    notification: {
+      announcement: true,
+      personal: true,
+      chat: false
+    },
+    fixNotify: true,
     department: 'reg',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
@@ -124,7 +138,7 @@ export default {
       { value: 'flash', text: '閃爍' },
       { value: 'headShake', text: '抖動' },
       { value: 'pulse', text: '呼吸' }
-    ],
+    ]
   }),
   computed: {
     wsConnStr() {
@@ -191,8 +205,23 @@ export default {
       this.$localForage.setItem('effect', val)
     },
     historyCount (val) {
-      this.$store.commit('history', this.historyCount)
-      this.$localForage.setItem('history', this.historyCount)
+      this.$store.commit('history', val)
+      this.$localForage.setItem('history', val)
+    },
+    'notification.announcement' (val) {
+      const obj = { ...this.notification, announcement: val }
+      this.$store.commit('notifySettings', obj)
+      this.$localForage.setItem('notifySettings', obj)
+    },
+    'notification.personal' (val) {
+      const obj = { ...this.notification, personal: val }
+      this.$store.commit('notifySettings', obj)
+      this.$localForage.setItem('notifySettings', obj)
+    },
+    'notification.chat' (val) {
+      const obj = { ...this.notification, chat: val }
+      this.$store.commit('notifySettings', obj)
+      this.$localForage.setItem('notifySettings', obj)
     }
   },
   methods: {
@@ -218,6 +247,7 @@ export default {
       this.historyCount = await this.$localForage.getItem('history') || 10
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
       this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
+      this.notification = { ...this.notification, ...await this.$localForage.getItem('notifySettings') }
     },
     logout() {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {

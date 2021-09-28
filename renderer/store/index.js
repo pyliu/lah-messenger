@@ -87,7 +87,12 @@ const state = () => ({
   },
   participatedChannels: [],
   connectedUsers: [],
-  statusText: ''
+  statusText: '',
+  notifySettings: {
+    announcement: true,
+    personal: true,
+    chat: false
+  }
 })
 
 const getters = {
@@ -151,6 +156,7 @@ const getters = {
     }
   },
   chatRooms: state => [ 'lds', 'adm', 'inf', 'val', 'reg', 'sur', 'acc', 'hr', 'supervisor' ],
+  notifySettings: state => state.notifySettings,
   participatedChannels: state => state.participatedChannels,
   platform: state => `${state.userinfo.os.logofile.replace(/(^|\s)\S/g, l => l.toUpperCase())} ${state.userinfo.os.kernel}`,
   effect: state => state.effect,
@@ -217,6 +223,9 @@ const mutations = {
   },
   history (state, history) {
     state.history = parseInt(history)
+  },
+  notifySettings (state, opts) {
+    state.notifySettings = { ...state.notifySettings, ...opts }
   },
   fetchingHistory (state, flag) {
     state.fetchingHistory = flag

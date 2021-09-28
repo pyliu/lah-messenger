@@ -1056,9 +1056,8 @@ export default {
       this.$store.commit('apiHost', this.wsHost)
       this.$store.commit('apiPort', parseInt(await this.$localForage.getItem('apiPort')) || 80)
       this.$store.commit('fePort', parseInt(await this.$localForage.getItem('fePort')) || 8080)
-      // restore user map
-      this.$store.commit('userMap', await this.$localForage.getItem('userMap') || {})
-      this.$store.commit("resetUnread", this.userid)
+      this.$store.commit('resetUnread', this.userid)
+      this.$store.commit('notifySettings', { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') })
       // back from settings page
       if (this.backFromSettings) {
         this.back = true
@@ -1080,6 +1079,7 @@ export default {
       } else {
         this.$store.commit('authority', authority)
       }
+      this.warn(this.notifySettings)
     })
   },
   beforeDestroy () {
