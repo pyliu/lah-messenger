@@ -34,6 +34,8 @@ export default {
         this.emojiLib.random().emoji,
         this.emojiLib.random().emoji,
         this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji,
         this.emojiLib.random().emoji
       ])
     }
