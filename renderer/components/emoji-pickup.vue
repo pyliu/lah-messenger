@@ -26,7 +26,7 @@ export default {
     emojiStr: '⚠️ ⛔ 😰 🤣 ☕ 😠 ❗ ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😜 😎 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
   }),
   computed: {
-    emojis () { return this.$utils._.compact([
+    emojis () { return [...new Set(this.$utils._.compact([
         this.emojiTxt, // from store
         '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤',
         ...this.emojiStr.split(/\s+/).sort(() => Math.random() - 0.5),  // 後面亂數排序
@@ -37,7 +37,7 @@ export default {
         this.emojiLib.random().emoji,
         this.emojiLib.random().emoji,
         this.emojiLib.random().emoji
-      ])
+      ]))]
     }
   },
   methods: {
