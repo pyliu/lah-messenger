@@ -34,7 +34,7 @@ div(style="position:relative")
         title="預覽"
         @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
-      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" :title="`挑選表情 ${emojiCode} => ${emojiTxt}`") #[span.h5 {{ emojiTxt }}]
+      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" :title="`挑選表情 ${randFace}`") #[span.h5 {{ randFace }}]
       b-button.mr-1(
         @click="pick"
         size="sm"
@@ -89,6 +89,7 @@ export default {
   data: () => ({
     realtime: true,
     emoji: false,
+    faces: ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮‍💨', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵‍💫', '😵', '😶‍🌫️', '😶', '😷'],
     messageTitle: '',
     priority: 3,
     message: '',
@@ -105,6 +106,7 @@ export default {
     this.realtime = userSetting !== false
   },
   computed: {
+    randFace () { return this.faces[this.$utils._.random(58)] },
     titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
     notValid () {
       if (this.isAnnouncementChannel && !this.titleValid) {

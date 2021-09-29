@@ -23,13 +23,18 @@ export default {
   },
   data: () => ({
     emojiLib: require('node-emoji'),
-    emoji: '⚠️ ⛔ 😰 🤣 ☕ 😠 ❗ ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😎 🤡 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
+    emojiStr: '⚠️ ⛔ 😰 🤣 ☕ 😠 ❗ ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😜 😎 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
   }),
   computed: {
     emojis () { return this.$utils._.compact([
-        this.emojiLib.random().emoji,
+        this.emojiTxt, // from store
         '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤',
-        ...this.emoji.split(/\s+/).sort(() => Math.random() - 0.5)  // 後面亂數排序
+        ...this.emojiStr.split(/\s+/).sort(() => Math.random() - 0.5),  // 後面亂數排序
+        this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji,
+        this.emojiLib.random().emoji
       ])
     }
   },

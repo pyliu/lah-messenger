@@ -1,8 +1,11 @@
 import trim from 'lodash/trim'
 import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
+import random from 'lodash/random'
 
 const emojiLib = require('node-emoji')
+// 59 faces
+const faces = ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮‍💨', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵‍💫', '😵', '😶‍🌫️', '😶', '😷']
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -90,7 +93,7 @@ const state = () => ({
   participatedChannels: [],
   connectedUsers: [],
   statusText: '',
-  emojiTxt: emojiLib.random().emoji,
+  emojiTxt: faces[random(58)],
   notifySettings: {
     announcement: true,
     personal: true,
