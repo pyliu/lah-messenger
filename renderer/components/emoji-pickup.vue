@@ -6,25 +6,27 @@
     //-   :size="size"
     //- )
     b-button.border-0(
-      v-for="(thisEmoji, iidx) in emojis"
-      :key="`emoji_${iidx}`"
       variant="outline-light"
+      v-for="(emojiTxt, idx) in emojis"
+      :key="`emoji_${idx}`"
       :size="size"
-      @click="$emit('click', thisEmoji)"
-    ) {{ thisEmoji }}
+      :title="emojiLib.unemojify(emojiTxt)"
+      @click="$emit('click', emojiTxt)"
+
+    ) {{ emojiTxt }}
 </template>
 
 <script>
-const nodeEmoji = require('node-emoji')
 export default {
   props: {
     size: { type: String, default: 'lg' }
   },
   data: () => ({
+    emojiLib: require('node-emoji'),
     emoji: '😃 😍 😝 😱 😵 😭 👋 👌 👍 👎 👏 ⭐ 💯 💤 ❗ ⚠️ ⛔ 😰 🤣 ☕ 😠 ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😎 🤡 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
   }),
   computed: {
-    emojis () { return this.$utils._.compact([nodeEmoji.random().emoji, ...this.emoji.split(/\s+/), nodeEmoji.random().emoji]) }
+    emojis () { return this.$utils._.compact([this.emojiLib.random().emoji, ...this.emoji.split(/\s+/), this.emojiLib.random().emoji]) }
   }
 };
 </script>
