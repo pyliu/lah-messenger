@@ -84,8 +84,7 @@ export default {
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
-    reply: { type: String, default: '' },
-    preview: { type: Boolean, default: true }
+    reply: { type: String, default: '' }
   },
   data: () => ({
     realtime: true,
@@ -101,8 +100,9 @@ export default {
       { text: '正常', value: 3 }
     ]
   }),
-  fetch () {
-    this.realtime = this.preview
+  async fetch () {
+    const userSetting = await this.$localForage.getItem('message-input-realtime')
+    this.realtime = userSetting !== false
   },
   computed: {
     titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
@@ -157,6 +157,9 @@ export default {
       this.$nextTick(() => {
         flag && (this.$refs.floatEmoji.style.top = this.isAnnouncementChannel ? '20px' : '-20px')
       })
+    },
+    realtime (flag) {
+      this.$localForage.setItem('message-input-realtime', flag)
     }
   },
   methods: {
