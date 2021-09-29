@@ -27,7 +27,7 @@
             div(v-if="userData.ext") 分機：{{ userData.ext }}
             div(v-if="userData.unit") 部門：{{ userData.unit }}
             div(v-if="userData.work") 工作：{{ userData.work }}
-          b-button(variant="outline-primary" @click="open") 留言
+          b-button(variant="outline-primary" @click="open") 私訊
       .d-flex.flex-column(md="6")
         b-link(@click="photoClick" title="放大顯示")
           b-img-lazy.shadow(
