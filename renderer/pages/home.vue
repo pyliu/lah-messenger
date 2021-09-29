@@ -47,7 +47,7 @@
               :key="`connected_user_${user.userid}_${idx}`"
               :user-data="user"
             )
-          span.mr-4(v-if="connectedUsersCount >= 13") ... ({{ connectedUsersCount }})
+          span.mr-4(v-if="connectedUsersCount >= 13") +{{ connectedUsersCount - 13 }}
           user-avatar.mr-4(
             v-if="connectedUsersCount === 1"
             :user-data="connectedUsers[0]"
