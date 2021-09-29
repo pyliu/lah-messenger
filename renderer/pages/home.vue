@@ -411,7 +411,7 @@ export default {
       }).then(({ data }) => {
         if (this.$utils.statusCheck(data.status)) {
           this.$store.commit('authority', data.authority)
-          this.setCache('userAuthority', data.data, 12 * 60 * 60 * 1000)
+          this.setCache('userAuthority', data.authority, 12 * 60 * 60 * 1000)
         } else {
           this.warning(data.message)
         }
