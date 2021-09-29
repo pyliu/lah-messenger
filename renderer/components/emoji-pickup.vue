@@ -23,10 +23,25 @@ export default {
   },
   data: () => ({
     emojiLib: require('node-emoji'),
-    emoji: '😃 😍 😝 😱 😵 😭 👋 👌 👍 👎 👏 ⭐ 💯 💤 ❗ ⚠️ ⛔ 😰 🤣 ☕ 😠 ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😎 🤡 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
+    emoji: '⚠️ ⛔ 😰 🤣 ☕ 😠 ❗ ❓ 😡 🙏 👀 🤬 😁 😆 😅 😂 💗 💛 💚 💔 😎 🤡 🔴 🟢 🟡 😏 😐 😞 😟 😖 🥱 😤 😮 😨 😷 🤕 🤢 🤧 🥵 🥶 💩 🤝 👈 👉 👆 👇 ☝ ✌ 🤞 🤚 🖐 💪 🙋 🙋‍♂️ ㊗️'
   }),
   computed: {
-    emojis () { return this.$utils._.compact([this.emojiLib.random().emoji, ...this.emoji.split(/\s+/), this.emojiLib.random().emoji]) }
+    emojis () { return this.$utils._.compact([
+        this.emojiLib.random().emoji,
+        '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤',
+        ...this.emoji.split(/\s+/).sort(() => Math.random() - 0.5)  // 後面亂數排序
+      ])
+    }
+  },
+  methods: {
+    shuffle (array) {
+      // Fisher-Yates 亂數排序
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        [array[i], array[j]] = [array[j], array[i]]
+      }
+      return array
+    }
   }
 };
 </script>
