@@ -34,7 +34,7 @@ div(style="position:relative")
         title="預覽"
         @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
-      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
+      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" :title="`挑選表情 ${emojiCode} => ${emojiTxt}`") #[span.h5 {{ emojiTxt }}]
       b-button.mr-1(
         @click="pick"
         size="sm"
@@ -151,6 +151,12 @@ export default {
         type: "remote"
       }
     }
+    // emojiTxt () {
+    //   return this.emojiLib.random().emoji
+    // },
+    // emojiCode () {
+    //   return this.emojiLib.unemojify(this.emojiTxt)
+    // }
   },
   watch: {
     emoji (flag) {

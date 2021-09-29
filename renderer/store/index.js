@@ -1,6 +1,8 @@
 import trim from 'lodash/trim'
 import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
+import { random } from 'lodash'
+const emojiLib = require('node-emoji')
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -88,6 +90,7 @@ const state = () => ({
   participatedChannels: [],
   connectedUsers: [],
   statusText: '',
+  emojiTxt: emojiLib.random().emoji,
   notifySettings: {
     announcement: true,
     personal: true,
@@ -176,7 +179,10 @@ const getters = {
   connectedUsers: state => state.connectedUsers,
   connectedUsersReverse: state => [...state.connectedUsers].reverse(),
   connectedUsersCount: state => state.connectedUsers.length,
-  statusText: state => state.statusText
+  statusText: state => state.statusText,
+
+  emojiTxt: state => state.emojiTxt,
+  emojiCode: state => emojiLib.unemojify(state.emojiTxt)
 }
 
 // only sync operation

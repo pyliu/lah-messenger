@@ -80,7 +80,7 @@
         )
         b-button.ml-1(@click="send" :variant="valid ? 'primary' : 'outline-primary'" :disabled="!valid" title="傳送")
           b-icon(icon="cursor" rotate="45")
-        b-button.mx-1(@click="emojiPickup" variant="outline-secondary" title="挑選表情") #[span.h5 😄]
+        b-button.mx-1(@click="emojiPickup" variant="outline-secondary" :title="`挑選表情 ${emojiCode} => ${emojiTxt}`") #[span.h5 {{ emojiTxt }}]
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
         lah-transition: .d-flex.justify-content-between.p-2.float-preview(v-if="!empty(inputText)" ref="floatPreview")
