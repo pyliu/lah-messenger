@@ -1,7 +1,7 @@
 import trim from 'lodash/trim'
 import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
-import { random } from 'lodash'
+
 const emojiLib = require('node-emoji')
 
 const empty = function(value) {
