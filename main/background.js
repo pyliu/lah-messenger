@@ -326,16 +326,17 @@ ipcMain.handle('ad-user-query', async (event, config) => {
   if (user) {
     !isProd && console.log(`找到AD使用者`, user)
     // find user group
-    let group = ''
-    await ad.isUserMemberOf(config.username, '資訊課') && (group = 'inf')
-    group === '' && await ad.isUserMemberOf(config.username, '登記課') && (group = 'reg')
-    group === '' && await ad.isUserMemberOf(config.username, '地價課') && (group = 'val')
-    group === '' && await ad.isUserMemberOf(config.username, '行政課') && (group = 'adm')
-    group === '' && await ad.isUserMemberOf(config.username, '測量課') && (group = 'sur')
-    group === '' && await ad.isUserMemberOf(config.username, '人事室') && (group = 'hr')
-    group === '' && await ad.isUserMemberOf(config.username, '會計室') && (group = 'acc')
-    group === '' && await ad.isUserMemberOf(config.username, '秘書室') && (group = 'supervisor')
-    group === '' && await ad.isUserMemberOf(config.username, '主任室') && (group = 'supervisor')
+    let group = 'supervisor'
+    let checked = false
+    await ad.isUserMemberOf(config.username, '資訊課') && (group = 'inf') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '登記課') && (group = 'reg') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '地價課') && (group = 'val') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '行政課') && (group = 'adm') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '測量課') && (group = 'sur') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '人事室') && (group = 'hr') && (checked = true)
+    !checked && await ad.isUserMemberOf(config.username, '會計室') && (group = 'acc') && (checked = true)
+    // await ad.isUserMemberOf(config.username, '秘書室') && (group = 'supervisor') && (checked = true)
+    // await ad.isUserMemberOf(config.username, '主任室') && (group = 'supervisor') && (checked = true)
     return {
       description: user.description,
       group: group
