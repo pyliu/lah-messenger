@@ -286,10 +286,10 @@ export default {
     backFromSettings () { return this.$route.query.reconnect === 'true' },
     notifyChannels () {
       const channels = ['announcement', `announcement_${this.department}`]
-      if (this.notifySettings.chat) {
-        // add chatting channel to the list
-        return this.$utils._.concat(channels, ['lds', this.department])
-      }
+      this.notifySettings.personal && channels.push(this.userid)
+      // add chatting channel to the list
+      this.notifySettings.chat && channels.push('lds')
+      this.notifySettings.chat && channels.push(this.department)
       return channels
     },
     
@@ -777,6 +777,8 @@ export default {
                           this.setChannelUnread(channel, receivedId)
                           // tell electron window got a unread message
                           this.ipcRenderer.invoke('unread', channel)
+                          // current channel received message and document is hidden, it should send notification
+                          document && document.hidden && this.invokeNotification(incoming)
                         }
                       }
                     }
@@ -793,12 +795,12 @@ export default {
                   if (this.showUnreadChannels.includes(channel)) {
                     // tell electron window the channels got unread message
                     this.ipcRenderer.invoke('unread', channel)
+                    // determining wether the message should trigger the system notification
+                    this.invokeNotification(incoming)
                   }
                 }
               }
-              // determining wether the message should trigger the system notification
-              this.invokeNotification(incoming)
-
+              
               this.connecting = false
             }
           } catch (e) {
@@ -863,7 +865,6 @@ export default {
     async invokeNotification (incoming) {
       const channel = incoming.channel
       this.log(this.time(), '確認是否需要傳送通知', channel)
-
       if (this.notifyChannels.includes(channel)) {
         /**
          * expect announcement incoming message format:
@@ -888,22 +889,7 @@ export default {
          *    time: "17:26:01"
          *    type: "remote"
          * }
-         */
-        const cacheKey = `${channel}_last_id`
-        const title = incoming.message.title
-        const id = incoming.id || incoming.message.id
-        let lastReadId = await this.getCache(cacheKey)
-        isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-        this.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
-        if (id > lastReadId) {
-          this.setCache(cacheKey, id)
-          this.invokeIPCNotification(title, {
-            showMainWindow: true,
-            channel: channel
-          })
-        }
-      } else if (channel === this.userid) {
-        /**
+         * 
          * expect personal incoming message format:
          * {
          *   channel: "HA10013859"
@@ -917,26 +903,25 @@ export default {
          * }
          */
         const cacheKey = `${channel}_last_id`
+        const id =  incoming.message.id || incoming.id
+        let title = incoming.message.title || incoming.message
 
         // remove all html tags (will generate by Markd)
-        const temp = document.createElement("div");
-        temp.innerHTML = incoming.message;
-        const title = temp.innerText.substring(0, 18) + ' ... '
+        const temp = document.createElement("div")
+        temp.innerHTML = title
+        title = temp.innerText.substring(0, 18) + ' ... '
 
-        const id = incoming.id
-        let lastReadId = await this.getCache(cacheKey)
-        isNaN(parseInt(lastReadId)) && (lastReadId = 0)
-        this.log(cacheKey, title, `now id: ${id}`, `last id: ${lastReadId}`)
+        let lastReadId = parseInt(await this.getCache(cacheKey)) || 0
+        this.log(`收到 ${channel} 頻道訊息`, `現在收到id: ${id}`, `上次讀過id: ${lastReadId}`, title)
         if (id > lastReadId) {
           this.setCache(cacheKey, id)
-          // don't send notification wehn sender is myself or current channel is own channel
-          incoming.sender !== this.userid && this.currentChannel !== this.userid && this.invokeIPCNotification(title, {
-            showMainWindow: false,
+          // sender not me then triggers notification
+          incoming.sender !== this.userid && this.invokeIPCNotification(title, {
+            showMainWindow: document.hidden,
             channel: channel
           })
         }
       }
-
     },
     invokeADQuery (force = false) {
       if (this.asking === true) {

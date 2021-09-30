@@ -47,10 +47,10 @@
       
       b-input-group.my-2(title="通知啟用")
         template(#prepend)
-          b-icon.my-auto.mr-2(icon="chat-square" font-scale="2.25" variant="secondary")
+          b-icon.my-auto.mr-2(icon="alarm-fill" font-scale="2.25" variant="secondary")
           span.my-auto 通知開關
         b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled title="全所、部門公告通知") 公告
-        b-checkbox.ml-2.my-auto(v-model="notification.personal" disabled title="個人通知") 個人
+        b-checkbox.ml-2.my-auto(v-model="notification.personal" title="個人通知") 個人
         b-checkbox.ml-2.my-auto(v-model="notification.chat") 聊天室
 
     

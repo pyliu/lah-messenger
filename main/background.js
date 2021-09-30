@@ -212,8 +212,10 @@ ipcMain.handle('notification', async (event, payload) => {
   // to prevent multiple message coming in at once
   notifyDebounced('[點我開啟APP視窗]', message, () => {
     if (channel) {
+      // 切換至頻道
       mainWindow.webContents.send('set-current-channel', channel)
     }
+    // 視窗置中顯示
     if (showMainWindow && mainWindow) {
       mainWindow.show()
       mainWindow.center()
@@ -230,11 +232,12 @@ ipcMain.handle('title', async (event, str) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  mainWindow.show()
   // important notification
-  if (mainWindow.userinfo?.userid === channel || channel.startsWith('announcement')) {
+  if (channel.startsWith('announcement')) {
+    mainWindow.show()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
+    mainWindow.focus()
   }
 })
 
