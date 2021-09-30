@@ -101,10 +101,13 @@ Vue.mixin({
       'plusUnread'
     ]),
     getFirstDNSIp () {
-      if (!empty(this.userinfo.dns)) {
-        return [...this.userinfo.dns].find(ip => {
+      const dnses = [...this.userinfo.dns]
+      if (!empty(dnses)) {
+        const first = this.$utils._.head(dnses)
+        const tyland = dnses.find(ip => {
           return ip.startsWith('220.1.')
         })
+        return tyland ? tyland : first
       }
       return ''
     },
