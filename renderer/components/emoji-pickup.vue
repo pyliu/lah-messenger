@@ -1,10 +1,5 @@
 <template lang="pug">
   .d-flex.flex-wrap.justify-content-between
-    //- b-button-group(
-    //-   v-for="(chunk, oidx) in emojis"
-    //-   :key="`chunk_${oidx}`"
-    //-   :size="size"
-    //- )
     b-button.border-0(
       variant="outline-light"
       v-for="(emojiTxt, idx) in emojis"
@@ -28,7 +23,7 @@ export default {
   computed: {
     emojis () { return [...new Set(this.$utils._.compact([
         this.emojiTxt, // from store
-        '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤',
+        '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤', // fixed front
         ...this.emojiStr.split(/\s+/).sort(() => Math.random() - 0.5),  // 後面亂數排序
         this.emojiLib.random().emoji,
         this.emojiLib.random().emoji,
