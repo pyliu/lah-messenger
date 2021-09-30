@@ -25,14 +25,20 @@ export default {
         this.emojiTxt, // from store
         '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤', // fixed front
         ...this.emojiStr.split(/\s+/).sort(() => Math.random() - 0.5),  // 後面亂數排序
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji,
-        this.emojiLib.random().emoji
+        ...this.random
       ]))]
+    },
+    flags () { return this.emojiLib.search('flag').map(emo => emo.emoji) },
+    random () {
+      const arr = []
+      for (let i = 0; i < 7; i++) {
+        let randEmoji = this.emojiLib.random().emoji
+        while (this.flags.includes(randEmoji)) {
+          randEmoji = this.emojiLib.random().emoji
+        }
+        arr.push(randEmoji)
+      }
+      return arr
     }
   },
   methods: {
