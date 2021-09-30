@@ -97,7 +97,7 @@ const state = () => ({
   notifySettings: {
     announcement: true,
     personal: true,
-    chat: false
+    chat: true
   }
 })
 
