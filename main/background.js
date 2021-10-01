@@ -201,7 +201,11 @@ ipcMain.handle('quit', async (event, str) => {
 
 ipcMain.handle('home-ready', async (event, arg) => {
   !isProd && console.log(`home.vue ready`, arg)
-  // mainWindow.show()
+})
+
+ipcMain.handle('title', async (event, str) => {
+  !isProd && console.log(`Set Title`, str)
+  mainWindow.setTitle(str)
 })
 
 ipcMain.handle('notification', async (event, payload) => {
@@ -209,7 +213,7 @@ ipcMain.handle('notification', async (event, payload) => {
   const channel = payload.channel
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
-  // to prevent multiple message coming in at once
+  // to prevent multiple messages coming in at once
   notifyDebounced('[點我開啟APP視窗]', message, () => {
     if (channel) {
       // 切換至頻道
@@ -223,11 +227,6 @@ ipcMain.handle('notification', async (event, payload) => {
       mainWindow.focus()
     }
   })
-})
-
-ipcMain.handle('title', async (event, str) => {
-  !isProd && console.log(`Set Title`, str)
-  mainWindow.setTitle(str)
 })
 
 ipcMain.handle('unread', async (event, channel) => {
