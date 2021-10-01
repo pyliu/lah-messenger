@@ -121,7 +121,7 @@ export default {
         this.warn('uploadImage無值，無法上傳檔案', this.uploadImage)
       }
       else if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
-        this.warning('公告信差版面不支援JPEG直接上傳')
+        this.warning('非聊天室不支援JPEG直接上傳')
       } else if (this.uploadImage?.type === 'image/jpeg') {
         this.isBusy = true
         this.pickedEncodingData = ''
@@ -184,7 +184,7 @@ export default {
       event.preventDefault()
       // this.debug(event.dataTransfer)
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
-        this.warning('公告信差版面不支援JPEG直接上傳')
+        this.warning('非聊天室不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {
         this.uploadImage = event.dataTransfer.files[0]
         this.upload(true)
