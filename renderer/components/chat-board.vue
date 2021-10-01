@@ -9,10 +9,11 @@
     h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark(:href="`${feQueryUrl}/message`") 私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧管控系統]
     h6 #[b-icon(icon="people-fill")] 線上使用者 #[b-badge(pill variant="success") {{ connectedUsersCount }}]
     //- show online user badges
-    b-avatar-group(size="3rem" :overlap="0.0"): .d-flex.justify-content-center.flex-wrap: user-avatar.m-1(
+    b-avatar-group(size="3rem" :overlap="overlapRatio"): .d-flex.justify-content-center.flex-wrap: user-avatar(
       v-for="(user, idx) in connectedUsers"
       :key="`avatar_${user.userid}_${idx}`"
       :user-data="user"
+      :class="connectedUsersCount <= 64 ? ['m-1'] : []"
     )
 </template>
 
@@ -36,7 +37,12 @@ export default {
     onlineTimer: undefined
   }),
   computed: {
-    isChat () { return this.currentChannel === 'chat'}
+    isChat () { return this.currentChannel === 'chat'},
+    overlapRatio () {
+      if (this.connectedUsersCount > 60) { return 0.2 }
+      if (this.connectedUsersCount > 120) { return 0.4 }
+      return 0.0
+    }
   },
   created () {
     this.queryChatChannelOnlineClients()
