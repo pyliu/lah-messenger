@@ -169,12 +169,12 @@ const getters = {
   history: state => parseInt(state.history),
   fetchingHistory: state => state.fetchingHistory,
 
-  imageMementoCapacity: state =>state.imageMementoCapacity,
+  imageMementoCapacity: state => state.imageMementoCapacity,
   imageMemento: state => state.imageMemento,
   latestImageMemento: state => state.imageMemento.length > 0 ? state.imageMemento[state.imageMemento.length - 1] : undefined,
   imageMementoCacheKey: state => 'imageMementoCached',
   
-  messageMementoCapacity: state =>state.messageMementoCapacity,
+  messageMementoCapacity: state => state.messageMementoCapacity,
   messageMemento: state => state.messageMemento,
   latestMessageMemento: state => state.messageMemento.length > 0 ? state.messageMemento[state.messageMemento.length - 1] : undefined,
   messageMementoCacheKey: state => 'messageMementoCached',
