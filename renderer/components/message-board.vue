@@ -42,7 +42,8 @@ export default {
     scrollTop: 0,
     scrollBehavior: 'last',
     uploadImage: undefined,
-    pickedEncodingData: ''
+    pickedEncodingData: '',
+    messageInputModalTitle: ''
   }),
   computed: {
     isAuthorized () {
@@ -195,18 +196,20 @@ export default {
       event.currentTarget.classList.remove('dropable');
     },
     openMessageInput () {
+      this.messageInputModalTitle = this.currentChannelName
       this.modal(this.$createElement(MessageInput, {
         props: {
           to: this.currentChannel,
           pickUser: this.currentChannel === this.userid // my channel shows the online user select input
         },
         on: {
-          sent: () => { this.hideModalById('message-input-modal') }
+          sent: () => { this.hideModalById('message-input-modal') },
+          changeTo: (event) => { this.messageInputModalTitle = event.detail }
         }
       }), {
         id: 'message-input-modal',
         size: 'xl',
-        title: `發訊息到 ${this.currentChannelName}`
+        title: this.messageInputModalTitle
       })
     }
   },
