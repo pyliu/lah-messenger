@@ -143,6 +143,9 @@ export default {
       if (ref) {
         // add event to invoke ipc to main process in electron
         const imgs = this.$utils.$(ref).find('img')
+        imgs.each((idx, img) => {
+          img.setAttribute('title', `點擊開啟 ${img.alt} 完整圖片`)
+        })
         // this.warn(`message 下找到 ${imgs.length} 張圖片，利用 jQuery 綁定 click 事件`)
         imgs.on('click', (event) => {
           event.preventDefault()
