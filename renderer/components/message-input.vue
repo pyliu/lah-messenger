@@ -24,7 +24,7 @@ div(style="position:relative")
   )
   
   .d-flex.align-items-center
-    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時預覽
+    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時
     div.mr-auto
     b-button-group(size="sm")
       b-button(
