@@ -32,7 +32,7 @@
       )
 
       //- remote or system message
-      p(v-else-if="!myMessage" v-html="message")
+      p(v-else-if="!myMessage" v-html="message" ref="remoteMessage")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
@@ -55,7 +55,7 @@
         div(v-if="!isAnnouncement") {{ mtime }}
 
       //- my message
-      p.my-message(v-if="myMessage" v-html="message")
+      p.my-message(ref="myMessage" v-if="myMessage" v-html="message")
 
 </template>
 
@@ -86,6 +86,10 @@ export default {
     id() { return this.raw?.id },
     type() { return this.raw?.type },
     message() { return this.$utils.emojify(this.raw?.message) },
+    processedMessage () {
+      // const regex = /(<img\ssrc="(.+)"\salt="(.+)">)/gm
+      // return this.message.replaceAll(regex, "<img src=\"$2\" alt=\"$3\" onclick=\"let w = window.open('about:blank');let image = new Image();image.src = '$2';setTimeout(function(){ w.document.write(image.outerHTML);}, 50);\">")
+    },
     senderId() { return this.raw?.sender },
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },
@@ -130,7 +134,27 @@ export default {
       return this.myMessage && offset <= 86400000
     }
   },
+  mounted () {
+    this.initImgClick(this.$refs.remoteMessage)
+    this.initImgClick(this.$refs.myMessage)
+  },
   methods: {
+    initImgClick (ref) {
+      if (ref) {
+        // add event to invoke ipc to main process in electron
+        const imgs = this.$utils.$(ref).find('img')
+        // this.warn(`message 下找到 ${imgs.length} 張圖片，利用 jQuery 綁定 click 事件`)
+        imgs.on('click', (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          const { ipcRenderer } = require('electron')
+          ipcRenderer.invoke('image', {
+            src: event.target.src,
+            alt: event.target.alt
+          })
+        })
+      }
+    },
     avatarClick (event) {
       event.stopPropagation()
       this.modal(this.$createElement(UserCard, {

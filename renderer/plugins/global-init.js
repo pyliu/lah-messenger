@@ -86,6 +86,7 @@ export default ({ $axios, store }, inject) => {
 
   // like old fashion global functions, use this.$utils to access these methods in Vue
   const utility = {
+    $,
     emojify (msg) {
       return emoji.emojify(msg)
     },

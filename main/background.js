@@ -1,6 +1,8 @@
 import { app, Tray, Menu, nativeImage } from 'electron'
 import serve from 'electron-serve'
 
+const fs = require('fs')
+const os = require('os');
 const path = require('path')
 const si = require('systeminformation')
 const qs = require('qs')
@@ -347,4 +349,20 @@ ipcMain.handle('ad-user-query', async (event, config) => {
     !isProd && console.error('AD查詢失敗', user)
   }
   return undefined
+})
+
+ipcMain.handle('image', async (event, payload) => {
+  const buf = Buffer.from(payload.src, 'base64')
+  const filepath = path.join(os.tmpdir(), `${payload.alt}.jpg`)
+
+  fs.writeFile(path.join(os.tmpdir(), `${payload.alt}.jpg`), buf, function(error) {
+    if (error) {
+      throw error
+    } else {
+      console.log(`${filepath} created from base64 string.`);
+      return true
+    }
+  })
+  // open the tmp jpg
+  require('child_process').exec(`start "" "${filepath}"`);
 })
