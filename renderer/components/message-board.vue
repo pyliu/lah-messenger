@@ -128,9 +128,9 @@ export default {
         const filename = this.uploadImage.name
         const formData = new FormData()
         formData.append('file', this.uploadImage)
-        formData.append('width', 380)
-        formData.append('height', 290)
-        formData.append('quality', 75)
+        formData.append('width', 1920)
+        formData.append('height', 1080)
+        formData.append('quality', 80)
         this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
           if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
             this.pickedEncodingData = `${data.uri}${data.encoded}`
