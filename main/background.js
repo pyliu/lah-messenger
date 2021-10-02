@@ -353,9 +353,9 @@ ipcMain.handle('ad-user-query', async (event, config) => {
 
 ipcMain.handle('image', async (event, payload) => {
   const buf = Buffer.from(payload.src, 'base64')
-  const filepath = path.join(os.tmpdir(), `${payload.alt}.jpg`)
+  const filepath = path.join(os.tmpdir(), `tmp.jpg`)
 
-  fs.writeFile(path.join(os.tmpdir(), `${payload.alt}.jpg`), buf, function(error) {
+  fs.writeFile(filepath, buf, function(error) {
     if (error) {
       throw error
     } else {
