@@ -189,7 +189,7 @@ export default {
         this.uploadImage = event.dataTransfer.files[0]
         this.upload(true)
       } else {
-        this.log('僅支援拖放實體檔案')
+        this.warning('僅支援拖放JPEG圖檔')
       }
       // Clean up
       event.currentTarget.classList.remove('dropable');
@@ -197,7 +197,8 @@ export default {
     openMessageInput () {
       this.modal(this.$createElement(MessageInput, {
         props: {
-          to: this.currentChannel
+          to: this.currentChannel,
+          pickUser: this.currentChannel === this.userid // my channel shows the online user select input
         },
         on: {
           sent: () => { this.hideModalById('message-input-modal') }

@@ -48,6 +48,7 @@ div(style="position:relative")
         :variant="notValid ? 'outline-primary' : 'primary'"
         title="送出"
       ): b-icon(icon="cursor" rotate="45")
+    b-select.ml-1(v-if="pickUser" v-model="toUser" :options="toUsersOpts" style="width: 175px")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -84,9 +85,11 @@ export default {
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
-    reply: { type: String, default: '' }
+    reply: { type: String, default: '' },
+    pickUser: { type: Boolean, default: false }
   },
   data: () => ({
+    toUser: '',
     realtime: true,
     emoji: false,
     faces: ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮‍💨', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵‍💫', '😵', '😶‍🌫️', '😶', '😷'],
@@ -104,6 +107,7 @@ export default {
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
     this.realtime = userSetting !== false
+    this.toUser = this.to
   },
   computed: {
     randFace () { return this.faces[this.$utils._.random(58)] },
@@ -152,13 +156,12 @@ export default {
         sender: this.userid,
         type: "remote"
       }
+    },
+    toUsersOpts () {
+      return this.connectedUsers.map((user) => {
+        return { value: user.userid, text: `${user.userid} ${user.username}`}
+      })
     }
-    // emojiTxt () {
-    //   return this.emojiLib.random().emoji
-    // },
-    // emojiCode () {
-    //   return this.emojiLib.unemojify(this.emojiTxt)
-    // }
   },
   watch: {
     emoji (flag) {
@@ -169,6 +172,9 @@ export default {
     realtime (flag) {
       this.$localForage.setItem('message-input-realtime', flag)
     }
+  },
+  mounted () {
+    this.warn(this.connectedUsers)
   },
   methods: {
     addEmoji (emoji) {
@@ -217,7 +223,7 @@ export default {
       if (this.websocket && !this.notValid) {
         // send to target
         this.websocket.send(this.packMessage(this.mergedMessage, {
-          channel: this.to,
+          channel: this.toUser,
           title: this.messageTitle,
           priority: this.priority
         }))
