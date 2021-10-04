@@ -230,7 +230,7 @@ export default {
           title: this.messageTitle,
           priority: this.priority
         }))
-        if (this.to !== this.userid && !this.to?.startsWith('announcement') && !this.chatRooms.includes(this.currentChannel)) {
+        if (this.toUser !== this.userid && !this.to?.startsWith('announcement') && !this.chatRooms.includes(this.currentChannel)) {
           const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
