@@ -118,7 +118,7 @@ export default {
       }
       return this.empty(this.message) && this.empty(this.images)
     },
-    toName () { return this.userMap[this.to] || this.to },
+    toName () { return this.userMap[this.toUser] || this.toUser },
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
@@ -148,7 +148,7 @@ export default {
     messageJson () {
       return {
         id: 0,
-        channel: this.to,
+        channel: this.toUser,
         date: this.date(),
         time: this.time(),
         message: this.markdMergedMessage,
@@ -194,7 +194,7 @@ export default {
         this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
-            channel: this.to
+            channel: this.toUser
           }
         }), modalOpts)
       } else {
@@ -206,7 +206,7 @@ export default {
     pick () {
       this.modal(this.$createElement(ImageUpload, {
         props: {
-          to: this.to,
+          to: this.toUser,
           modalId: 'image-upload-modal',
           skipPreview: true
         },
@@ -230,8 +230,8 @@ export default {
           title: this.messageTitle,
           priority: this.priority
         }))
-        if (this.toUser !== this.userid && !this.to?.startsWith('announcement') && !this.chatRooms.includes(this.currentChannel)) {
-          const replyHeader = this.packReplyHeader(this.to, this.toName, this.reply)
+        if (this.toUser !== this.userid && !this.toUser?.startsWith('announcement') && !this.chatRooms.includes(this.currentChannel)) {
+          const replyHeader = this.packReplyHeader(this.toUser, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
             this.packMessage(`${replyHeader} ${this.mergedMessage}`, {
