@@ -24,7 +24,7 @@ div(style="position:relative")
   )
   
   .d-flex.align-items-center
-    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時
+    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時預覽
     div.mr-auto
     b-button-group(size="sm")
       b-button(
@@ -48,7 +48,7 @@ div(style="position:relative")
         :variant="notValid ? 'outline-primary' : 'primary'"
         title="送出"
       ): b-icon(icon="cursor" rotate="45")
-    b-select.ml-1(v-if="pickUser" v-model="toUser" :options="toUsersOpts" style="width: 175px")
+    b-select.ml-1(v-if="pickUser" v-model="toUser" :options="toUsersOpts" style="width: 185px")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
