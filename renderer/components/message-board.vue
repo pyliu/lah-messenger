@@ -42,8 +42,7 @@ export default {
     scrollTop: 0,
     scrollBehavior: 'last',
     uploadImage: undefined,
-    pickedEncodingData: '',
-    messageInputModalTitle: ''
+    pickedEncodingData: ''
   }),
   computed: {
     isAuthorized () {
@@ -196,20 +195,18 @@ export default {
       event.currentTarget.classList.remove('dropable');
     },
     openMessageInput () {
-      this.messageInputModalTitle = this.currentChannelName
       this.modal(this.$createElement(MessageInput, {
         props: {
           to: this.currentChannel,
           pickUser: this.currentChannel === this.userid // my channel shows the online user select input
         },
         on: {
-          sent: () => { this.hideModalById('message-input-modal') },
-          changeTo: (event) => { this.messageInputModalTitle = event.detail }
+          sent: () => { this.hideModalById('message-input-modal') }
         }
       }), {
         id: 'message-input-modal',
         size: 'xl',
-        title: this.messageInputModalTitle
+        title: this.currentChannelName
       })
     }
   },

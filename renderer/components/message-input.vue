@@ -171,9 +171,6 @@ export default {
     },
     realtime (flag) {
       this.$localForage.setItem('message-input-realtime', flag)
-    },
-    toUser (val) {
-      this.trigger('changeTo', `${val} ${this.userMap[val]}`)
     }
   },
   mounted () {
