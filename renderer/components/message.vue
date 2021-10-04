@@ -32,7 +32,7 @@
       )
 
       //- remote or system message
-      p(v-else-if="!myMessage" v-html="message" ref="remoteMessage")
+      p(ref="remoteMessage" v-else-if="!myMessage" v-html="message")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
@@ -55,7 +55,7 @@
         div(v-if="!isAnnouncement") {{ mtime }}
 
       //- my message
-      p.my-message(ref="myMessage" v-if="myMessage" v-html="message")
+      p(ref="myMessage" v-if="myMessage" v-html="message")
 
 </template>
 
