@@ -407,7 +407,8 @@ export default {
     },
     loadAuthority () {
       this.$axios.post(this.userQueryStr, {
-        type: 'authentication'
+        type: 'authentication',
+        ip: this.ip
       }).then(({ data }) => {
         if (this.$utils.statusCheck(data.status)) {
           this.$store.commit('authority', data.authority)
@@ -1050,13 +1051,13 @@ export default {
       this.$store.commit('fePort', parseInt(await this.$localForage.getItem('fePort')) || 8080)
       this.$store.commit('resetUnread', this.userid)
       this.$store.commit('notifySettings', { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') })
+      this.ipcRenderer.invoke('home-ready')
       // back from settings page
       if (this.backFromSettings) {
         this.back = true
         this.setCurrentChannel('chat')
         this.connect()
       }
-      this.ipcRenderer.invoke('home-ready')
       // restore usermap
       const mapping = await this.getCache('userMapping')
       if (mapping === false) {
