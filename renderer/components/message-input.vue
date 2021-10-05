@@ -68,7 +68,7 @@ div(style="position:relative")
   lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
     span.text-white.font-weight-bold 預覽
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2(v-else :raw="messageJson")
+    message.mr-2.my-message(v-else :raw="messageJson")
 
 </template>
 
