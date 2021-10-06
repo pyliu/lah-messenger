@@ -216,9 +216,7 @@ export default {
   },
   mounted () {
     setTimeout(() => {
-      // this.ready = true
       // this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
-      
       this.displayOldMessageArrow = true
     }, 1200)
   }
