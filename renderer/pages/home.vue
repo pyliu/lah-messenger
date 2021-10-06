@@ -772,14 +772,14 @@ export default {
                       })
                       if (!found) {
                         this.messages[channel].push(incoming)
-                        // only recieved id is greater than read id need to insert to the current message list
+                        // only recieved id is greater than read id that needs to insert to current message list
                         if (receivedId > lastReadId) {
                           // store the read id for this channel at FE
                           this.setChannelUnread(channel, receivedId)
                           // tell electron window got a unread message
                           this.ipcRenderer.invoke('unread', channel)
-                          // current channel received message and document is hidden, it should send notification
-                          document && document.hidden && this.invokeNotification(incoming)
+                          // current channel received message send notification
+                          this.invokeNotification(incoming)
                         }
                       }
                     }
@@ -918,7 +918,7 @@ export default {
           this.setCache(cacheKey, id)
           // sender not me then triggers notification
           incoming.sender !== this.userid && this.invokeIPCNotification(title, {
-            showMainWindow: document.hidden,
+            showMainWindow: true,
             channel: channel
           })
         }
