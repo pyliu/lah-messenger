@@ -198,10 +198,16 @@ export default {
       // Clean up
       event.currentTarget.classList.remove('dropable');
     },
+    getLastSender () {
+      const lastRemoteMessage = [...this.list].reverse().find(message => {
+        return message.type === 'remote' && message.sender !== this.userid
+      })
+      return lastRemoteMessage?.sender
+    },
     openMessageInput () {
       this.modal(this.$createElement(MessageInput, {
         props: {
-          to: this.currentChannel,
+          to: this.getLastSender() || this.currentChannel,
           pickUser: this.currentChannel === this.userid // my channel shows the online user select input
         },
         on: {

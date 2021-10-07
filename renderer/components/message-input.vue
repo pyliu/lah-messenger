@@ -66,7 +66,7 @@ div(style="position:relative")
     emoji-pickup(@click="addEmoji")
 
   lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
-    span.text-white.font-weight-bold 預覽
+    span.text-white.font-weight-bold 將傳給 {{ this.userMap[this.toUser] }}
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
     message.mr-2.my-message(v-else :raw="messageJson")
 
@@ -158,9 +158,14 @@ export default {
       }
     },
     toUsersOpts () {
-      return this.connectedUsers.map((user) => {
+      const opts = this.connectedUsers.map((user) => {
         return { value: user.userid, text: `${user.userid} ${user.username}`}
       })
+      const found = opts.find(opt => {
+        return opt.value === this.toUser
+      })
+      !found && opts.unshift({ value: this.toUser, text: `${this.toUser} ${this.userMap[this.toUser]}` })
+      return opts
     }
   },
   watch: {
