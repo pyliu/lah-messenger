@@ -172,6 +172,9 @@ export default {
         }
       })
     },
+    pasted (base64) {
+      
+    },
     dragover (event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
