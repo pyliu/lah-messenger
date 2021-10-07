@@ -7,10 +7,10 @@
   )
     b-file(
       v-model="uploadFile"
-      placeholder="僅支援上傳JPEG圖檔"
+      placeholder="支援上傳 JPG/PNG/GIF 圖檔"
       drop-placeholder="放開以設定上傳檔案"
       browse-text="瀏覽"
-      accept="image/jpeg"
+      :accept="supportTypes.join(',')"
     ): template(slot="file-name" slot-scope="{ names }"): b-badge(variant="primary") {{ names[0] }}
     hr
     h6.d-flex.align-items-center(ref="selectPreview")
@@ -64,7 +64,8 @@ export default {
   },
   data: () => ({
     uploadFile: undefined,
-    encoded: ''
+    encoded: '',
+    supportTypes: ['image/jpeg', 'image/png', 'image/gif']
   }),
   computed: {
     name () { return this.userMap[this.to] || this.to },
@@ -82,10 +83,10 @@ export default {
   },
   methods: {
     upload () {
-      if (this.uploadFile?.type === 'image/jpeg') {
+      const type = this.uploadFile?.type
+      if (this.supportTypes.includes(type)) {
         this.isBusy = true
         this.encoded = ''
-        const filename = this.uploadFile.name
         const formData = new FormData()
         formData.append('file', this.uploadFile)
         formData.append('width', 1920)
@@ -109,7 +110,7 @@ export default {
           this.isBusy = false
         })
       } else {
-        this.warning('僅支援JPEG圖檔上傳')
+        this.warning('僅支援 JPG/PNG/GIF/BMP 圖檔上傳')
       }
     },
     publish () {
