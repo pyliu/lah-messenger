@@ -23,7 +23,7 @@ export default {
   computed: {
     emojis () { return [...new Set(this.$utils._.compact([
         this.emojiTxt, // from store
-        '😃', '😍', '😝', '😱', '😵', '😭', '👋', '👌', '👍', '👎', '👏', '⭐', '💯', '💤', // fixed front
+        '😃', '😍', '😝', '😱', '😵', '😭', '🔥', '👌', '👍', '👎', '👏', '⭐', '💯', '💤', '🎇', // fixed front
         ...this.emojiStr.split(/\s+/).sort(() => Math.random() - 0.5),  // 後面亂數排序
         ...this.random
       ]))]
