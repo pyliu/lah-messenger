@@ -12,6 +12,7 @@ div(style="position:relative")
       :options="priorityOpts"
     )
   b-textarea.my-2(
+    @paste="paste($event)"
     ref="msgTextarea"
     v-model="message"
     debounce="200"
@@ -178,10 +179,45 @@ export default {
       this.$localForage.setItem('message-input-realtime', flag)
     }
   },
-  mounted () {
-    this.warn(this.connectedUsers)
-  },
   methods: {
+    paste (event) {
+      event.stopPropagation()
+      event.preventDefault()
+      this.warn(event)
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items
+      for (var i = 0 ; i < items.length ; i++) {
+        const item = items[i]
+        if (item.type.indexOf("image") !== -1) {
+          const file = item.getAsFile();
+          this.warn(file)
+          this.upload(file)
+        }
+      }
+    },
+    upload (file) {
+        this.isBusy = true
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('width', 1920)
+        formData.append('height', 1080)
+        formData.append('quality', 80)
+        this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
+          if (!this.empty(data.encoded) && !this.empty(data.uri)) {
+            const encoded = `${data.uri}${data.encoded}`
+            this.$store.commit('addImageMemento', encoded)
+            this.images.indexOf(encoded) === -1 && this.images.push(encoded)
+            if (!this.$utils.statusCheck(data.status)) {
+              this.warning(data.message, { title: '上傳圖檔結果' })
+            }
+          } else {
+            this.warning('回傳的影像編碼有誤', { title: '貼上的影像處理結果' })
+          }
+        }).catch((err) => {
+          this.err(err)
+        }).finally(() => {
+          this.isBusy = false
+        })
+    },
     addEmoji (emoji) {
       this.message = this.message + emoji
       this.$refs.msgTextarea?.focus()
