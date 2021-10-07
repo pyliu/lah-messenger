@@ -15,7 +15,11 @@
         variant="primary"
         :title="`發布訊息@${currentChannelName}`"
       ): b-icon(icon="chat-right-text" flip-h)
-      transition-group(name="list" mode="out-in")
+      
+      h5.center.my-5(v-if="empty(list)")
+        b-icon.mr-1(icon="shield-fill-exclamation" variant="success")
+        span 目前尚無任何訊息 
+      transition-group(v-else name="list" mode="out-in")
         message.mr-1.animate__animated(
           enter-active-class="animate__slideInUp"
           leave-active-class="animate__slideInDown"
