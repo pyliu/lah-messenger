@@ -4,6 +4,7 @@
     @dragover="dragover"
     @dragleave="dragleave"
     @drop="drop"
+    @paste="pasteImage($event, pasted)"
   )
     b-file(
       v-model="uploadFile"
@@ -82,6 +83,7 @@ export default {
     }
   },
   methods: {
+    pasted (base64) { this.encoded = base64 },
     upload () {
       const type = this.uploadFile?.type
       if (this.supportTypes.includes(type)) {

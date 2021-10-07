@@ -203,6 +203,40 @@ Vue.mixin({
     sendImage (base64, alt, channel) {
       this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
     },
+    pasteImage (pasteEvent, callback) {
+      pasteEvent.stopPropagation()
+      pasteEvent.preventDefault()
+      const items = (pasteEvent.clipboardData || pasteEvent.originalEvent.clipboardData).items
+      for (var i = 0 ; i < items.length ; i++) {
+        const item = items[i]
+        if (item.type.indexOf("image") !== -1) {
+          this.log('剪貼版發現影像資料，準備直接轉換成base64影像資料 ... ')
+          const file = item.getAsFile()
+          this.isBusy = true
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('width', 1920)
+          formData.append('height', 1080)
+          formData.append('quality', 80)
+          this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
+            if (!this.empty(data.encoded) && !this.empty(data.uri)) {
+              const encoded = `${data.uri}${data.encoded}`
+              this.$store.commit('addImageMemento', encoded)
+              callback && callback(encoded)
+              if (!this.$utils.statusCheck(data.status)) {
+                this.warning(data.message, { title: '上傳圖檔結果' })
+              }
+            } else {
+              this.warning('回傳的影像編碼有誤', { title: '貼上的影像處理結果' })
+            }
+          }).catch((err) => {
+            this.err(err)
+          }).finally(() => {
+            this.isBusy = false
+          })
+        }
+      }
+    },
     getChannelName(channelId) {
       switch (channelId) {
         case 'announcement': return '公告'
