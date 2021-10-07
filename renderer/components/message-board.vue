@@ -45,7 +45,7 @@ export default {
     displayOldMessageArrow: false,
     scrollTop: 0,
     scrollBehavior: 'last',
-    uploadImage: undefined,
+    dropImage: undefined,
     pickedEncodingData: ''
   }),
   computed: {
@@ -87,7 +87,7 @@ export default {
     fetchingHistory (flag) {
       this.scrollBehavior = flag ? 'first' : 'last'
     },
-    uploadImage (file) {
+    dropImage (file) {
       file ? this.upload() : this.debug('選定的上傳檔案是空的')
     }
   },
@@ -121,17 +121,17 @@ export default {
       }
     },
     upload (directly = false) {
-      if (!this.uploadImage) {
-        this.warn('uploadImage無值，無法上傳檔案', this.uploadImage)
+      if (!this.dropImage) {
+        this.warn('dropImage無值，無法上傳檔案', this.dropImage)
       }
       else if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('非聊天室不支援JPEG直接上傳')
-      } else if (this.uploadImage?.type === 'image/jpeg') {
+      } else if (this.dropImage?.type === 'image/jpeg') {
         this.isBusy = true
         this.pickedEncodingData = ''
-        const filename = this.uploadImage.name
+        const filename = this.dropImage.name
         const formData = new FormData()
-        formData.append('file', this.uploadImage)
+        formData.append('file', this.dropImage)
         formData.append('width', 1920)
         formData.append('height', 1080)
         formData.append('quality', 80)
@@ -157,10 +157,10 @@ export default {
           this.err(err)
         }).finally(() => {
           this.isBusy = false
-          // this.uploadImage = undefined
+          // this.dropImage = undefined
         })
       } else {
-        this.warning('僅支援JPEG圖檔上傳')
+        this.warning('僅支援 JPG/PNG/GIF 圖檔上傳')
       }
     },
     publish () {
@@ -190,7 +190,7 @@ export default {
       if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('非聊天室不支援JPEG直接上傳')
       } else if (event.dataTransfer.files.length > 0) {
-        this.uploadImage = event.dataTransfer.files[0]
+        this.dropImage = event.dataTransfer.files[0]
         this.upload(true)
       } else {
         this.warning('僅支援拖放JPEG圖檔')
