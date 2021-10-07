@@ -212,30 +212,33 @@ Vue.mixin({
         if (item.type.indexOf("image") !== -1) {
           this.log('剪貼版發現影像資料，準備直接轉換成base64影像資料 ... ')
           const file = item.getAsFile()
-          this.isBusy = true
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('width', 1920)
-          formData.append('height', 1080)
-          formData.append('quality', 80)
-          this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
-            if (!this.empty(data.encoded) && !this.empty(data.uri)) {
-              const encoded = `${data.uri}${data.encoded}`
-              this.$store.commit('addImageMemento', encoded)
-              callback && callback(encoded)
-              if (!this.$utils.statusCheck(data.status)) {
-                this.warning(data.message, { title: '上傳圖檔結果' })
-              }
-            } else {
-              this.warning('回傳的影像編碼有誤', { title: '貼上的影像處理結果' })
-            }
-          }).catch((err) => {
-            this.err(err)
-          }).finally(() => {
-            this.isBusy = false
-          })
+          this.uploadImage(file, callback)
         }
       }
+    },
+    uploadImage (file, callback) {
+      this.isBusy = true
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('width', 1920)
+      formData.append('height', 1080)
+      formData.append('quality', 80)
+      this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
+        if (!this.empty(data.encoded) && !this.empty(data.uri)) {
+          const encoded = `${data.uri}${data.encoded}`
+          this.$store.commit('addImageMemento', encoded)
+          callback && callback(encoded)
+          if (!this.$utils.statusCheck(data.status)) {
+            this.warning(data.message, { title: '上傳圖檔結果' })
+          }
+        } else {
+          this.warning('回傳的影像編碼有誤', { title: '貼上的影像處理結果' })
+        }
+      }).catch((err) => {
+        this.err(err)
+      }).finally(() => {
+        this.isBusy = false
+      })
     },
     getChannelName(channelId) {
       switch (channelId) {
