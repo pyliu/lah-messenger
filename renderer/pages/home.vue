@@ -69,11 +69,13 @@
         b-textarea(
           ref="textarea"
           v-model="inputText"
-          placeholder="... Ctrl + Enter 送出 ..."
+          placeholder="... Ctrl + Enter 可直接送出訊息，並支援 Ctrl + V 直接貼上剪貼簿截圖影像，ESC鍵清除 ..."
           @keyup.enter.ctrl="send"
           @keyup.enter.shift="send"
           @keyup.enter.alt="send"
+          @keyup.esc="clear"
           @keydown="delayConnect"
+          @paste="pasteImage($event, pasted)"
           no-resize
           no-auto-shrink
           autofocus
@@ -83,9 +85,9 @@
         b-button.mx-1(@click="emojiPickup" variant="outline-secondary" :title="`挑選表情 ${emojiCode} => ${emojiTxt}`") #[span.h5 {{ emojiTxt }}]
         b-button(@click="pick" variant="outline-success" title="傳送圖片")
           b-icon(icon="image")
-        lah-transition: .d-flex.justify-content-between.p-2.float-preview(v-if="!empty(inputText)" ref="floatPreview")
+        lah-transition: .d-flex.justify-content-between.p-2.float-preview.preview(v-if="!empty(inputText) || !empty(this.inputImages)" ref="floatPreview")
           span.text-white.font-weight-bold 預覽
-          message(:raw="messagePreviewJson" style="opacity: 1 !important;")
+          message.my-message(:raw="messagePreviewJson" style="opacity: 1 !important;")
         lah-transition(fade): .float-emoji(v-if="emoji")
           emoji-pickup(@click="addEmoji")
 
@@ -176,6 +178,7 @@ export default {
     emoji: false,
     image: null,
     inputText: '',
+    inputImages: [],
     connectText: '',
     adHost: '',
     adPassword: '',
@@ -248,7 +251,7 @@ export default {
     wsConnStr () { return `ws://${this.wsHost}:${this.wsPort}` },
     // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
     userQueryStr () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
-    valid () { return !isEmpty(trim(this.inputText)) },
+    valid () { return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages) },
     validAdHost () { return this.$utils.isIPv4(this.adHost) === false ? false : null },
     validAdPassword () { return this.empty(this.adPassword) ? false : null },
     validHost () { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
@@ -293,10 +296,19 @@ export default {
       return channels
     },
     
+    markdImages () {
+      let imgMdText = this.inputImages.map((base64, idx) => {
+        return `![preview-${idx}](${base64})`
+      }).join('<hr style="margin:5px"/>')
+      if (!this.empty(this.inputText) && !this.empty(imgMdText)) {
+        imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
+      }
+      return imgMdText
+    },
     markdMessage () {
-      if (isEmpty(this.inputText)) { return '' }
+      if (this.empty(this.inputText) && this.empty(this.inputImages)) { return '' }
       // markd treat '\s{2}\n' to break line
-      return DOMPurify?.sanitize(Markd(this.inputText.replaceAll('\n', '  \n')))
+      return DOMPurify?.sanitize(Markd(`${this.inputText}${this.markdImages}`.replaceAll('\n', '  \n')))
     },
     messagePreviewJson () {
       return {
@@ -336,7 +348,7 @@ export default {
         this.queryChatChannelOnlineClients()
       }
       // clear the input UI content
-      this.inputText = ''
+      this.clear()
     },
     wsHost(val) {
       this.resetReconnectTimer()
@@ -366,6 +378,13 @@ export default {
     fetchingHistory(flag) {
       this.isBusy = flag
     },
+    inputImages (dontcare) {
+      this.$nextTick(() => {
+        if (this.$refs.floatPreview) {
+          this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
+        }
+      })
+    },
     inputText (dontcare) {
       this.$nextTick(() => {
         if (this.$refs.floatPreview) {
@@ -379,6 +398,19 @@ export default {
     delaySendChannelActivity: function noop () {},
     delayConnect () { /* placeholder */ },
     delayLatestMessage () { /* placeholder */ },
+    clear () {
+      this.inputText = ''
+      this.inputImages = []
+    },
+    pasted (base64) {
+      this.inputImages.indexOf(base64) === -1 && this.inputImages.push(base64)
+    },
+    removeInoutImage (base64data) {
+      const index = this.inputImages.indexOf(base64data)
+      if (index > -1) {
+        this.inputImages.splice(index, 1)
+      }
+    },
     emojiPickup () {
       this.emoji = !this.emoji
     },
@@ -488,8 +520,8 @@ export default {
         this.$router.push('/settings')
       }
 
-      if (this.sendTo(this.inputText, { channel: this.currentChannel })) {
-        this.inputText = ''
+      if (this.sendTo(this.markdMessage, { channel: this.currentChannel })) {
+        this.clear()
       }
       this.$refs.textarea && this.$refs.textarea.focus()
     },
