@@ -403,7 +403,7 @@ export default {
       this.inputImages = []
     },
     pasted (base64) {
-      this.inputImages.indexOf(base64) === -1 && this.inputImages.push(base64)
+      !this.inputImages.includes(base64) && this.inputImages.push(base64)
     },
     removeInoutImage (base64data) {
       const index = this.inputImages.indexOf(base64data)
