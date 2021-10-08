@@ -69,7 +69,7 @@
         b-textarea(
           ref="textarea"
           v-model="inputText"
-          placeholder="... Ctrl + Enter 可直接送出訊息，並支援 Ctrl + V 直接貼上剪貼簿截圖影像，ESC鍵清除 ..."
+          placeholder="... Ctrl + Enter 送出 ... Ctrl + V 剪貼簿貼圖 ... ESC鍵清除 ..."
           @keyup.enter.ctrl="send"
           @keyup.enter.shift="send"
           @keyup.enter.alt="send"
