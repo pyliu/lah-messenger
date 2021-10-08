@@ -13,7 +13,7 @@
       v-for="(user, idx) in connectedUsers"
       :key="`avatar_${user.userid}_${idx}`"
       :user-data="user"
-      :class="connectedUsersCount <= 64 ? ['m-1'] : []"
+      :class="connectedUsersCount <= 30 ? ['m-1'] : []"
     )
 </template>
 
