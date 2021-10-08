@@ -379,11 +379,11 @@ export default {
       this.isBusy = flag
     },
     inputImages (dontcare) {
-      this.$nextTick(() => {
+      this.timeout(() => {
         if (this.$refs.floatPreview) {
           this.$refs.floatPreview.style.top = '-' + this.$refs.floatPreview.offsetHeight + 'px'
         }
-      })
+      }, 100)
     },
     inputText (dontcare) {
       this.$nextTick(() => {
