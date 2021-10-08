@@ -236,7 +236,7 @@ export default {
           const replyHeader = this.packReplyHeader(this.toUser, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
-            this.packMessage(`${replyHeader} ${this.mergedMessage}`, {
+            this.packMessage(`${replyHeader} ${this.markdMergedMessage}`, {
               channel: this.userid,
               title: this.messageTitle,
               priority: this.priority
