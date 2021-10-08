@@ -128,7 +128,7 @@ export default {
         if (!this.empty(this.message) && !this.empty(imgMdText)) {
           imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
         }
-        return `${this.message}\n${imgMdText}`
+        return `${this.message}  \n${imgMdText}`
     },
     markdMergedMessage () { return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n'))) },
     announcementJson () {
@@ -236,7 +236,7 @@ export default {
           const replyHeader = this.packReplyHeader(this.toUser, this.toName, this.reply)
           // also send to own channel to simulate talking between eachothers
           this.websocket.send(
-            this.packMessage(`${replyHeader}\n${this.mergedMessage}`, {
+            this.packMessage(`${replyHeader}\n${this.markdMergedMessage}`, {
               channel: this.userid,
               title: this.messageTitle,
               priority: this.priority
