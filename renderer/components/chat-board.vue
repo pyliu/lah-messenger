@@ -39,7 +39,9 @@ export default {
   computed: {
     isChat () { return this.currentChannel === 'chat'},
     overlapRatio () {
+      if (this.connectedUsersCount > 30) { return 0.1 }
       if (this.connectedUsersCount > 60) { return 0.2 }
+      if (this.connectedUsersCount > 90) { return 0.3 }
       if (this.connectedUsersCount > 120) { return 0.4 }
       return 0.0
     }
