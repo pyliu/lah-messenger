@@ -200,7 +200,7 @@ export default {
       })
     },
     sendRemoveMessage () {
-      const jsonString = JSON.stringify({
+      const json = {
         type: "command",
         sender: this.userid,
         date: this.date(),
@@ -211,8 +211,21 @@ export default {
           id: this.id
         }),
         channel: 'system'
-      })
-      this.websocket.send(jsonString)
+      }
+      this.websocket.send(JSON.stringify(json))
+      // in my channel, it needs to remove the pm as well
+      if (this.currentChannel === this.userid && this.raw.flag === 1) {
+        // info: { to: 'HAXXXX', id: xxxx }
+        const info = JSON.parse(this.raw.remove)
+        this.websocket.send(JSON.stringify({
+          ...json, 
+          message: JSON.stringify({
+            command: 'remove_message',
+            channel: info.to,
+            id: String(info.id)
+          })
+        }))
+      }
     }
   }
 }

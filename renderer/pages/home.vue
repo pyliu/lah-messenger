@@ -665,16 +665,16 @@ export default {
           this.notify(`${json.message}`, { type: json.success ? 'success' : 'warning' })
           break;
         case 'remove_message':
-          if (json.success && this.messages[json.payload.channel]) {
+          if (json.success) {
             let found_idx = -1
-            const found = this.messages[json.payload.channel].find((msg, idx) => {
+            const found = this.messages[json.payload.channel]?.find((msg, idx) => {
               found_idx = idx
               return msg.id === json.payload.id
             })
             if (found_idx > -1) {
               this.messages[json.payload.channel].splice(found_idx, 1)
             }
-            this.log(json.message)
+            this.warn(json.message)
             // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
             this.err(json)
@@ -696,6 +696,27 @@ export default {
           break;
         case 'online':
           this.$store.commit('connectedUsers', json.payload.users)
+          this.connectText = `${json.message}`
+          break;
+        case 'private_message':
+          const insertedId = json.payload.insertedId
+          const insertedChannel = json.payload.channel
+          const userName = this.userMap[insertedChannel] || insertedChannel
+          if (insertedChannel !== this.userid && !insertedChannel?.startsWith('announcement') && !this.chatRooms.includes(insertedChannel)) {
+            const toHeader = this.packReplyHeader(insertedChannel, userName, '')
+            const md = DOMPurify?.sanitize(Markd(`${json.payload.message}`))
+            const remove = JSON.stringify({ to: insertedChannel, id: insertedId })
+            // add sent message to my channel
+            this.websocket.send(
+              this.packMessage(`${toHeader}\n${md}`, {
+                channel: this.userid,
+                title: remove,  // use title field to store inserted info for now
+                priority: 4,
+                flag: 1 // now use flag === 1 to indicate the message is a pm sent by myself
+              })
+            )
+          }
+
           this.connectText = `${json.message}`
           break;
         default:
