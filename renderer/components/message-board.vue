@@ -1,5 +1,5 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="3" variant="success")
+  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="3" :variant="randVariant")
   div(v-else :class="blockCss")
     .msg(
       ref="box"
@@ -35,6 +35,7 @@
 
 <script>
 import debounce from 'lodash/debounce'
+import random from 'lodash/random'
 import MessageInput from '~/components/message-input.vue'
 
 export default {
@@ -43,6 +44,7 @@ export default {
     list: { type: Array, required: true }
   },
   data: () => ({
+    variants: ['primary', 'secondary', 'info', 'warning', 'danger', 'dark', 'light'],
     loading: true,
     displayOldMessageArrow: false,
     scrollTop: 0,
@@ -51,6 +53,7 @@ export default {
     pickedEncodingData: ''
   }),
   computed: {
+    randVariant () { return this.variants[random(6)] },
     isAuthorized () {
       if (this.currentChannel === this.userid) {
         return true
