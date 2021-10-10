@@ -44,7 +44,7 @@ export default {
     list: { type: Array, required: true }
   },
   data: () => ({
-    variants: ['primary', 'secondary', 'info', 'warning', 'danger', 'dark', 'light'],
+    variants: ['primary', 'secondary', 'info', 'warning', 'danger', 'dark'],
     loading: true,
     displayOldMessageArrow: false,
     scrollTop: 0,
@@ -53,7 +53,7 @@ export default {
     pickedEncodingData: ''
   }),
   computed: {
-    randVariant () { return this.variants[random(6)] },
+    randVariant () { return this.variants[random(5)] },
     isAuthorized () {
       if (this.currentChannel === this.userid) {
         return true
