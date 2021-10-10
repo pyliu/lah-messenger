@@ -1,5 +1,5 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 87.5vh"): b-icon(icon="three-dots-vertical" animation="cylon-vertical" font-scale="4")
+  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="4")
   div(v-else :class="blockCss")
     .msg(
       ref="box"
@@ -84,7 +84,7 @@ export default {
       }
     },
     fetchingHistory (flag) {
-      this.scrollBehavior = flag ? 'first' : 'last'
+      this.timeout(() => { this.scrollBehavior = flag ? 'first' : 'last' }, 600)
     },
     dropImage (file) {
       file ? this.upload() : this.debug('選定的上傳檔案是空的')
