@@ -692,7 +692,6 @@ export default {
                 })
               }))
             }
-            this.warn(json.payload)
             // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
             this.err(json)
