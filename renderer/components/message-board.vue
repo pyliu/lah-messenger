@@ -1,5 +1,5 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="4")
+  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="3" variant="success")
   div(v-else :class="blockCss")
     .msg(
       ref="box"
