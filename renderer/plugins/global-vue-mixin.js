@@ -204,6 +204,7 @@ Vue.mixin({
       this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
     },
     pasteImage (pasteEvent, callback) {
+      // can not execute below 2 lines or it will block normal paste action
       // pasteEvent.stopPropagation()
       // pasteEvent.preventDefault()
       const items = (pasteEvent.clipboardData || pasteEvent.originalEvent.clipboardData).items
