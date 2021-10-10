@@ -45,7 +45,7 @@
           @click="remove"
         )
         b-icon.clickableIcon(
-          v-if="!isAnnouncement && !myMessage"
+          v-if="!isAnnouncement && !myMessage && userMap[senderId]"
           icon="reply-fill"
           title="回覆此訊息"
           font-scale="1.5"

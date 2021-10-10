@@ -107,7 +107,7 @@ export default {
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
     this.realtime = userSetting !== false
-    this.toUser = this.to
+    this.toUser = this.userMap[this.to] ? this.to : this.userid
   },
   computed: {
     randFace () { return this.faces[this.$utils._.random(58)] },
@@ -164,7 +164,7 @@ export default {
       const found = opts.find(opt => {
         return opt.value === this.toUser
       })
-      !found && opts.unshift({ value: this.toUser, text: `${this.toUser} ${this.userMap[this.toUser]}` })
+      !found && this.userMap[this.toUser] && opts.unshift({ value: this.toUser, text: `${this.toUser} ${this.userMap[this.toUser]}` })
       return opts
     }
   },
