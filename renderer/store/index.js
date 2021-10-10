@@ -2,8 +2,8 @@ import trim from 'lodash/trim'
 import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
 import random from 'lodash/random'
+import emojiLib from 'node-emoji'
 
-const emojiLib = require('node-emoji')
 // 59 faces
 const faces = ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵', '😶', '😷']
 
