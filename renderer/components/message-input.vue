@@ -228,7 +228,7 @@ export default {
       if (this.websocket && !this.notValid) {
         // send to target
         this.websocket.send(this.packMessage(this.mergedMessage, {
-          channel: this.toUser,
+          channel: this.currentChannel.startsWith('announcement') ? this.currentChannel : this.toUser,
           title: this.messageTitle,
           priority: this.priority
         }))
