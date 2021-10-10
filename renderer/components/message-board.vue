@@ -1,5 +1,6 @@
 <template lang="pug">
-  div(:class="blockCss")
+  .center(v-if="loading" style="height: 87.5vh"): b-icon(icon="three-dots-vertical" animation="cylon-vertical" font-scale="4")
+  div(v-else :class="blockCss")
     .msg(
       ref="box"
       @scroll="scrollTop = $event.target.scrollTop"
@@ -42,6 +43,7 @@ export default {
     list: { type: Array, required: true }
   },
   data: () => ({
+    loading: true,
     displayOldMessageArrow: false,
     scrollTop: 0,
     scrollBehavior: 'last',
@@ -71,18 +73,15 @@ export default {
   watch: {
     messageCount (n, o) {
       // watch list count to scroll viewport to display the first/last message
-      n > o && this.$nextTick(() => {
-        const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
-        if (this.$refs.box && target) {
-          const message = target[0]
-          if (message.$el.scrollIntoView && this.currentChannelMessageCount > 10) {
-            message.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
-          } else {
-            this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
-          }
-          !message.mine && !message.system && this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
-        }
-      })
+      n > o && this.$nextTick(this.scrollToMessage)
+      if (n === 0) {
+        this.loading = true
+      } else {
+        this.timeout(() => {
+          this.loading = false
+          this.$nextTick(this.scrollToMessage)
+        }, 600)
+      }
     },
     fetchingHistory (flag) {
       this.scrollBehavior = flag ? 'first' : 'last'
@@ -221,6 +220,18 @@ export default {
         size: 'xl',
         title: this.currentChannelName
       })
+    },
+    scrollToMessage () {
+      const target = this.scrollBehavior === 'first' ? this.$refs[`msg-0`] : this.$refs[`msg-${this.list.length - 1}`]
+      if (this.$refs.box && target) {
+        const message = target[0]
+        if (message.$el.scrollIntoView && this.currentChannelMessageCount > 10) {
+          message.$el.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
+        } else {
+          this.$refs.box.scrollTop = this.scrollBehavior === 'first' ? 0 : this.$refs.box.scrollHeight
+        }
+        !message.mine && !message.system && this.delayAttention(message.$el, { name: this.effect, speed: 'faster' })
+      }
     }
   },
   created () {
