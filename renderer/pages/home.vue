@@ -675,6 +675,24 @@ export default {
               this.messages[json.payload.channel].splice(found_idx, 1)
             }
             this.warn(json.message)
+            // if found cacade info, also send remove message to server
+            if (json.payload.cascade?.to && json.payload.cascade?.id) {
+              // cascade info: { to: 'HAXXXX', id: xxxx }
+              const info = json.payload.cascade
+              this.websocket.send(JSON.stringify({
+                type: "command",
+                sender: this.userid,
+                date: this.date(),
+                time: this.time(),
+                channel: 'system',
+                message: JSON.stringify({
+                  command: 'remove_message',
+                  channel: info.to,
+                  id: info.id
+                })
+              }))
+            }
+            this.warn(json.payload)
             // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
             this.err(json)

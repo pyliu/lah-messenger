@@ -208,24 +208,13 @@ export default {
         message: JSON.stringify({
           command: 'remove_message',
           channel: this.channel,
-          id: this.id
+          id: this.id,
+          // in my channel, it needs to remove the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
+          cascade: this.currentChannel === this.userid && this.raw.flag === 1 ? JSON.parse(this.raw.remove) : ''
         }),
         channel: 'system'
       }
       this.websocket.send(JSON.stringify(json))
-      // in my channel, it needs to remove the pm as well
-      if (this.currentChannel === this.userid && this.raw.flag === 1) {
-        // info: { to: 'HAXXXX', id: xxxx }
-        const info = JSON.parse(this.raw.remove)
-        this.websocket.send(JSON.stringify({
-          ...json, 
-          message: JSON.stringify({
-            command: 'remove_message',
-            channel: info.to,
-            id: String(info.id)
-          })
-        }))
-      }
     }
   }
 }
