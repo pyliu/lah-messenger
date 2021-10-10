@@ -1,5 +1,5 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="3" :variant="randVariant")
+  .center(v-if="loading" style="height: 80vh"): b-icon(icon="circle-fill" animation="throb" font-scale="3" variant="secondary")
   div(v-else :class="blockCss")
     .msg(
       ref="box"
@@ -44,7 +44,6 @@ export default {
     list: { type: Array, required: true }
   },
   data: () => ({
-    variants: ['primary', 'secondary', 'info', 'warning', 'danger', 'dark'],
     loading: true,
     displayOldMessageArrow: false,
     scrollTop: 0,
@@ -53,7 +52,6 @@ export default {
     pickedEncodingData: ''
   }),
   computed: {
-    randVariant () { return this.variants[random(5)] },
     isAuthorized () {
       if (this.currentChannel === this.userid) {
         return true
