@@ -13,7 +13,7 @@
     )
       b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
       b-button.leave-message-btn(
-        v-if="(!chatRooms.includes(currentChannel) && isAuthorized) || $config.isDev"
+        v-if="(!chatRooms.includes(currentChannel) && isAuthorized)"
         @click="openMessageInput"
         size="lg"
         variant="primary"

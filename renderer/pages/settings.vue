@@ -1,5 +1,5 @@
 <template lang="pug">
-  .vh-100.p-2.gradient-top(v-cloak)
+  .vh-100.p-2.gradient-top(v-cloak @keyup="keyup")
     .mt-2.d-flex.align-items-center
       nuxt-link.mr-auto(to="/home?reconnect=true" title="返回主畫面")
         b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
@@ -225,6 +225,10 @@ export default {
     }
   },
   methods: {
+    keyup (e) {
+      const code = e.key || e.keyCode
+      this.notify(code)
+    },
     switchAdPasswordIcon() {
       if (this.adPasswordIcon === 'eye') {
         this.adPasswordIcon = 'eye-slash'

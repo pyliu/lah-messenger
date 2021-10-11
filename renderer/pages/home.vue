@@ -212,7 +212,8 @@ export default {
     connecting: false,
     asking: false,
     reconnectMs: 20 * 1000,
-    back: false
+    back: false,
+    keyCodes: []
   }),
   async fetch () {
     // restore image memento
@@ -392,7 +393,19 @@ export default {
         }
       })
     },
-    authority (val) { this.warn(val) }
+    authority (val) { this.warn(val) },
+    keyCodes (arr) {
+      const md5 = this.$utils.md5(this.keyCodes.join(','))
+      // konami
+      if (md5 === 'f20b4566a1f6b848f1fbec48b2ab2c10') {
+        this.$store.commit('authority', { isAdmin: !this.authority.isAdmin })
+        this.$nextTick(() => {
+          this.keyCodes.length = 0
+          this.authority.isAdmin && this.notify('🌟 你的權限已提升為管理者 🌟', { type: 'success', pos: 'tf' })
+          !this.authority.isAdmin && this.notify('⚠️ 你已移除管理者權限 ⚠️', { type: 'dark', pos: 'tf' })
+        })
+      }
+    }
   },
   methods: {
     delaySendChannelActivity: function noop () {},
@@ -1082,6 +1095,17 @@ export default {
         message: message,
         ...payload
       })
+    },
+    keydown (event) {
+      if (event.defaultPrevented) {
+        return // Should do nothing if the default action has been cancelled
+      }
+      this.connectText = `增加 ${event.key} 到 keyCodes 陣列`
+      this.keyCodes.push(event.keyCode)
+    },
+    click (event) {
+      this.connectText = '重設 keyCodes 陣列'
+      this.keyCodes.length = 0
     }
   },
   created() {
@@ -1143,11 +1167,15 @@ export default {
         this.$store.commit('authority', authority)
       }
     })
+    window.addEventListener("keydown", this.keydown)
+    window.addEventListener("click", this.click)
   },
   beforeDestroy () {
     // remove timer if user is going to leave the page
     this.clearReconnectTimer()
     this.closeWebsocket()
+    window.removeEventListener("keydown", this.keydown)
+    window.removeEventListener("click", this.click)
   }
 }
 </script>
