@@ -216,7 +216,7 @@ ipcMain.handle('notification', async (event, payload) => {
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple messages coming in at once
-  notifyDebounced('[點我開啟APP視窗]', message, () => {
+  notifyDebounced('[👉點擊開啟APP視窗]', message, () => {
     if (channel) {
       // 切換至頻道
       mainWindow.webContents.send('set-current-channel', channel)
