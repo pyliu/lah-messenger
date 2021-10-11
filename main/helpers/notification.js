@@ -9,7 +9,7 @@ const notify = function (message, title, callback) {
   !isProd && console.log(`notification icon path`, iconPath)
   notifier.notify(
     {
-      appID: '💬 桃園即時通',
+      appID: '💬桃園即時通',
       title: title || message,
       message: title ? message : '',
       icon: iconPath, // Absolute path (doesn't work on balloons)
