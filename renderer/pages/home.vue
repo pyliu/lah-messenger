@@ -1102,6 +1102,7 @@ export default {
       }
       this.connectText = `增加 ${event.key} 到 keyCodes 陣列`
       this.keyCodes.push(event.keyCode)
+      this.keyCodes.length > 10 && this.keyCodes.shift()
     },
     click (event) {
       this.connectText = '重設 keyCodes 陣列'
