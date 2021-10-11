@@ -397,7 +397,7 @@ Vue.mixin({
           }
           // merge default setting
           const merged = Object.assign({
-            title: '通知',
+            title: '📣 通知',
             subtitle: this.$utils.now().split(' ')[1],
             href: '',
             noAutoHide: false,
