@@ -230,10 +230,10 @@ Vue.mixin({
           this.$store.commit('addImageMemento', encoded)
           callback && callback(encoded)
           if (!this.$utils.statusCheck(data.status)) {
-            this.warning(data.message, { title: '上傳圖檔結果' })
+            this.warning(data.message, { title: '⚠️上傳圖檔結果' })
           }
         } else {
-          this.warning('回傳的影像編碼有誤', { title: '貼上的影像處理結果' })
+          this.warning('回傳的影像編碼有誤', { title: '⚠️貼上的影像處理問題' })
         }
       }).catch((err) => {
         this.err(err)
@@ -442,7 +442,7 @@ Vue.mixin({
         }
       })
     },
-    notify (msg, opts = { title: '通知' }) {
+    notify (msg, opts = { title: '📢 通知' }) {
       if (document && !document.hidden) {
         return new Promise((resolve, reject) => {
           if (typeof msg !== 'string' && typeof opts !== 'object') {
@@ -476,7 +476,7 @@ Vue.mixin({
     warning (message, opts = {}) {
       if (!empty(message)) {
         const merged = Object.assign({
-          title: '警示',
+          title: '⚠️ 警示',
           autoHideDelay: 7500,
           pos: 'tl',
           variant: 'warning'
@@ -493,7 +493,7 @@ Vue.mixin({
           opts.pos = 'tf'
         }
         const merged = Object.assign({
-          title: '錯誤',
+          title: '❌ 錯誤',
           autoHideDelay: 10000,
           variant: 'danger'
         }, opts)
