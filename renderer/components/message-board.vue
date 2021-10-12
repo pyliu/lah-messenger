@@ -81,6 +81,9 @@ export default {
     },
     dropImage (file) {
       file ? this.upload() : this.debug('選定的上傳檔案是空的')
+    },
+    loading (flag) {
+      !flag && this.$nextTick(this.scrollToMessage)
     }
   },
   methods: {
