@@ -35,7 +35,6 @@
 
 <script>
 import debounce from 'lodash/debounce'
-import random from 'lodash/random'
 import MessageInput from '~/components/message-input.vue'
 
 export default {
@@ -73,16 +72,9 @@ export default {
   },
   watch: {
     messageCount (n, o) {
+      o > n && (this.loading = true)
       // watch list count to scroll viewport to display the first/last message
-      n > o && this.$nextTick(this.scrollToMessage)
-      if (n === 0) {
-        this.loading = true
-      } else {
-        this.timeout(() => {
-          this.loading = false
-          this.$nextTick(this.scrollToMessage)
-        }, 600)
-      }
+      this.delayScrollToMessage()
     },
     fetchingHistory (flag) {
       this.timeout(() => { this.scrollBehavior = flag ? 'first' : 'last' }, 600)
@@ -92,6 +84,7 @@ export default {
     }
   },
   methods: {
+    delayScrollToMessage () {/* placeholder for scrolling */},
     delayAttention () {/* placeholder for attention */},
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
     loadHistoryMessage () {
@@ -172,9 +165,6 @@ export default {
         }
       })
     },
-    pasted (base64) {
-      
-    },
     dragover (event) {
       event.preventDefault();
       // Add some visual fluff to show the user can drop its files
@@ -238,6 +228,10 @@ export default {
   created () {
     this.delayLoadHistoryMessage = debounce(this.loadHistoryMessage, 400)
     this.delayAttention = debounce(this.attention, 600)
+    this.delayScrollToMessage = debounce(() => {
+      this.loading = false
+      this.scrollToMessage()
+    }, 400)
   },
   mounted () {
     setTimeout(() => {
