@@ -207,7 +207,7 @@ export default {
       { value: 'announcement_val', text: '地價' },
       { value: 'announcement_hr', text: '人事' },
       { value: 'announcement_acc', text: '會計' },
-      { value: 'announcement_supervisor', text: '主任秘書' },
+      { value: 'announcement_supervisor', text: '主秘' },
     ],
     connecting: false,
     asking: false,
