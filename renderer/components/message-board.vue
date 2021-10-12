@@ -83,7 +83,7 @@ export default {
       file ? this.upload() : this.debug('選定的上傳檔案是空的')
     },
     loading (flag) {
-      !flag && this.$nextTick(this.scrollToMessage)
+      !flag && this.delayScrollToMessage()
     }
   },
   methods: {
@@ -234,7 +234,7 @@ export default {
     this.delayScrollToMessage = debounce(() => {
       this.loading = false
       this.scrollToMessage()
-    }, 400)
+    }, 250)
   },
   mounted () {
     setTimeout(() => {
