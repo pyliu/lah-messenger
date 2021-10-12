@@ -114,7 +114,7 @@
               b-icon.mr-1(v-if="this.userid === this.nickname" icon="box-arrow-in-right" font-scale="1.25")
               span.my-auto {{ queryADLabel }}
               
-            b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim readonly)
+            b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim :disabled="!authority.isAdmin")
             b-modal(
               id="ad-query-modal"
               hide-footer
@@ -135,7 +135,7 @@
         .center.d-flex.my-2
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="building" font-scale="2.25" variant="secondary")
-            b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門" disabled)
+            b-select(v-model="department" :options="departmentOpts" :state="validDepartment" title="選擇所屬部門" :disabled="!authority.isAdmin")
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-1(icon="chat" font-scale="2.25" variant="secondary")
