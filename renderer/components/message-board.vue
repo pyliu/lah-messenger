@@ -246,6 +246,8 @@ export default {
     setTimeout(() => {
       // this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
       this.displayOldMessageArrow = true
+      // in case no message coming
+      this.loading = false
     }, 1200)
   }
 };
