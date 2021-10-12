@@ -1,8 +1,5 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 80vh")
-    b-iconstack(font-scale="3" animation="cylon")
-      //- b-icon(stacked icon="slash-circle" animation="spin" variant="secondary" )
-      b-icon(stacked icon="circle-fill" animation="throb" variant="secondary")
+  .center(v-if="loading" style="height: 80vh"): b-icon(font-scale="3" icon="circle-fill" animation="throb" variant="secondary")
   div(v-else :class="blockCss")
     .msg(
       ref="box"
