@@ -66,7 +66,8 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
     emoji-pickup(@click="addEmoji")
 
   lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
-    span.text-white.font-weight-bold 將傳給 {{ this.userMap[this.toUser] }}
+    span.text-white.font-weight-bold(v-if="isAnnouncementChannel") 預覽
+    span.text-white.font-weight-bold(v-else) 將傳給 {{ this.userMap[this.toUser] }}
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
     message.mr-2.my-message(v-else :raw="messageJson")
 
