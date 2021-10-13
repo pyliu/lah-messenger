@@ -178,6 +178,10 @@ export default {
       this.$localForage.setItem('message-input-realtime', flag)
     }
   },
+  created () {
+    // to refresh toUsersOpts
+    this.queryChatChannelOnlineClients()
+  },
   methods: {
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
