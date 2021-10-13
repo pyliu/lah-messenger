@@ -828,7 +828,7 @@ export default {
               const channel = incoming.channel
 
               const receivedId = incoming.message.id || incoming.id
-              const lastReadId = await this.getChannelUnread(channel)
+              const lastReadId = await this.getChannelUnread(channel) || 0
 
               this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
@@ -859,11 +859,8 @@ export default {
                         if (receivedId > lastReadId) {
                           // store the read id for this channel at FE
                           this.setChannelUnread(channel, receivedId)
-                          // tell electron window got a unread message
-                          this.ipcRenderer.invoke('unread', channel)
-                          // current channel received message send notification
-                          this.invokeNotification(incoming)
                         }
+                        this.triggerNotification(incoming)
                       }
                     }
                   }
@@ -876,13 +873,8 @@ export default {
                 // channel got new message then pluses the counter
                 if (receivedId > lastReadId) {
                   this.currentChannel !== channel && this.plusUnread(channel)
-                  if (this.showUnreadChannels.includes(channel)) {
-                    // tell electron window the channels got unread message
-                    this.ipcRenderer.invoke('unread', channel)
-                    // determining wether the message should trigger the system notification
-                    this.invokeNotification(incoming)
-                  }
                 }
+                this.triggerNotification(incoming)
               }
               
               this.connecting = false
@@ -944,67 +936,6 @@ export default {
           this.connectText = '檢查連線狀態'
           this.connect()
         }, this.reconnectMs))
-      }
-    },
-    async invokeNotification (incoming) {
-      const channel = incoming.channel
-      this.log(this.time(), '確認是否需要傳送通知', channel)
-      if (this.notifyChannels.includes(channel)) {
-        /**
-         * expect announcement incoming message format:
-         * {
-         *    channel: "announcement_inf"
-         *    date: "2021-09-02"
-         *    from: "220.1.34.75"
-         *    id: 1
-         *    message: {
-         *      content: "目標：穩定(確保機房及系統正常運作) ..."
-         *      create_datetime: "2021-08-25 15:52:19"
-         *      expire_datetime: ""
-         *      flag: 0
-         *      from_ip: "192.168.xx.xx"
-         *      id: 1
-         *      priority: 2
-         *      sender: "HA10000000"
-         *      title: "xxxxxxx"
-         *    }
-         *    prepend: false
-         *    sender: "系統推播"
-         *    time: "17:26:01"
-         *    type: "remote"
-         * }
-         * 
-         * expect personal incoming message format:
-         * {
-         *   channel: "HA10013859"
-         *   date: "2021-09-02"
-         *   id: 16
-         *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
-         *   prepend: false
-         *   sender: "HA10013859"
-         *   time: "17:17:13"
-         *   type: "remote"
-         * }
-         */
-        const cacheKey = `${channel}_last_id`
-        const id =  incoming.message.id || incoming.id
-        let title = incoming.message.title || incoming.message
-
-        // remove all html tags (will generate by Markd)
-        const temp = document.createElement("div")
-        temp.innerHTML = title
-        title = temp.innerText.substring(0, 18) + ' ... '
-
-        let lastReadId = parseInt(await this.getCache(cacheKey)) || 0
-        this.log(`收到 ${channel} 頻道訊息`, `現在收到id: ${id}`, `上次讀過id: ${lastReadId}`, title)
-        if (id > lastReadId) {
-          this.setCache(cacheKey, id)
-          // sender not me then triggers notification
-          incoming.sender !== this.userid && this.invokeIPCNotification(title, {
-            showMainWindow: true,
-            channel: channel
-          })
-        }
       }
     },
     invokeADQuery (force = false) {
@@ -1090,12 +1021,71 @@ export default {
         this.setCurrentChannel(channel)
       })
     },
-    invokeIPCNotification (message, payload = { showMainWindow: false }) {
+    async triggerNotification (incoming) {
+      const channel = incoming.channel
+      const receivedId = incoming.message.id || incoming.id
+      const lastReadId = await this.getChannelUnread(channel) || 0
+      if (receivedId > lastReadId) {
+        // tell electron window the channels got unread message
+        this.ipcRenderer.invoke('unread', channel)
+        // determining wether the message should trigger the system notification
+        this.notifyChannels.includes(channel) && this.invokeNotification(incoming)
+      }
+    },
+    async invokeNotification (incoming) {
+      const channel = incoming.channel
+      /**
+       * expect announcement incoming message format:
+       * {
+       *    channel: "announcement_inf"
+       *    date: "2021-09-02"
+       *    from: "220.1.34.75"
+       *    id: 1
+       *    message: {
+       *      content: "目標：穩定(確保機房及系統正常運作) ..."
+       *      create_datetime: "2021-08-25 15:52:19"
+       *      expire_datetime: ""
+       *      flag: 0
+       *      from_ip: "192.168.xx.xx"
+       *      id: 1
+       *      priority: 2
+       *      sender: "HA10000000"
+       *      title: "xxxxxxx"
+       *    }
+       *    prepend: false
+       *    sender: "系統推播"
+       *    time: "17:26:01"
+       *    type: "remote"
+       * }
+       * 
+       * expect personal incoming message format:
+       * {
+       *   channel: "HA10013859"
+       *   date: "2021-09-02"
+       *   id: 16
+       *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
+       *   prepend: false
+       *   sender: "HA10013859"
+       *   time: "17:17:13"
+       *   type: "remote"
+       * }
+       */
+      // remove all html tags (will generate by Markd)
+      const temp = document.createElement("div")
+      temp.innerHTML = incoming.message.title || incoming.message
+      const title = temp.innerText.substring(0, 18) + ' ... '
+
+      this.warn(`呼叫主程序發出通知 SENDER: ${incoming.sender} MY ID: ${this.userid}`, title)
+      // store the last read id
+      this.setCache(`${channel}_last_id`, incoming.message.id || incoming.id)
+      // sender not me then triggers notification
       this.ipcRenderer.invoke('notification', {
-        message: message,
-        ...payload
+        message: title,
+        showMainWindow: false,
+        channel: channel
       })
     },
+
     keydown (event) {
       if (event.defaultPrevented) {
         return // Should do nothing if the default action has been cancelled

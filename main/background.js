@@ -222,7 +222,7 @@ ipcMain.handle('notification', async (event, payload) => {
       mainWindow.webContents.send('set-current-channel', channel)
     }
     // 視窗置中顯示
-    if (showMainWindow && mainWindow) {
+    if (showMainWindow) {
       mainWindow.show()
       mainWindow.center()
       mainWindow.setAlwaysOnTop(true)
@@ -233,8 +233,8 @@ ipcMain.handle('notification', async (event, payload) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  // unread meesage comes to my channel then show the main window
-  mainWindow.userinfo.userid === channel && mainWindow.show()
+  // unread meesage comes to non-chatting channels showing the main window
+  !['chat', 'lds', 'inf', 'adm', 'reg', 'sur', 'val', 'acc', 'hr', 'supervisor'].includes(channel) && mainWindow.show()
   // important notification
   if (channel.startsWith('announcement')) {
     mainWindow.show()
