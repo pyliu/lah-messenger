@@ -233,6 +233,8 @@ ipcMain.handle('notification', async (event, payload) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
+  // unread meesage comes to my channel then show the main window
+  mainWindow.userinfo.userid === channel && mainWindow.show()
   // important notification
   if (channel.startsWith('announcement')) {
     mainWindow.show()
