@@ -75,6 +75,7 @@ export default {
     return {}
   },
   computed: {
+    isRead () { return (this.raw.flag & 2) === 2 },
     announcementPayload () { return this.raw?.message },
     isAnnouncement() { return typeof this.announcementPayload === 'object' },
     myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
