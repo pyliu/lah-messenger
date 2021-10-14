@@ -1016,6 +1016,11 @@ export default {
       this.ipcRenderer.removeAllListeners('set-current-channel')
       // register main process quit event listener (To send leave channel message after user closed the app)
       this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
+      // register main process quit event listener (To send leave channel message after user closed the app)
+      this.ipcRenderer.on('windowVisible', (event, args) => {
+        this.$store.commit('windowVisible', args)
+        // this.warn('視窗顯示狀態', this.windowVisible)
+      })
       // register main process set-current-channel event listener (To switch tab after notification showing up)
       this.ipcRenderer.on('set-current-channel', (event, channel) => {
         this.setCurrentChannel(channel)

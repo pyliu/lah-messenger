@@ -45,6 +45,8 @@ if (!gotTheLock) {
       mainWindow.show()
       mainWindow.focus()
     }
+    // notify renderer that main winodw is visible or not
+    mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
   })
 
   // Create mainWindow, load the rest of the app, etc...
@@ -60,9 +62,17 @@ if (!gotTheLock) {
         const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
         tray = new Tray(trayIcon)
         tray.setContextMenu(Menu.buildFromTemplate([{
-            label: '顯示視窗', click () { mainWindow.show() }, icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
+            label: '顯示視窗', click () {
+              mainWindow.show()
+              // notify renderer that main winodw is visible or not
+              mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
+          }, icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
           }, {
-            label: '隱藏視窗', click () { mainWindow.hide() }, icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
+            label: '隱藏視窗', click () {
+              mainWindow.hide()
+              // notify renderer that main winodw is visible or not
+              mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
+          }, icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
           }, {
             type: "separator"
           }, {
@@ -75,8 +85,12 @@ if (!gotTheLock) {
           }
         ]))
         tray.setIgnoreDoubleClickEvents(true)
-        tray.on('click', (event) => mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show())
-        tray.setToolTip('桃園地政信差服務即時通')
+        tray.on('click', (event) => {
+          mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+          // notify renderer that main winodw is visible or not
+          mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
+        })
+        tray.setToolTip('桃園即時通')
 
         mainWindow = createWindow('main', {
           width: isProd ? 490 : 960,
@@ -127,16 +141,20 @@ if (!gotTheLock) {
         })
 
         // minimize to tray
-        // mainWindow.on('minimize', function(event) {
-        //   event.preventDefault()
-        //   mainWindow.hide()
-        // })
+        mainWindow.on('minimize', function(event) {
+          event.preventDefault()
+          // mainWindow.hide()
+          // notify renderer that main winodw is visible or not
+          mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
+        })
         
         // close to tray
         mainWindow.on('close', function (event) {
           if (!app.isQuiting){
               event.preventDefault()
               mainWindow.hide()
+              // notify renderer that main winodw is visible or not
+              mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
           }
           return false
         })
@@ -228,6 +246,8 @@ ipcMain.handle('notification', async (event, payload) => {
       mainWindow.setAlwaysOnTop(true)
       mainWindow.focus()
     }
+    // notify renderer that main winodw is visible or not
+    mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
   })
 })
 
@@ -242,6 +262,8 @@ ipcMain.handle('unread', async (event, channel) => {
     mainWindow.setAlwaysOnTop(true)
     mainWindow.focus()
   }
+  // notify renderer that main winodw is visible or not
+  mainWindow.webContents.send('windowVisible', mainWindow.isVisible())
 })
 
 ipcMain.handle('injectUserinfo', async (event, arg) => {  

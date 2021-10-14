@@ -29,6 +29,7 @@ const timestamp = (full = false) => {
 }
 
 const state = () => ({
+  windowVisible: false,
   authority: {
     isAdmin: false,
     isChief: false,
@@ -102,6 +103,7 @@ const state = () => ({
 })
 
 const getters = {
+  windowVisible: state => state.windowVisible,
   authority: state => state.authority,
   websocket: state => state.websocket,
   connected: state => state.websocket && state.websocket.readyState === 1,
@@ -190,6 +192,7 @@ const getters = {
 
 // only sync operation
 const mutations = {
+  windowVisible (state, flag) { state.windowVisible = flag },
   authority (state, payloadObj) {
     state.authority = { ...state.authority, ...payloadObj }
   },
