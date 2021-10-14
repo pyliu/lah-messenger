@@ -444,7 +444,7 @@ Vue.mixin({
       })
     },
     notify (msg, opts = { title: '📢 通知' }) {
-      if (document && !document.hidden) {
+      if (this.windowVisible) {
         return new Promise((resolve, reject) => {
           if (typeof msg !== 'string' && typeof opts !== 'object') {
             this.err(msg, opts)
@@ -502,7 +502,7 @@ Vue.mixin({
       }
     },
     attention (selector, opts = { name: 'flash', speed: 'faster' }) {
-      return process.client && this.$utils.animated(selector, opts)
+      return process.client && this.windowVisible && this.$utils.animated(selector, opts)
     },
     showModalById (id) {
       this.$bvModal && this.$bvModal.show(id)
