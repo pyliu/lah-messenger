@@ -71,9 +71,6 @@ export default {
     prev: { type: Object, default: undefined }
   },
   data: () => ({}),
-  asyncData(ctx) {
-    return {}
-  },
   computed: {
     isRead () { return (this.raw.flag & 2) === 2 },
     announcementPayload () { return this.raw?.message },
@@ -87,10 +84,6 @@ export default {
     id() { return this.raw?.id },
     type() { return this.raw?.type },
     message() { return this.$utils.emojify(this.raw?.message) },
-    processedMessage () {
-      // const regex = /(<img\ssrc="(.+)"\salt="(.+)">)/gm
-      // return this.message.replaceAll(regex, "<img src=\"$2\" alt=\"$3\" onclick=\"let w = window.open('about:blank');let image = new Image();image.src = '$2';setTimeout(function(){ w.document.write(image.outerHTML);}, 50);\">")
-    },
     senderId() { return this.raw?.sender },
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },
@@ -135,11 +128,18 @@ export default {
       return this.myMessage && offset <= 86400000
     }
   },
+  created () {
+    this.sendReadCommand = this.$utils.debounce(() => {
+      // TODO impl remote message send read command
+    }, 5000)
+  },
   mounted () {
     this.initImgClick(this.$refs.remoteMessage)
     this.initImgClick(this.$refs.myMessage)
+    this.sendReadCommand()
   },
   methods: {
+    sendReadCommand () {},
     initImgClick (ref) {
       if (ref) {
         // add event to invoke ipc to main process in electron
