@@ -1016,11 +1016,6 @@ export default {
       this.ipcRenderer.removeAllListeners('set-current-channel')
       // register main process quit event listener (To send leave channel message after user closed the app)
       this.ipcRenderer.on('quit', (event, args) => this.sendAppCloseActivity())
-      // register main process quit event listener (To send leave channel message after user closed the app)
-      this.ipcRenderer.on('windowVisible', (event, args) => {
-        this.$store.commit('windowVisible', args)
-        // this.warn('視窗顯示狀態', this.windowVisible)
-      })
       // register main process set-current-channel event listener (To switch tab after notification showing up)
       this.ipcRenderer.on('set-current-channel', (event, channel) => {
         this.setCurrentChannel(channel)
@@ -1102,7 +1097,8 @@ export default {
     click (event) {
       this.connectText = '重設 keyCodes 陣列'
       this.keyCodes.length = 0
-    }
+    },
+    visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) }
   },
   created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
@@ -1165,6 +1161,8 @@ export default {
     })
     window.addEventListener("keydown", this.keydown)
     window.addEventListener("click", this.click)
+    document.addEventListener("visibilitychange", this.visibilityChange)
+    this.$store.commit('windowVisible', !document.hidden)
   },
   beforeDestroy () {
     // remove timer if user is going to leave the page
@@ -1172,6 +1170,7 @@ export default {
     this.closeWebsocket()
     window.removeEventListener("keydown", this.keydown)
     window.removeEventListener("click", this.click)
+    document.removeEventListener("visibilitychange", this.visibilityChange)
   }
 }
 </script>
