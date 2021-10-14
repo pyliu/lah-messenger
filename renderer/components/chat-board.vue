@@ -9,7 +9,7 @@
     h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧管控系統]
     h6 #[b-icon(icon="people-fill")] 線上使用者 #[b-badge(pill variant="success") {{ connectedUsersCount }}]
     //- show online user badges
-    b-avatar-group(size="3rem" :overlap="overlapRatio"): .d-flex.justify-content-center.flex-wrap: user-avatar(
+    b-avatar-group(size="3rem" :overlap="overlapRatio"): transition-group.d-flex.justify-content-center.flex-wrap(name="listY"): user-avatar(
       v-for="(user, idx) in connectedUsers"
       :key="`avatar_${user.userid}_${idx}`"
       :user-data="user"
