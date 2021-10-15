@@ -130,13 +130,35 @@ export default {
   },
   created () {
     this.sendReadCommand = this.$utils.debounce(() => {
-      // TODO impl remote message send read command
-    }, 5000)
+      if (this.windowVisible && this.connected && this.channel) {
+        // not read and can find sender user
+        if (!this.isRead && this.sender !== this.serderId) {
+          const json = {
+            type: "command",
+            sender: this.userid,
+            date: this.date(),
+            time: this.time(),
+            channel: 'system'
+          }
+          json.message = {
+            command: 'set_read',
+            channel: this.channel,
+            id: this.id,
+            flag: this.raw.flag,
+            sender: this.senderId,
+            cascade: this.isMyChannel // need to send set read message to the sender to set the message in his channel
+          }
+          this.websocket.send(JSON.stringify(json))
+        }
+      } else {
+        this.timeout(() => this.sendReadCommand(), 3000)
+      }
+    }, 3000)
   },
   mounted () {
     this.initImgClick(this.$refs.remoteMessage)
     this.initImgClick(this.$refs.myMessage)
-    this.sendReadCommand()
+    this.$refs.remoteMessage && this.sendReadCommand()
   },
   methods: {
     sendReadCommand () {},
