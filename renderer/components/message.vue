@@ -36,6 +36,12 @@
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
+        b-icon.align-middle.mr-1.readIcon(
+          v-if="isRead"
+          icon="check"
+          :variant="myMessage ? 'primary' : 'light'"
+          title="已讀取"
+        )
         b-icon.mr-1.clickableIcon(
           v-if="messageRemovable"
           icon="x-circle"
@@ -67,6 +73,18 @@ import MessageInput from '~/components/message-input.vue'
 export default {
   components: { announcementCard, UserCard, MessageInput },
   props: {
+    /** example raw json data from my channel
+      channel: "HA1001XXXX"
+      date: "2021-10-19"
+      flag: 3
+      id: 152
+      message: "<p>給 <span class="b-avatar-img"><img src="http://XXX.XXX.XXX.XXX:XX/get_user_img.php?id=HAXXXXXX_avatar&name=XXX_avatar" alt="avatar" class="avatar mt-n1"></span> XXX  <hr style="margin:5px"/></p>↵<h3 id="-z-1101019-">👉 ... </h3>"
+      prepend: false
+      remove: "{"to":"HA03XXXX","id":13}"
+      sender: "HA1001XXXX"
+      time: "09:26:40"
+      type: "remote"
+     */
     raw: { type: Object, required: true },
     prev: { type: Object, default: undefined }
   },
@@ -145,7 +163,7 @@ export default {
             channel: this.channel,
             id: this.id,
             flag: this.raw.flag,
-            sender: this.senderId,
+            sender: this.userid,
             cascade: this.isMyChannel // need to send set read message to the sender to set the message in his channel
           }
           this.websocket.send(JSON.stringify(json))
@@ -244,15 +262,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.clickableIcon {
-  transition: all .5s;
-  z-index: 1002;
-  &:hover {
-    font-size: .75rem;
-    font-weight: bold;
-    color: rgb(0, 81, 255);
-  }
-}
 .msg-item {
   position: relative;
   overflow: hidden;
@@ -299,8 +308,19 @@ export default {
   .time {
     display: inline-block;
     align-self: flex-end;
-    svg {
+    .clickableIcon {
       cursor: pointer;
+      transition: all .5s;
+      z-index: 1002;
+      &:hover {
+        font-size: .75rem;
+        font-weight: bold;
+        color: rgb(0, 81, 255);
+      }
+    }
+    .readIcon {
+      font-size: 1.5rem;
+      font-weight: bold;
     }
   }
 }

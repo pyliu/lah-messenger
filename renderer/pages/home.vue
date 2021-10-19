@@ -749,6 +749,44 @@ export default {
 
           this.connectText = `${json.message}`
           break;
+        case 'set_read':
+          const list = this.messages[json.payload.channel]
+          if (Array.isArray(list)) {
+            const found = list.find((message) => message?.id === json.payload.id)
+            if (found && (found.flag & 2) !== 2) {
+              found.flag += 2
+            }
+          }
+          this.warn(found, '訊息設定已讀', '連帶更新', json.cascade)
+          if (json.cascade) {
+            // to set read for the cascade message in my channel
+            const myList = this.messages[this.userid]
+            if (Array.isArray(myList)) {
+              const found = myList.find((message) => {
+                const removeJson = JSON.parse(message.remove || message.title)
+                return removeJson?.to === json.payload.channel && parseInt(removeJson?.id) === parseInt(json.payload.id)
+              })
+              if (found) {
+                const json = {
+                  type: "command",
+                  sender: this.userid,
+                  date: this.date(),
+                  time: this.time(),
+                  channel: 'system'
+                }
+                json.message = {
+                  command: 'set_read',
+                  channel: found.channel,
+                  id: found.id,
+                  flag: found.flag,
+                  sender: this.userid,
+                  cascade: false // stop cascading, since this is the stop point
+                }
+                this.websocket.send(JSON.stringify(json))
+              }
+            }
+          }
+          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
       }
