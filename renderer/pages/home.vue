@@ -22,7 +22,7 @@
           
           b-nav-item(:active="isPersonal" :title="`${userid} 個人通知訊息`" @click="setCurrentChannel(userid)"): a.mr-1
             //- b-icon.mr-1(icon="person-square" variant="primary")
-            span 📧 私訊
+            span 📩 私訊
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
           b-nav-item(:active="isChat" title="聊天室列表" @click="setCurrentChannel('chat')"): a.mr-1
