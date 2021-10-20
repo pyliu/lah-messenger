@@ -105,6 +105,7 @@
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
             b-button(
+              ref="nametag"
               id="nametag"
               title="開啟登入視窗"
               @click="showModalById('ad-query-modal')"
@@ -284,7 +285,7 @@ export default {
     },
     queryADLabel () { return this.userid === this.nickname ? '登入' : this.userid },
     queryADVariant () {
-      if (this.empty(this.nickname)) { return 'outline-danger' }
+      if (this.empty(this.nickname)) {  return 'outline-danger' }
       return this.nickname === this.userid ? 'outline-primary' : 'success'
     },
     backFromSettings () { return this.$route.query.reconnect === 'true' },
@@ -1136,7 +1137,13 @@ export default {
       this.connectText = '重設 keyCodes 陣列'
       this.keyCodes.length = 0
     },
-    visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) }
+    visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) },
+    loginAdAttention () {
+      if (this.nickname === this.userid) {
+        this.attention(this.$refs.nametag, { name: 'tada', speed: '' })
+        this.timeout(() => this.loginAdAttention(), 2000)
+      }
+    }
   },
   created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
@@ -1196,6 +1203,7 @@ export default {
       } else {
         this.$store.commit('authority', authority)
       }
+      this.loginAdAttention()
     })
     window.addEventListener("keydown", this.keydown)
     window.addEventListener("click", this.click)
