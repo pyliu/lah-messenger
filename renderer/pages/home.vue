@@ -1270,7 +1270,7 @@ export default {
 }
 .notify-personal {
   @include notify();
-  left: 265px;
+  left: 275px;
 }
 .notify-chat {
   @include notify();
