@@ -788,6 +788,31 @@ export default {
             }
           }
           break;
+        case 'check_read':
+          if (Array.isArray(this.messages[json.payload.sender])) {
+            const found = this.messages[json.payload.sender].find((message) => message?.id === json.payload.senderChannelMessageId)
+            if (found && (found.flag & 2) !== 2) {
+              // will set read at server side when detected the message is read
+              // const json = {
+              //   type: "command",
+              //   sender: this.userid,
+              //   date: this.date(),
+              //   time: this.time(),
+              //   channel: 'system'
+              // }
+              // json.message = {
+              //   command: 'set_read',
+              //   channel: found.channel,
+              //   id: found.id,
+              //   flag: found.flag,
+              //   sender: this.userid,
+              //   cascade: false // stop cascading, since this is the stop point
+              // }
+              // this.websocket.send(JSON.stringify(json))
+              found.flag += 2
+            }
+          }
+          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
       }

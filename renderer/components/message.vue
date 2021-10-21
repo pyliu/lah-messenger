@@ -90,6 +90,14 @@ export default {
   },
   data: () => ({}),
   computed: {
+    cascadeInfo () {
+      try {
+        return JSON.parse(this.raw?.remove)
+      } catch (e) {
+        return undefined
+      }
+    },
+    isCascadeMessage () { return (this.raw.flag & 1) === 1 && typeof this.cascadeInfo === 'object' },
     isRead () { return (this.raw.flag & 2) === 2 },
     announcementPayload () { return this.raw?.message },
     isAnnouncement() { return typeof this.announcementPayload === 'object' },
@@ -177,9 +185,32 @@ export default {
     this.initImgClick(this.$refs.remoteMessage)
     this.initImgClick(this.$refs.myMessage)
     this.$refs.remoteMessage && this.sendReadCommand()
+    this.$refs.myMessage && this.checkReadCommand()
   },
   methods: {
-    sendReadCommand () {},
+    sendReadCommand () {/* placeholder for debouncing */},
+    checkReadCommand () {
+      if (this.isCascadeMessage && !this.isRead) {
+        const json = {
+          type: "command",
+          sender: this.userid,
+          date: this.date(),
+          time: this.time(),
+          channel: 'system'
+        }
+        json.message = {
+          command: 'check_read',
+          channel: this.cascadeInfo.to,
+          id: this.cascadeInfo.id,
+          sender: this.userid,
+          senderChannelMessageId: this.id,
+          senderChannelMessageFlag: this.raw?.flag || 0
+        }
+        this.connected && this.websocket.send(JSON.stringify(json))
+        // in case remote not read the message, checks again after 20s
+        this.timeout(() => this.checkReadCommand(), 20000)
+      }
+    },
     initImgClick (ref) {
       if (ref) {
         // add event to invoke ipc to main process in electron
