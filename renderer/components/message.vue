@@ -39,7 +39,7 @@
         b-icon.align-middle.mr-1.readIcon(
           v-if="isRead"
           icon="check"
-          :variant="myMessage ? 'primary' : 'light'"
+          :variant="myMessage ? 'success' : 'light'"
           title="已讀取"
         )
         b-icon.mr-1.clickableIcon(
