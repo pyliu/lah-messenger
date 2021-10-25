@@ -5,7 +5,7 @@
         template(#header): b-nav(card-header tabs fill)
           b-nav-item(:active="isAnnouncement" title="全所公告訊息" @click="setCurrentChannel('announcement')"): a.mr-1
             //- b-icon.mr-1(icon="bookmarks-fill" variant="danger")
-            span.s-105 📢 公告
+            span.s-105 📣 公告
             b-badge.notify-announcement(variant="danger" pill v-if="showUnread('announcement')") {{ getUnread('announcement') }}
 
           b-nav-item(
@@ -17,12 +17,12 @@
             :title="`${deptChannel.text} 部門公告訊息`"
           ): a.mr-1
             //- b-icon.mr-1(icon="building" variant="primary")
-            span.s-105 🏛️ {{ deptChannel.text }}
+            span.s-105 🏬 {{ deptChannel.text }}
             b-badge.notify-dept(variant="info" pill v-if="showUnread(deptChannel.value)") {{ getUnread(deptChannel.value) }}
           
           b-nav-item(:active="isPersonal" :title="`${userid} 個人通知訊息`" @click="setCurrentChannel(userid)"): a.mr-1
             //- b-icon.mr-1(icon="person-square" variant="primary")
-            span.s-105 📩 私訊
+            span.s-105 📧 私訊
             b-badge.notify-personal(variant="success" pill v-if="showUnread(userid)") {{ getUnread(userid) }}
 
           b-nav-item(:active="isChat" title="聊天室列表" @click="setCurrentChannel('chat')"): a.mr-1
