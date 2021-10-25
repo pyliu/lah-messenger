@@ -30,16 +30,6 @@ export default {
   width: 475px;
   position: absolute;
   left: .5rem;
-  bottom: .5rem;
-}
-.bottom-right {
-  position: absolute;
-  right: .5rem;
-  bottom: .5rem;
-}
-.bottom-left {
-  position: absolute;
-  left: .5rem;
-  bottom: .5rem;
+  bottom: .25rem;
 }
 </style>
