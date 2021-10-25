@@ -11,6 +11,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
       v-model="priority"
       :options="priorityOpts"
     )
+  b-input-group(v-if="pickUser" size="sm" prepend="傳送給"): b-select(v-model="toUser" :options="toUsersOpts")
   b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
@@ -24,31 +25,27 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
   )
   
   .d-flex.align-items-center
-    b-checkbox(v-model="realtime" switch v-if="!emoji") 即時預覽
+    b-checkbox(v-model="realtime" switch v-if="!emoji") 預覽
     div.mr-auto
-    b-button-group(size="sm")
-      b-button(
+    b-button-group.mr-1(size="sm")
+      b-button.mr-1(
         v-if="!realtime"
-        size="sm"
         variant="outline-secondary"
-        title="預覽"
+        title="👀 預覽"
         @click="openPreview"
       ): b-img(src="~/assets/img/preview_black_24dp.svg")
-      b-button.mx-1(@click="emoji = !emoji" variant="outline-secondary" :title="`挑選表情 ${randFace}`") #[span.h5 {{ randFace }}]
+      b-button.mr-1(@click="emoji = !emoji" variant="outline-secondary" :title="`挑選表情 ${randFace}`") #[span.h5 {{ randFace }}]
       b-button.mr-1(
         @click="pick"
-        size="sm"
         variant="outline-success"
         title="附加圖片"
       ): b-icon(icon="images")
       b-button(
         @click="send"
-        size="sm"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
         title="送出"
       ): b-icon(icon="cursor" rotate="45")
-    b-select.ml-1(v-if="pickUser" v-model="toUser" :options="toUsersOpts" style="width: 185px")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -172,7 +169,7 @@ export default {
   watch: {
     emoji (flag) {
       this.$nextTick(() => {
-        flag && (this.$refs.floatEmoji.style.top = this.isAnnouncementChannel ? '20px' : '-20px')
+        flag && (this.$refs.floatEmoji.style.top = '20px')
       })
     },
     realtime (flag) {
