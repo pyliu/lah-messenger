@@ -129,7 +129,7 @@
                 b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
               b-input-group.ml-1(:title="`${userid}的網域密碼`")
                 template(#prepend): .mr-1.my-auto 網域密碼
-                b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="`網域密碼`" trim @keydown.enter="invokeADQuery(true)")
+                b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="'🔐 網域密碼'" trim @keydown.enter="invokeADQuery(true)")
                 b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon" :style="'margin-right: 60px'")
                 b-button.ml-1(:title="`點擊重新查詢 ${userid}`" @click="invokeADQuery(true)" :variant="'outline-primary'" :disabled="empty(adPassword) || validAdHost === false") 登入
         
