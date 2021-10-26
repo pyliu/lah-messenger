@@ -99,7 +99,7 @@ blockquote {
     margin-top: 0;
     margin-bottom: 0;
     img {
-      max-width: 390px;
+      max-width: 375px;
       cursor: pointer;
       box-shadow: 5px 3px 5px gray;
     }
@@ -124,6 +124,10 @@ blockquote {
       }
       p {
         max-width: 300px;
+        img {
+          max-width: 290px;
+          margin: 1px 10px 1px 1px;
+        }
       }
     }
   }
