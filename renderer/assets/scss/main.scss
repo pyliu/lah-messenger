@@ -28,6 +28,11 @@ html, body {
   overflow: hidden;
 }
 
+hr {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 body::-webkit-scrollbar {
   display: none;
 }
