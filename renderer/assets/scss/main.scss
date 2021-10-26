@@ -26,23 +26,21 @@ html, body {
   padding: 0;
   scroll-behavior: smooth;
   overflow: hidden;
-}
-
-hr {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  a {
+    color: var(--gray-dark);
+    &:hover {
+      text-decoration: none;
+      font-weight: bold;
+    }
+  }
 }
 
 body::-webkit-scrollbar {
   display: none;
-}
-
-a {
-  color: var(--gray-dark);
-}
-a:hover {
-  text-decoration: none;
-  font-weight: bold;
 }
 
 .title {
@@ -81,50 +79,52 @@ blockquote {
   padding: 0.5em 10px;
   quotes: "\201C""\201D""\2018""\2019";
   box-shadow: 2px 2px 15px #ccc;
-}
-
-blockquote:before {
-  color: #ccc;
-  content: open-quote;
-  font-size: 4em;
-  line-height: 0.1em;
-  margin-right: 0.25em;
-  vertical-align: -0.4em;
-}
-
-blockquote p {
-  display: inline;
-  color: black;
-}
-
-.msg-item p {
-  margin-top: 0;
-  margin-bottom: 0;
-  img {
-    max-width: 400px;
-    cursor: pointer;
+  &:before {
+    color: #ccc;
+    content: open-quote;
+    font-size: 4em;
+    line-height: 0.1em;
+    margin-right: 0.25em;
+    vertical-align: -0.4em;
+  }
+  p {
+    display: inline;
+    color: black;
   }
 }
 
-.announcement-card {
-  img {
-    max-width: 400px;
+.msg-item {
+  overflow-x: hidden;
+  p {
+    margin-top: 0;
+    margin-bottom: 0;
+    img {
+      max-width: 390px;
+      cursor: pointer;
+      box-shadow: 5px 3px 5px gray;
+    }
   }
-}
 
-.preview {
   .announcement-card {
     img {
-      max-width: 355px;
+      max-width: 400px;
     }
   }
-  .my-message {
-    img {
-      max-width: 290px;
-      margin: 1px 10px 1px 1px;
+
+  .preview {
+    .announcement-card {
+      img {
+        max-width: 355px;
+      }
     }
-    p {
-      max-width: 300px;
+    .my-message {
+      img {
+        max-width: 290px;
+        margin: 1px 10px 1px 1px;
+      }
+      p {
+        max-width: 300px;
+      }
     }
   }
 }
