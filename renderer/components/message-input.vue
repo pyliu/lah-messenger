@@ -11,7 +11,9 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
       v-model="priority"
       :options="priorityOpts"
     )
-  b-input-group(v-if="pickUser" size="sm" prepend="傳送給"): b-select(v-model="toUser" :options="toUsersOpts")
+  b-input-group(v-if="pickUser" size="sm" prepend="傳給")
+    b-select(v-model="toUser" :options="toUsersOpts" :disabled="toMe")
+    b-checkbox.my-auto.ml-1(v-model="toMe") 給我自己
   b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
@@ -87,6 +89,7 @@ export default {
     pickUser: { type: Boolean, default: false }
   },
   data: () => ({
+    toMe: false,
     toUser: '',
     realtime: true,
     emoji: false,
@@ -167,6 +170,9 @@ export default {
     }
   },
   watch: {
+    toMe (flag) {
+      flag && (this.toUser = this.userid)
+    },
     emoji (flag) {
       this.$nextTick(() => {
         flag && (this.$refs.floatEmoji.style.top = this.empty(this.reply) ? '20px' : '-20px')
