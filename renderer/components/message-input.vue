@@ -169,7 +169,7 @@ export default {
   watch: {
     emoji (flag) {
       this.$nextTick(() => {
-        flag && (this.$refs.floatEmoji.style.top = '20px')
+        flag && (this.$refs.floatEmoji.style.top = this.empty(this.reply) ? '20px' : '-20px')
       })
     },
     realtime (flag) {
