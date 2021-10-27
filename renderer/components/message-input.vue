@@ -191,8 +191,20 @@ export default {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
     },
     addEmoji (emoji) {
-      this.message = this.message + emoji
-      this.$refs.msgTextarea?.focus()
+      const element = this.$refs.msgTextarea
+      if (element && element.selectionStart) {
+        const st = element.selectionStart
+        const ed = element.selectionEnd
+        const front = this.message.substring(0, st).trim()
+        const appended = front + ' ' + emoji + ' '
+        const tail = this.message.substring(ed, this.message.length).trim()
+        this.message = appended + tail
+        element.focus()
+        this.$nextTick(() => { element.selectionEnd = appended.length })
+      } else {
+        this.message = this.message + ' ' + emoji
+        element.focus()
+      }
       this.emoji = false
     },
     openPreview () {

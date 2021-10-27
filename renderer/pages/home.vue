@@ -430,8 +430,20 @@ export default {
     },
     addEmoji (emoji) {
       this.emoji = false
-      this.inputText = this.inputText + emoji
-      this.$refs.textarea?.focus()
+      const element = this.$refs.textarea
+      if (element && element.selectionStart) {
+        const st = element.selectionStart
+        const ed = element.selectionEnd
+        const front = this.inputText.substring(0, st).trim()
+        const appended = front + ' ' + emoji + ' '
+        const tail = this.inputText.substring(ed, this.inputText.length).trim()
+        this.inputText = appended + tail
+        element.focus()
+        this.$nextTick(() => { element.selectionEnd = appended.length })
+      } else {
+        this.inputText = this.inputText + ' ' + emoji
+        element.focus()
+      }
     },
     pick () {
       this.modal(this.$createElement(ImageUpload, {
