@@ -770,8 +770,8 @@ export default {
               found.flag += 2
             }
           }
-          this.warn(found, '訊息設定已讀', '連帶更新', json.cascade)
           if (json.cascade) {
+            this.warn('訊息設定已讀', '連帶更新', json.cascade)
             // to set read for the cascade message in my channel
             const myList = this.messages[this.userid]
             if (Array.isArray(myList)) {
