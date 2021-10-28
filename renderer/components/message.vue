@@ -222,6 +222,12 @@ export default {
         imgs.on('click', (event) => {
           event.preventDefault()
           event.stopPropagation()
+
+	        // var image = new Image();
+	        // image.src = event.target.src
+          // var w = window.open("");
+	        // w.document.write(image.outerHTML);
+
           const { ipcRenderer } = require('electron')
           ipcRenderer.invoke('image', {
             src: event.target.src,
