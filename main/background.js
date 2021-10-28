@@ -362,7 +362,7 @@ ipcMain.handle('ad-user-query', async (event, config) => {
 ipcMain.handle('image', async (event, payload) => {
   const buf = Buffer.from(payload.src, 'base64')
   // const filepath = path.join(os.tmpdir(), 'tmp.jpg')
-  const filepath = path.join(app.getPath('home'), 'tmp.jpg')
+  const filepath = path.join(path.resolve("./"), 'tmp.jpg')
   fs.writeFile(filepath, buf, function(error) {
     if (error) {
       console.error(error)
@@ -370,9 +370,6 @@ ipcMain.handle('image', async (event, payload) => {
     }
   })
   // open the image
-
-
-  
   require('child_process').exec(filepath, function(err, stdout, stderr) {
     if (err !== null) {
       console.error(err)
