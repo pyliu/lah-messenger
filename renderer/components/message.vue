@@ -212,19 +212,19 @@ export default {
     handleImgClick (event) {
       const element = event.target
       if (element.tagName === 'IMG') {
-        if (this.isCascadeMessage && this.$utils.$(element).hasClass('avatar')) {
-          this.modal(this.$createElement(UserCard, { props: { id: this.cascadeInfo?.to } }), {
-            title: this.cascadeInfo?.to,
-            size: 'xl'
-          })
-        } else if (element.src.startsWith('data:')) {
+        if (element.src.startsWith('data:')) {
           // not click on avatar img
           const { ipcRenderer } = require('electron')
           ipcRenderer.invoke('open-image', {
             src: element.src,
             alt: element.alt
           })
-        }
+        } else if (this.$utils.$(element).hasClass('avatar') && this.cascadeInfo) {
+          this.modal(this.$createElement(UserCard, { props: { id: this.cascadeInfo.to } }), {
+            title: this.cascadeInfo.to,
+            size: 'xl'
+          })
+        } 
       }
     },
     avatarClick (event) {
