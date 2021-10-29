@@ -8,7 +8,6 @@
           span 進入 #[b {{ item.name }}] 頻道
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 
-      //- h5.my-2 此處為群組聊天看板，可以隨時留信息到各房間
     h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧管控系統]
     h6.d-flex.align-items-center
       .mr-auto
@@ -16,7 +15,7 @@
         span.mx-1 線上使用者
         b-badge(pill variant="secondary") {{ connectedUsersCount }}
       b-checkbox(
-        v-model="sort"
+        v-model="ascending"
         v-b-tooltip="'優先顯示人數較少的部門'"
         size="sm"
         switch
@@ -53,7 +52,7 @@ export default {
       { id: 'lds', name: '全所' },
     ],
     onlineTimer: undefined,
-    sort: false
+    ascending: false
   }),
   computed: {
     isChat () { return this.currentChannel === 'chat'},
@@ -100,15 +99,19 @@ export default {
         }
       });
       return filter.sort((a, b) => {
-        if (a.users.length > b.users.length) { return this.sort ? 1 : -1 }
-        if (a.users.length < b.users.length) { return this.sort ? -1: 1 }
+        if (a.users.length > b.users.length) { return this.ascending ? 1 : -1 }
+        if (a.users.length < b.users.length) { return this.ascending ? -1: 1 }
         return 0
       })
     }
   },
-  created () {
+  watch: {
+    ascending (flag) { this.$localForage.setItem('online-ascending', flag) }
+  },
+  async created () {
     this.queryChatChannelOnlineClients()
     this.onlineTimer = setInterval(() => this.queryChatChannelOnlineClients(), 5 * 60 * 1000)
+    this.ascending = await this.$localForage.getItem('online-ascending') || false
   },
   beforeDestroy() {
     clearInterval(this.onlineTimer) 
