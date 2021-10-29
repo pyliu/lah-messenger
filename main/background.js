@@ -360,7 +360,7 @@ ipcMain.handle('ad-user-query', async (event, config) => {
   return undefined
 })
 
-ipcMain.handle('image', async (event, payload) => {
+ipcMain.handle('open-image', async (event, payload) => {
   const buf = Buffer.from(payload.src, 'base64')
   // const filepath = path.join(os.tmpdir(), 'tmp.jpg')
   const filepath = path.join(path.resolve("./"), 'tmp.jpg')
