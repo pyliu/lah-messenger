@@ -15,7 +15,7 @@
         @click="remove"
       )
       span.ml-1 \#{{ dataJson.id }}
-    b-card-text(ref="content" v-html="content")
+    b-card-text(ref="content" v-html="content" @click="handleImgClick($event)")
     template(#footer): .d-flex.justify-content-between.small.text-muted
       span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
       span {{ dataJson.create_datetime }}
@@ -65,26 +65,6 @@ export default {
       return DOMPurify.sanitize(Markd(this.dataJson.content.replaceAll('\n', '  \n')))
     }
   },
-  mounted () {
-    // init img click
-    if (this.$refs.content) {
-      // add event to invoke ipc to main process in electron
-      const imgs = this.$utils.$(this.$refs.content).find('img')
-      imgs.each((idx, img) => {
-        img.setAttribute('title', `點擊開啟完整圖片`)
-      })
-      // this.warn(`message 下找到 ${imgs.length} 張圖片，利用 jQuery 綁定 click 事件`)
-      imgs.on('click', (event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        const { ipcRenderer } = require('electron')
-        ipcRenderer.invoke('image', {
-          src: event.target.src,
-          alt: event.target.alt
-        })
-      })
-    }
-  },
   methods: {
     remove () {
       this.confirm(`刪除公告 - 「${this.dataJson.title}」？`).then((YN) => {
@@ -110,6 +90,17 @@ export default {
         channel: 'system'
       })
       this.websocket && this.websocket.send(jsonString)
+    },
+    handleImgClick (event) {
+      const element = event.target
+      if (element.tagName === 'IMG') {
+        // click on img
+        const { ipcRenderer } = require('electron')
+        ipcRenderer.invoke('open-image', {
+          src: event.target.src,
+          alt: event.target.alt
+        })
+      }
     }
   }
 }

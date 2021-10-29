@@ -20,7 +20,7 @@
       )
       span.mr-1 {{ sender }}
       em {{ from }}
-    
+
     .d-flex.msg-item.my-1(:class="classes")
 
       //- special card message for announcement
@@ -32,7 +32,7 @@
       )
 
       //- remote or system message
-      p(ref="remoteMessage" v-else-if="!myMessage" v-html="message")
+      p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="handleImgClick($event)")
 
       //- timestamp for the message
       .time.s-60.mx-1.text-muted.text-right(v-if="!system")
@@ -61,7 +61,7 @@
         div(v-if="!isAnnouncement") {{ mtime }}
 
       //- my message
-      p(ref="myMessage" v-if="myMessage" v-html="message")
+      p(ref="myMessage" v-if="myMessage" v-html="message" @click="handleImgClick($event)")
 
 </template>
 
@@ -182,8 +182,6 @@ export default {
     }, 3000)
   },
   mounted () {
-    this.initImgClick(this.$refs.remoteMessage)
-    this.initImgClick(this.$refs.myMessage)
     this.$refs.remoteMessage && this.sendReadCommand()
     this.$refs.myMessage && this.checkReadCommand()
   },
@@ -211,52 +209,22 @@ export default {
         this.timeout(() => this.checkReadCommand(), 20000)
       }
     },
-    initImgClick (ref) {
-      if (ref) {
-        // add event to invoke ipc to main process in electron
-        const imgs = this.$utils.$(ref).find('img')
-        if (imgs.length > 0) {
-          imgs.each((idx, img) => {
-            img.setAttribute('title', this.$utils.$(img).hasClass('avatar') ? '查詢使用者' : '開啟完整圖片')
-            img.onclick = (event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              this.warn('點擊影像', event.target)
-              const remove = this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : false
-              if (remove && this.$utils.$(event.target).hasClass('avatar')) {
-                this.modal(this.$createElement(UserCard, { props: { id: remove?.to } }), {
-                  title: remove?.to,
-                  size: 'xl'
-                })
-              } else {
-                // not click on avatar img
-                const { ipcRenderer } = require('electron')
-                ipcRenderer.invoke('open-image', {
-                  src: event.target.src,
-                  alt: event.target.alt
-                })
-              }
-            }
+    handleImgClick (event) {
+      const element = event.target
+      if (element.tagName === 'IMG') {
+        const remove = this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : false
+        if (remove && this.$utils.$(element).hasClass('avatar')) {
+          this.modal(this.$createElement(UserCard, { props: { id: remove?.to } }), {
+            title: remove?.to,
+            size: 'xl'
           })
-          // 利用 jQuery 綁定 click 事件
-          // imgs.on('click', (event) => {
-          //   event.preventDefault()
-          //   event.stopPropagation()
-          //   const remove = this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : false
-          //   if (remove && this.$utils.$(event.target).hasClass('avatar')) {
-          //     this.modal(this.$createElement(UserCard, { props: { id: remove?.to } }), {
-          //       title: remove?.to,
-          //       size: 'xl'
-          //     })
-          //   } else {
-          //     // not click on avatar img
-          //     const { ipcRenderer } = require('electron')
-          //     ipcRenderer.invoke('open-image', {
-          //       src: event.target.src,
-          //       alt: event.target.alt
-          //     })
-          //   }
-          // })
+        } else {
+          // not click on avatar img
+          const { ipcRenderer } = require('electron')
+          ipcRenderer.invoke('open-image', {
+            src: event.target.src,
+            alt: event.target.alt
+          })
         }
       }
     },
