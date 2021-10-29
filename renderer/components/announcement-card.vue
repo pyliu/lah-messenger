@@ -93,12 +93,12 @@ export default {
     },
     handleImgClick (event) {
       const element = event.target
-      if (element.tagName === 'IMG') {
+      if (element.tagName === 'IMG' && element.src.startsWith('data:')) {
         // click on img
         const { ipcRenderer } = require('electron')
         ipcRenderer.invoke('open-image', {
-          src: event.target.src,
-          alt: event.target.alt
+          src: element.src,
+          alt: element.alt
         })
       }
     }
