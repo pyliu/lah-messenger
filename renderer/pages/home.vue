@@ -399,6 +399,7 @@ export default {
       const md5 = this.$utils.md5(this.keyCodes.join(','))
       // konami
       if (md5 === 'f20b4566a1f6b848f1fbec48b2ab2c10') {
+        this.connectText = '🎉'
         this.$store.commit('authority', { isAdmin: !this.authority.isAdmin })
         this.$nextTick(() => {
           this.keyCodes.length = 0
@@ -1166,12 +1167,32 @@ export default {
       if (event.defaultPrevented) {
         return // Should do nothing if the default action has been cancelled
       }
-      // this.connectText = `增加 ${event.key} 到 keyCodes 陣列`
-      this.keyCodes.push(event.keyCode)
+      const key = event.keyCode
+      switch (key) {
+        case 37:
+          this.connectText = '←'
+          break
+        case 38:
+          this.connectText = '↑'
+          break
+        case 39:
+          this.connectText = '→'
+          break
+        case 40:
+          this.connectText = '↓'
+          break
+        case 65:
+          this.connectText = 'a'
+          break
+        case 66:
+          this.connectText = 'b'
+          break
+      }
+      this.keyCodes.push(key)
       this.keyCodes.length > 10 && this.keyCodes.shift()
     },
     click (event) {
-      this.connectText = '重設 keyCodes 陣列'
+      this.connectText = '🔑'
       this.keyCodes.length = 0
     },
     visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) },
