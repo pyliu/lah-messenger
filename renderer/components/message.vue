@@ -214,7 +214,7 @@ export default {
     initImgClick (ref) {
       if (ref) {
         // add event to invoke ipc to main process in electron
-        const imgs = this.$utils.$(ref).find('img:not(.b-avatar-img)')
+        const imgs = this.$utils.$(ref).find('img')
         imgs.each((idx, img) => {
           img.setAttribute('title', `點擊開啟完整圖片`)
         })
