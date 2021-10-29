@@ -4,7 +4,7 @@
       b-list-group-item(v-for="(item, idx) in deptChannels" v-if="userdept === item.id || item.id === 'lds'" :key="`dept-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
         //- span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
         .d-flex.align-items-center
-          b-icon.mr-2(font-scale="1.75" icon="chat-dots")
+          b-icon.mr-2(font-scale="1.75" icon="chat-dots" variant="primary")
           span 進入 #[strong.mark.text-primary {{ item.name }}] 頻道
         b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 
