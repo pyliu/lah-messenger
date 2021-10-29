@@ -182,8 +182,8 @@ export default {
     }, 3000)
   },
   mounted () {
-    this.initImgClick(this.$refs.remoteMessage)
-    this.initImgClick(this.$refs.myMessage)
+    !this.initImgClick(this.$refs.remoteMessage) && this.timeout(() => this.initImgClick(this.$refs.remoteMessage), 1000)
+    !this.initImgClick(this.$refs.myMessage) && this.timeout(() => this.initImgClick(this.$refs.myMessage), 1000)
     this.$refs.remoteMessage && this.sendReadCommand()
     this.$refs.myMessage && this.checkReadCommand()
   },
@@ -214,7 +214,7 @@ export default {
     initImgClick (ref) {
       if (ref) {
         // add event to invoke ipc to main process in electron
-        const imgs = this.$utils.$(ref).find('img')
+        const imgs = this.$utils.$(ref).find('img:not(.b-avatar-img)')
         imgs.each((idx, img) => {
           img.setAttribute('title', `點擊開啟完整圖片`)
         })
@@ -222,13 +222,25 @@ export default {
         imgs.on('click', (event) => {
           event.preventDefault()
           event.stopPropagation()
-          const { ipcRenderer } = require('electron')
-          ipcRenderer.invoke('open-image', {
-            src: event.target.src,
-            alt: event.target.alt
-          })
+          this.warn(event.target)
+          const remove = this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : false
+          if (remove && this.$utils.$(event.target).hasClass('avatar')) {
+            this.modal(this.$createElement(UserCard, { props: { id: remove?.to } }), {
+              title: remove?.to,
+              size: 'xl'
+            })
+          } else {
+            // not click on avatar img
+            const { ipcRenderer } = require('electron')
+            ipcRenderer.invoke('open-image', {
+              src: event.target.src,
+              alt: event.target.alt
+            })
+          }
         })
+        return true
       }
+      return false
     },
     avatarClick (event) {
       event.stopPropagation()
