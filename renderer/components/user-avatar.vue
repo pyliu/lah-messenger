@@ -1,8 +1,9 @@
 <template lang="pug">
   b-avatar(
     :src="avatarSrc"
-    :title="tip"
     :size="size"
+    :title="nametag"
+    v-b-popover.hover.topright="{ content: logon }"
     button
     @click="click"
   )
@@ -23,8 +24,9 @@ export default {
   computed: {
     uid () { return this.userData?.userid },
     uname () { return this.userData?.username || this.userMap[this.userData?.userid] || this.userData?.userid },
-    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` },
-    tip () { return this.userData.timestamp ? `${this.uname} 登入時間：${this.$utils.tsAd(this.userData.timestamp).split(' ')[1]}` : this.uname }
+    nametag () { return this.uid === this.uname ? this.uid : `${this.uid} ${this.uname}` },
+    logon () { return `登入時間：${this.$utils.tsAd(this.userData.timestamp).split(' ')[1]}` },
+    avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` }
   },
   methods: {
     click (event) {
