@@ -135,7 +135,7 @@ if (!gotTheLock) {
         // minimize to tray
         mainWindow.on('minimize', function(event) {
           event.preventDefault()
-          // mainWindow.hide()
+          mainWindow.webContents.send('set-current-channel', 'chat')
         })
         
         // close to tray
@@ -143,6 +143,7 @@ if (!gotTheLock) {
           if (!app.isQuiting){
               event.preventDefault()
               mainWindow.hide()
+              mainWindow.webContents.send('set-current-channel', 'chat')
           }
           return false
         })
