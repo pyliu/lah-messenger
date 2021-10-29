@@ -93,36 +93,46 @@ blockquote {
   }
 }
 
+@mixin thumbnail() {
+  padding: $thumbnail-padding;
+  background-color: $thumbnail-bg;
+  border: $thumbnail-border-width solid $thumbnail-border-color;
+  @include border-radius($thumbnail-border-radius);
+  @include box-shadow($thumbnail-box-shadow);
+  // Keep them at most 100% wide
+  @include img-fluid;
+}
+
 .msg-item {
   overflow-x: hidden;
   p {
     margin-top: 0;
     margin-bottom: 0;
-    img {
-      max-width: 375px;
+    img:not(.avatar) {
+      // max-width: 375px;
       cursor: pointer;
       box-shadow: 5px 3px 5px gray;
+      @include thumbnail();
     }
   }
 }
 
 .announcement-card {
   img {
-    max-width: 400px;
+    @include thumbnail();
   }
 }
 
 .preview {
   .announcement-card {
     img {
-      max-width: 355px;
+      @include thumbnail();
       cursor: auto;
     }
   }
   .my-message {
     img {
-      max-width: 240px;
-      margin: 1px 10px 1px 1px;
+      @include thumbnail();
       cursor: auto;
     }
     p {
