@@ -27,7 +27,7 @@
       v-if="deptList.users.length > 0"
     ): .d-flex.align-items-start
       .text-nowrap.mr-auto {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
-      b-avatar-group(size="3rem" :overlap="overlapRatio(deptList.users.length)"): transition-group.d-flex.justify-content-center.flex-wrap(name="listY" mode="out-in"): user-avatar(
+      b-avatar-group(size="3rem" :overlap="overlapRatio(deptList.users.length)"): transition-group.d-flex.justify-content-end.flex-wrap(name="listY" mode="out-in"): user-avatar(
         v-for="(user, uidx) in deptList.users"
         :key="`avatar_${user.userid}_${uidx}`"
         :user-data="user"
