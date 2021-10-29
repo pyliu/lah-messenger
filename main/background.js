@@ -363,7 +363,7 @@ ipcMain.handle('ad-user-query', async (event, config) => {
 ipcMain.handle('open-image', async (event, payload) => {
   const buf = Buffer.from(payload.src, 'base64')
   // const filepath = path.join(os.tmpdir(), 'tmp.jpg')
-  const filepath = path.join(path.resolve("./"), 'tmp.jpg')
+  const filepath = path.join(os.homedir(), 'tmp.jpg')
   fs.writeFile(filepath, buf, (error) => {
     if (error) { throw new Error(error) }
     // open the image
