@@ -399,12 +399,12 @@ export default {
       const md5 = this.$utils.md5(this.keyCodes.join(','))
       // konami
       if (md5 === 'f20b4566a1f6b848f1fbec48b2ab2c10') {
-        this.connectText = '🎉'
         this.$store.commit('authority', { isAdmin: !this.authority.isAdmin })
         this.$nextTick(() => {
           this.keyCodes.length = 0
           this.authority.isAdmin && this.notify('🌟 你的權限已提升為管理者 🌟', { type: 'success', pos: 'tf' })
           !this.authority.isAdmin && this.notify('⚠️ 你已移除管理者權限 ⚠️', { type: 'dark', pos: 'tf' })
+          this.connectText = this.authority.isAdmin ? '✔' : '⛔'
         })
       }
     }
