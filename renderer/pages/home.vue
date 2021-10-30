@@ -627,18 +627,23 @@ export default {
         entry_desc: this.nickname
       })
     },
-    async getChannelUnread (channel) {
+    async getChannelLastReadId (channel) {
       return await this.getCache(`${channel}_last_id`) || 0
     },
     setChannelUnread (channel, unreadId) {
       this.setCache(`${channel}_last_id`, unreadId)
     },
-    queryStickyChannelUnreadCount () {
+    queryUnreadCount () {
+      // sticky channels
       this.queryChannelUnreadCount('announcement')
       this.queryChannelUnreadCount(`announcement_${this.userdept}`)
       this.queryChannelUnreadCount(this.userid)
+      // chatting channels
+      this.queryChannelUnreadCount('lds')
+      this.queryChannelUnreadCount(this.userdept)
     },
     async queryChannelUnreadCount (channel) {
+      const lastReadId = await this.getChannelLastReadId(channel)
       const jsonString = JSON.stringify({
         type: "command",
         sender: this.userid,
@@ -646,30 +651,36 @@ export default {
         time: this.time(),
         message: JSON.stringify({
           command: 'unread',
-          channel: 'channel',
-          last: this.getChannelUnread(channel)
+          channel: channel,
+          last: lastReadId
         }),
         channel: 'system'
       })
       this.websocket.send(jsonString)
     },
     queryMyChannel () {
-      const jsonString = JSON.stringify({
-        type: "command",
-        sender: this.userid,
-        date: this.date(),
-        time: this.time(),
-        message: JSON.stringify({ command: 'mychannel' }),
-        channel: 'system'
-      })
-      this.websocket.send(jsonString)
+      try {
+        const jsonString = JSON.stringify({
+          type: "command",
+          sender: this.userid,
+          date: this.date(),
+          time: this.time(),
+          message: JSON.stringify({ command: 'mychannel' }),
+          channel: 'system'
+        })
+        this.websocket.send(jsonString)
+        return true
+      } catch (e) {
+        this.warning(`無法傳送 mychannel 命令 (${e.toString()})`)
+      }
+      return false
     },
     handleAckMessage (json) {
       const cmd = json.command
       this.log(this.time(), `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`, json)
       switch (cmd) {
         case 'register':
-          json.success && this.queryMyChannel() && this.queryStickyChannelUnreadCount()
+          json.success && this.queryUnreadCount()
           break;
         case 'mychannel':
           if (json.success) {
@@ -733,8 +744,8 @@ export default {
           break;
         case 'unread':
           this.$store.commit('setUnread', {
-            channel: json.channel,
-            count: json.count
+            channel: json.payload.channel,
+            count: json.payload.unread
           })
           this.connectText = `${json.message}`
           break;
@@ -905,7 +916,7 @@ export default {
               const channel = incoming.channel
 
               const receivedId = incoming.message.id || incoming.id
-              const lastReadId = await this.getChannelUnread(channel) || 0
+              const lastReadId = await this.getChannelLastReadId(channel) || 0
 
               this.log(`現在頻道 ${channel}`, `收到ID ${receivedId}`, `最後讀取ID ${lastReadId}`, incoming)
 
@@ -1101,7 +1112,7 @@ export default {
     async triggerNotification (incoming) {
       const channel = incoming.channel
       const receivedId = incoming.message.id || incoming.id
-      const lastReadId = await this.getChannelUnread(channel) || 0
+      const lastReadId = await this.getChannelLastReadId(channel) || 0
       if (receivedId > lastReadId) {
         // tell electron window the channels got unread message
         this.ipcRenderer.invoke('unread', channel)
