@@ -414,7 +414,10 @@ export default {
         // konami ends with 'b'
         this.$localForage.clear().then(() => {
           this.notify('⚠ 暫存資料已清除，3秒後重新整理頁面 ... ', { type: 'warning', pos: 'tf' })
-          setTimeout(() => { location.reload() }, 3000)
+          setTimeout(() => {
+            this.connectText = '♻ 重新整理頁面'
+            window.location.reload()
+          }, 3000)
         })
       }
     }
