@@ -119,10 +119,10 @@ export default {
   methods: {
     overlapRatio (count) {
       if (count < 8) { return 0.0 }
-      // if (count < 16) { return 0.1 }
-      if (count < 24) { return 0.2 }
-      if (count < 32) { return 0.3 }
-      return 0.4
+      if (count < 16) { return 0.3 }
+      if (count < 32) { return 0.4 }
+      if (count < 64) { return 0.5 }
+      return 0.6
     }
   }
 };
