@@ -257,11 +257,12 @@ ipcMain.handle('injectUserinfo', async (event, arg) => {
 })
 
 ipcMain.handle('userinfo', async (event, arg) => {
-  const found = [ ...await si.users() ].find(thisuser => !thisuser.user.startsWith('Admin') && !thisuser.user.startsWith('admin'))
+  // To find user id starts with 'HX'
+  const found = [ ...await si.users() ].find(thisuser => /^H[A-H]/i.test(thisuser.user))
   !isProd && console.log(`Found User`, found)
   /*
     found e.g. => {
-      user: 'HB0000',
+      user: 'HA0000',
       tty: 'console',
       date: '',
       time: '',
