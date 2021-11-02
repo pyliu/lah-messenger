@@ -223,6 +223,9 @@ const mutations = {
   userinfo (state, userinfo) {
     state.userinfo = { ...userinfo }
   },
+  userid (state, id) {
+    state.userinfo = { ...state.userinfo, userid: id }
+  },
   username (state, username) {
     state.username = username
   },

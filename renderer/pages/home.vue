@@ -363,6 +363,10 @@ export default {
     nickname(val) {
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
+      // temporally fix for unable getting userid from os
+      if (/^H[A-H]/i.test(val)) {
+        this.$store.commit('userid', val)
+      }
     },
     adHost(val) {
       this.$store.commit('ad', val)
@@ -405,6 +409,12 @@ export default {
           this.authority.isAdmin && this.notify('🌟 你的權限已提升為管理者 🌟', { type: 'success', pos: 'tf' })
           !this.authority.isAdmin && this.notify('⚠️ 你已移除管理者權限 ⚠️', { type: 'dark', pos: 'tf' })
           this.connectText = this.authority.isAdmin ? '✔' : '⛔'
+        })
+      } else if (md5 === '21ea03e57ae8281916206c6710dc3e35') {
+        // konami ends with 'b'
+        this.$localForage.clear().then(() => {
+          this.notify('⚠ 暫存資料已清除，3秒後重新整理頁面 ... ', { type: 'warning', pos: 'tf' })
+          setTimeout(() => { location.reload() }, 3000)
         })
       }
     }
@@ -593,7 +603,7 @@ export default {
             command: 'register',
             ip: this.ip,
             domain: this.domain,
-            userid: this.userid,
+            userid: this.userid || this.nickname,
             username: this.nickname,
             dept: this.department,
             timestamp: +new Date()
@@ -1076,7 +1086,7 @@ export default {
           this.setUserInfo(userinfo)
         } else {
           this.ipcRenderer.invoke('userinfo').then((userinfo) => {
-            this.setUserInfo (userinfo)
+            this.setUserInfo(userinfo)
           })
         }
       })
@@ -1208,7 +1218,7 @@ export default {
     },
     visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) },
     loginAdAttention () {
-      if (this.nickname === this.userid) {
+      if (this.nickname === this.userid && this.$refs.nametag) {
         this.attention(this.$refs.nametag, { name: 'tada', speed: '' })
         this.timeout(() => this.loginAdAttention(), 2000)
       }

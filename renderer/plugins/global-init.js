@@ -105,6 +105,10 @@ export default ({ $axios, store }, inject) => {
      * })
      */
     animated (selector, opts, prefix = 'animate__') {
+      if (_.isEmpty(selector)) {
+        console.warn('⚠ 選擇代碼為空值：', selector)
+        return false
+      }
       return new Promise((resolve, reject) => {
         if (_.isEmpty(selector)) {
           reject(`selector is empty.`)
