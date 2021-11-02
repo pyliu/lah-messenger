@@ -1208,13 +1208,12 @@ export default {
         case 66:
           this.connectText = 'b'
           break
+        default:
+          this.connectText = '🔑'
+          this.keyCodes.length = 0
       }
       this.keyCodes.push(key)
       this.keyCodes.length > 10 && this.keyCodes.shift()
-    },
-    click (event) {
-      this.connectText = '🔑'
-      this.keyCodes.length = 0
     },
     visibilityChange (event) { this.$store.commit('windowVisible', !document.hidden) },
     loginAdAttention () {
@@ -1285,7 +1284,6 @@ export default {
       this.loginAdAttention()
     })
     window.addEventListener("keydown", this.keydown)
-    window.addEventListener("click", this.click)
     document.addEventListener("visibilitychange", this.visibilityChange)
     this.$store.commit('windowVisible', !document.hidden)
   },
@@ -1294,7 +1292,6 @@ export default {
     this.clearReconnectTimer()
     this.closeWebsocket()
     window.removeEventListener("keydown", this.keydown)
-    window.removeEventListener("click", this.click)
     document.removeEventListener("visibilitychange", this.visibilityChange)
   }
 }
