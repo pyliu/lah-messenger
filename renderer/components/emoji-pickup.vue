@@ -1,5 +1,5 @@
 <template lang="pug">
-  .d-flex.flex-wrap.justify-content-between
+  .d-flex.flex-wrap.justify-content-between(title="Windows + . 開啟系統鍵盤")
     b-button.border-0(
       variant="outline-light"
       v-for="(emojiTxt, idx) in emojis"
