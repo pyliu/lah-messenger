@@ -179,7 +179,7 @@ export default {
       } else {
         this.timeout(() => this.sendReadCommand(), 3000)
       }
-    }, 3000)
+    }, 15000)
   },
   mounted () {
     this.$refs.remoteMessage && this.sendReadCommand()
