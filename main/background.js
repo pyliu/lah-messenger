@@ -240,10 +240,10 @@ ipcMain.handle('notification', async (event, payload) => {
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  // unread meesage comes to non-chatting channels showing the main window
-  !['chat', 'lds', 'inf', 'adm', 'reg', 'sur', 'val', 'acc', 'hr', 'supervisor'].includes(channel) && mainWindow.show()
-  // important notification
-  if (channel.startsWith('announcement')) {
+  // unread meesage comes to me or dept channels showing the main window
+  [mainWindow.userinfo?.userid, `announcement_${mainWindow.userinfo.userdept}`].includes(channel) && mainWindow.show()
+  // very important notification
+  if (channel === 'announcement') {
     mainWindow.show()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)

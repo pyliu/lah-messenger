@@ -1111,7 +1111,7 @@ export default {
       }
       this.register()
       // inject userinfo to electron mainWindow as well
-      this.ipcRenderer.invoke('injectUserinfo', userinfo)
+      this.ipcRenderer.invoke('injectUserinfo', { ...userinfo, userdept: this.userdept })
     },
     ipcRendererSetup () {
       const { ipcRenderer } = require('electron')
