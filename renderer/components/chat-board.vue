@@ -119,8 +119,8 @@ export default {
   methods: {
     overlapRatio (count) {
       if (count < 8) { return 0.0 }
-      if (count < 16) { return 0.3 }
-      if (count < 32) { return 0.4 }
+      if (count < 10) { return 0.3 }
+      if (count < 20) { return 0.4 }
       if (count < 64) { return 0.5 }
       return 0.6
     }
