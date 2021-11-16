@@ -224,26 +224,30 @@ ipcMain.handle('notification', async (event, payload) => {
   !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple messages coming in at once
   notifyDebounced('[👉點擊開啟APP視窗]', message, () => {
-    if (channel) {
-      // 切換至頻道
-      mainWindow.webContents.send('set-current-channel', channel)
-    }
     // 視窗置中顯示
     if (showMainWindow) {
       mainWindow.show()
       mainWindow.center()
       mainWindow.setAlwaysOnTop(true)
       mainWindow.focus()
+      // if (channel) {
+      //   // 切換至頻道
+      //   mainWindow.webContents.send('set-current-channel', channel)
+      // }
     }
   })
 })
 
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
-  // unread meesage comes to me or dept channels showing the main window
-  [mainWindow.userinfo?.userid, `announcement_${mainWindow.userinfo?.userdept}`, 'announcement'].includes(channel) && mainWindow.show()
+  const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
+  const chatChannels = ['lds', 'reg', 'val', 'adm', 'sur', 'acc', 'hr', 'supervisor']
+  // unread meesage does not come to chat channels showing the main window
+  if (!chatChannels.includes(channel)) {
+    mainWindow.show()
+  }
   // very important notification
-  if (channel === 'announcement') {
+  if (annChannels.includes(channel)) {
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
     mainWindow.focus()
