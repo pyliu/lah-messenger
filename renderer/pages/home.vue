@@ -104,19 +104,16 @@
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
             template(#prepend): b-icon.my-auto.mr-1(icon="person-badge" font-scale="2.25" variant="secondary")
+            b-input.mr-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim :disabled="!authority.isAdmin")
             b-button(
               ref="nametag"
               id="nametag"
               title="開啟登入視窗"
-              @click="showModalById('ad-query-modal')"
+              v-b-modal.ad-query-modal
               :variant="queryADVariant"
             )
-              //- b-icon.mr-1(v-if="this.userid === this.nickname" icon="box-arrow-in-right" font-scale="1.25")
-              //- span.my-auto {{ queryADLabel }}
               b-icon.mr-1(icon="box-arrow-in-right" font-scale="1.25")
               span.my-auto 登入AD
-              
-            b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim :disabled="!authority.isAdmin")
             b-modal(
               id="ad-query-modal"
               hide-footer
@@ -289,7 +286,6 @@ export default {
       }, 0)
       return result > 99 ? '99+' : result
     },
-    queryADLabel () { return this.userid === this.nickname ? '登入' : this.userid },
     queryADVariant () {
       if (this.empty(this.nickname)) {  return 'outline-danger' }
       return this.nickname === this.userid ? 'outline-primary' : 'success'
@@ -1262,14 +1258,13 @@ export default {
 
     this.$nextTick(async () => {
       // restore last settings
-      this.nickname = await this.$localForage.getItem('nickname') || this.userid
-      // isEmpty(this.nickname) && (this.nickname = this.userid)
+      this.adAccount = await this.$localForage.getItem('adAccount')
+      this.adPassword = await this.$localForage.getItem('adPassword')
+      this.nickname = await this.$localForage.getItem('nickname') || this.adAccount
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
-      this.adAccount = await this.$localForage.getItem('adAccount')
-      this.adPassword = await this.$localForage.getItem('adPassword')
       // restore effect setting to store
       this.$store.commit('effect', await this.$localForage.getItem('effect'))
       // restore history count to store
