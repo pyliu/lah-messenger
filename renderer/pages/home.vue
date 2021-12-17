@@ -362,6 +362,12 @@ export default {
       this.resetReconnectTimer()
       this.$localForage.setItem('wsPort', val)
     },
+    userid (val) {
+      if (!isEmpty(val)) {
+        isEmpty(this.nickname) && (this.nickname = val)
+        this.adAccount !== val && (this.adAccount = val)
+      }
+    },
     nickname(val) {
       this.$store.commit('username', val)
       this.$localForage.setItem('nickname', val)
@@ -377,7 +383,7 @@ export default {
     },
     adAccount(val) {
       this.$localForage.setItem('adAccount', val)
-      this.$store.commit('userid', val)
+      this.userid !== val && this.$store.commit('userid', val)
     },
     adPassword(val) {
       this.$store.commit('password', val)
