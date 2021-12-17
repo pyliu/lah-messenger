@@ -137,7 +137,7 @@ const getters = {
   },
   hostname: state => state.userinfo.hostname,
   pcname: state => state.userinfo.hostname,
-  userid: state => state.userinfo.userid.toUpperCase(),
+  userid: state => state.userinfo.userid?.toUpperCase(),
   ad: state => state.ad,
   apiHost: state => state.apiHost,
   apiPort: state => state.apiPort,

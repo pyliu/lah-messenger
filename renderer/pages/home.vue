@@ -150,7 +150,7 @@ div
   //- 登入介面
   .center.vh-100(v-else, v-cloak)
     .w-75
-      .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak)
+      .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak, fluid)
 
       .center(style="margin-top: 3rem"): b-iconstack#main_logo_icon.iconstack(
         font-scale="7.5",
@@ -172,130 +172,132 @@ div
           stacked
         )
 
-      .center.d-flex.my-2(title="連線使用者資訊")
-        b-input-group
+      admin-manual-login(v-if="authority.isAdmin && !connecting", @connect="handleAdminConnect")
+      div(v-else)
+        .center.d-flex.my-2(title="連線使用者資訊")
+          b-input-group
+            template(#prepend): b-icon.my-auto.mr-1(
+              icon="person-badge",
+              font-scale="2.25",
+              variant="secondary"
+            )
+            b-input.mr-1(
+              v-model="nickname",
+              placeholder="... 顯示姓名 ...",
+              trim,
+              :disabled="!authority.isAdmin"
+            )
+            b-button#nametag(
+              ref="nametag",
+              title="開啟登入視窗",
+              v-b-modal.ad-query-modal,
+              :variant="queryADVariant"
+            )
+              b-icon.mr-1(icon="box-arrow-in-right", font-scale="1.25")
+              span.my-auto 登入AD
+            b-modal#ad-query-modal(
+              hide-footer,
+              centered,
+              scrollable,
+              no-close-on-backdrop
+            )
+              template(#modal-title): div(v-html="`AD驗證登入 ${userid}`")
+              b-input-group.ml-1(title="AD伺服器IP")
+                template(#prepend): .mr-1.my-auto ＡＤ主機
+                b-input(
+                  v-model="adHost",
+                  placeholder="... AD伺服器IP ...",
+                  :state="validAdHost",
+                  trim
+                )
+              b-input-group.ml-1.my-1(:title="`網域帳號`")
+                template(#prepend): .mr-1.my-auto 網域帳號
+                b-input(
+                  v-model="adAccount",
+                  :state="validAdAccount",
+                  :placeholder="'👨‍💻 網域帳號'",
+                  trim
+                )
+              b-input-group.ml-1(:title="`${userid}的網域密碼`")
+                template(#prepend): .mr-1.my-auto 網域密碼
+                b-input(
+                  :type="adPasswordType",
+                  v-model="adPassword",
+                  :state="validAdPassword",
+                  :placeholder="'🔐 網域密碼'",
+                  trim,
+                  @keydown.enter="invokeADQuery(true)"
+                )
+                b-icon.my-auto.ml-2.eye(
+                  ref="eye",
+                  :icon="adPasswordIcon",
+                  font-scale="1.25",
+                  variant="secondary",
+                  @click="switchAdPasswordIcon",
+                  :style="'margin-right: 60px'"
+                )
+                b-button.ml-1(
+                  :title="`點擊重新查詢 ${userid}`",
+                  @click="invokeADQuery(true)",
+                  :variant="'outline-primary'",
+                  :disabled="empty(adPassword) || validAdHost === false"
+                ) 登入
+
+        .center.d-flex.my-2
+          b-input-group
+            template(#prepend): b-icon.my-auto.mr-1(
+              icon="building",
+              font-scale="2.25",
+              variant="secondary"
+            )
+            b-select(
+              v-model="department",
+              :options="departmentOpts",
+              :state="validDepartment",
+              title="選擇所屬部門",
+              :disabled="!authority.isAdmin"
+            )
+
+        b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend): b-icon.my-auto.mr-1(
-            icon="person-badge",
+            icon="chat",
             font-scale="2.25",
             variant="secondary"
           )
-          b-input.mr-1(
-            v-model="nickname",
-            placeholder="... 顯示姓名 ...",
+          b-input(
+            v-model="wsHost",
+            @keyup.enter.exact="manualConnect",
+            :state="validHost",
             trim,
-            :disabled="!authority.isAdmin"
+            placeholder="... 信差伺服器IP ..."
           )
-          b-button#nametag(
-            ref="nametag",
-            title="開啟登入視窗",
-            v-b-modal.ad-query-modal,
-            :variant="queryADVariant"
-          )
-            b-icon.mr-1(icon="box-arrow-in-right", font-scale="1.25")
-            span.my-auto 登入AD
-          b-modal#ad-query-modal(
-            hide-footer,
-            centered,
-            scrollable,
-            no-close-on-backdrop
-          )
-            template(#modal-title): div(v-html="`AD驗證登入 ${userid}`")
-            b-input-group.ml-1(title="AD伺服器IP")
-              template(#prepend): .mr-1.my-auto ＡＤ主機
-              b-input(
-                v-model="adHost",
-                placeholder="... AD伺服器IP ...",
-                :state="validAdHost",
-                trim
-              )
-            b-input-group.ml-1.my-1(:title="`網域帳號`")
-              template(#prepend): .mr-1.my-auto 網域帳號
-              b-input(
-                v-model="adAccount",
-                :state="validAdAccount",
-                :placeholder="'👨‍💻 網域帳號'",
-                trim
-              )
-            b-input-group.ml-1(:title="`${userid}的網域密碼`")
-              template(#prepend): .mr-1.my-auto 網域密碼
-              b-input(
-                :type="adPasswordType",
-                v-model="adPassword",
-                :state="validAdPassword",
-                :placeholder="'🔐 網域密碼'",
-                trim,
-                @keydown.enter="invokeADQuery(true)"
-              )
-              b-icon.my-auto.ml-2.eye(
-                ref="eye",
-                :icon="adPasswordIcon",
-                font-scale="1.25",
-                variant="secondary",
-                @click="switchAdPasswordIcon",
-                :style="'margin-right: 60px'"
-              )
-              b-button.ml-1(
-                :title="`點擊重新查詢 ${userid}`",
-                @click="invokeADQuery(true)",
-                :variant="'outline-primary'",
-                :disabled="empty(adPassword) || validAdHost === false"
-              ) 登入
-
-      .center.d-flex.my-2
-        b-input-group
-          template(#prepend): b-icon.my-auto.mr-1(
-            icon="building",
-            font-scale="2.25",
-            variant="secondary"
-          )
-          b-select(
-            v-model="department",
-            :options="departmentOpts",
-            :state="validDepartment",
-            title="選擇所屬部門",
-            :disabled="!authority.isAdmin"
+          span.my-auto.mx-1 :
+          b-input(
+            v-model="wsPort",
+            type="number",
+            min="1025",
+            max="65535",
+            :state="validPort",
+            style="max-width: 75px"
           )
 
-      b-input-group.my-2(title="信差伺服器資訊")
-        template(#prepend): b-icon.my-auto.mr-1(
-          icon="chat",
-          font-scale="2.25",
-          variant="secondary"
+        transition.text-center(
+          enter-active-class="animate__slideInUp",
+          leave-active-class="animate__slideInDown",
+          mode="out-in"
+        ): b-button.animate__animated(
+          v-if="validInformation",
+          @click="manualConnect",
+          :disabled="connecting",
+          variant="success",
+          block
         )
-        b-input(
-          v-model="wsHost",
-          @keyup.enter.exact="manualConnect",
-          :state="validHost",
-          trim,
-          placeholder="... 信差伺服器IP ..."
-        )
-        span.my-auto.mx-1 :
-        b-input(
-          v-model="wsPort",
-          type="number",
-          min="1025",
-          max="65535",
-          :state="validPort",
-          style="max-width: 75px"
-        )
-
-      transition.text-center(
-        enter-active-class="animate__slideInUp",
-        leave-active-class="animate__slideInDown",
-        mode="out-in"
-      ): b-button.animate__animated(
-        v-if="validInformation",
-        @click="manualConnect",
-        :disabled="connecting",
-        variant="success",
-        block
-      )
-        b-icon(
-          v-if="connecting",
-          icon="arrow-clockwise",
-          animation="spin-pulse"
-        )
-        span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right", font-scale="1")] 連線
+          b-icon(
+            v-if="connecting",
+            icon="arrow-clockwise",
+            animation="spin-pulse"
+          )
+          span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right", font-scale="1")] 連線
 
   //- 狀態列
   status(:status-text="connectText")
@@ -1215,6 +1217,16 @@ export default {
         default:
           this.log(this.time(), `未支援的命令 ${action}`, json);
       }
+    },
+    handleAdminConnect(info) {
+      console.log(info);
+      this.wsHost = info.host;
+      this.wsPort = info.port;
+      // this.$store.commit("userid", info.id);
+      this.adAccount = info.id;
+      this.nickname = info.name;
+      this.department = info.dept;
+      this.manualConnect();
     },
     manualConnect() {
       this.connecting = true;
