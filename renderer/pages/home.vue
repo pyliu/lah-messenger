@@ -1303,9 +1303,10 @@ export default {
         this.$store.commit('authority', authority)
       }
       this.loginAdAttention()
+      
       // use userid for AD login
       if (!isEmpty(this.userid)) {
-        isEmpty(this.nickname) && (this.nickname = val)
+        isEmpty(this.nickname) && (this.nickname = this.userid)
         this.adAccount !== this.userid && (this.adAccount = this.userid)
       }
     })
