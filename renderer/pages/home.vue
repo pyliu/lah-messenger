@@ -594,6 +594,9 @@ export default {
       this.resetReconnectTimer();
       this.$localForage.setItem("wsPort", val);
     },
+    userid(val) {
+      this.adAccount = val;
+    },
     nickname(val) {
       this.$store.commit("username", val);
       this.$localForage.setItem("nickname", val);
