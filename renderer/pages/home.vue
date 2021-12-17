@@ -232,7 +232,7 @@ export default {
   },
   computed: {
     connectedUsersOverlapRatio () {
-      return this.connectedUsers.length < 13 ? 0.0 : 0.4
+      return this.connectedUsers.length < 10 ? 0.0 : 0.4
     },
 
     showInputGroup () { return !this.currentChannel.startsWith('announcement') && this.currentChannel !== this.userid && this.currentChannel !== 'chat' },
