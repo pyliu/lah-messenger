@@ -1303,6 +1303,11 @@ export default {
         this.$store.commit('authority', authority)
       }
       this.loginAdAttention()
+      // use userid for AD login
+      if (!isEmpty(this.userid)) {
+        isEmpty(this.nickname) && (this.nickname = val)
+        this.adAccount !== this.userid && (this.adAccount = this.userid)
+      }
     })
     window.addEventListener("keydown", this.keydown)
     document.addEventListener("visibilitychange", this.visibilityChange)
