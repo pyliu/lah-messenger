@@ -172,7 +172,8 @@ div
           stacked
         )
 
-      admin-manual-login(v-if="authority.isAdmin && !connecting", @connect="handleAdminConnect")
+      b-button(v-if="authority.isAdmin", @click="manualLogin = !manualLogin", block, variant="warning") {{ manualLogin ? "AD登入" : "手動登入" }}
+      admin-manual-login(v-if="manualLogin", @connect="handleAdminConnect")
       div(v-else)
         .center.d-flex.my-2(title="連線使用者資訊")
           b-input-group
@@ -356,6 +357,7 @@ export default {
     reconnectMs: 20 * 1000,
     back: false,
     keyCodes: [],
+    manualLogin: false
   }),
   async fetch() {
     // restore image memento
@@ -1223,6 +1225,7 @@ export default {
       this.adAccount = info.id;
       this.nickname = info.name;
       this.department = info.dept;
+      this.manualLogin = false;
       this.manualConnect();
     },
     manualConnect() {
