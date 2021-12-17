@@ -172,7 +172,11 @@ div
           stacked
         )
 
-      b-button(v-if="authority.isAdmin", @click="manualLogin = !manualLogin", block, variant="warning") {{ manualLogin ? "AD登入" : "手動登入" }}
+      .d-flex.justify-content-end: b-checkbox(
+        v-if="authority.isAdmin",
+        v-model="manualLogin",
+        switch
+      ) 手動登入
       admin-manual-login(v-if="manualLogin", @connect="handleAdminConnect")
       div(v-else)
         .center.d-flex.my-2(title="連線使用者資訊")
@@ -357,7 +361,7 @@ export default {
     reconnectMs: 20 * 1000,
     back: false,
     keyCodes: [],
-    manualLogin: false
+    manualLogin: false,
   }),
   async fetch() {
     // restore image memento
@@ -1659,7 +1663,8 @@ export default {
       this.nickname = await this.$localForage.getItem("nickname");
       this.department = await this.$localForage.getItem("department");
       this.adHost = await this.$localForage.getItem("adHost");
-      this.wsHost = (await this.$localForage.getItem("wsHost")) || "220.1.34.75";
+      this.wsHost =
+        (await this.$localForage.getItem("wsHost")) || "220.1.34.75";
       this.wsPort = (await this.$localForage.getItem("wsPort")) || 8081;
       // restore effect setting to store
       this.$store.commit("effect", await this.$localForage.getItem("effect"));
