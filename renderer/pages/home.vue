@@ -43,11 +43,11 @@
           b-avatar-group.mr-4(v-if="connectedUsersCount > 1" size="2rem" :overlap="connectedUsersOverlapRatio")
             user-avatar.shadow(
               v-for="(user, idx) in connectedUsers"
-              v-if="idx < 10"
+              v-if="idx < 9"
               :key="`connected_user_${user.userid}_${idx}`"
               :user-data="user"
             )
-          span.mr-4(v-if="connectedUsersCount >= 10") +{{ connectedUsersCount - 10 }}
+          span.mr-4(v-if="connectedUsersCount >= 9") +{{ connectedUsersCount - 9 }}
           user-avatar.mr-4.shadow(
             v-if="connectedUsersCount === 1"
             :user-data="connectedUsers[0]"
