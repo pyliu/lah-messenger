@@ -594,17 +594,11 @@ export default {
       this.resetReconnectTimer();
       this.$localForage.setItem("wsPort", val);
     },
-    userid(val) {
-      if (!isEmpty(val)) {
-        isEmpty(this.nickname) && (this.nickname = val);
-        this.adAccount !== val && (this.adAccount = val);
-      }
-    },
     nickname(val) {
       this.$store.commit("username", val);
       this.$localForage.setItem("nickname", val);
       // temporally fix for unable getting userid from os
-      if (/^H[A-H]/i.test(val)) {
+      if (/^H[A-H]/i.test(val) && this.userid !== val) {
         this.$store.commit("userid", val);
         this.adAccount = val;
       }
@@ -1447,7 +1441,6 @@ export default {
             const name = desc || this.userMap[this.adAccount] || this.adAccount;
             this.$store.commit("userid", this.adAccount);
             this.$store.commit("username", name);
-            this.$localForage.setItem("nickname", name);
             this.nickname = name;
             this.department = group;
             this.connectText = `AD: ${this.adAccount} ${name} ${group}`;
@@ -1657,12 +1650,10 @@ export default {
       // restore last settings
       this.adAccount = await this.$localForage.getItem("adAccount");
       this.adPassword = await this.$localForage.getItem("adPassword");
-      this.nickname =
-        (await this.$localForage.getItem("nickname")) || this.adAccount;
+      this.nickname = await this.$localForage.getItem("nickname");
       this.department = await this.$localForage.getItem("department");
       this.adHost = await this.$localForage.getItem("adHost");
-      this.wsHost =
-        (await this.$localForage.getItem("wsHost")) || "220.1.34.75";
+      this.wsHost = (await this.$localForage.getItem("wsHost")) || "220.1.34.75";
       this.wsPort = (await this.$localForage.getItem("wsPort")) || 8081;
       // restore effect setting to store
       this.$store.commit("effect", await this.$localForage.getItem("effect"));
@@ -1710,9 +1701,8 @@ export default {
       this.loginAdAttention();
 
       // use userid for AD login
-      if (!isEmpty(this.userid)) {
-        isEmpty(this.nickname) && (this.nickname = this.userid);
-        this.adAccount !== this.userid && (this.adAccount = this.userid);
+      if (!this.empty(this.userid) && this.adAccount !== this.userid) {
+        this.adAccount = this.userid;
       }
     });
     window.addEventListener("keydown", this.keydown);

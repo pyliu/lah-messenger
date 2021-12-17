@@ -46,7 +46,6 @@ div
 </template>
 
 <script>
-import isEmpty from "lodash/isEmpty";
 import trim from "lodash/trim";
 
 export default {
@@ -70,10 +69,10 @@ export default {
   }),
   computed: {
     validInformation() {
-      if (isEmpty(this.adId)) {
+      if (this.empty(this.adId)) {
         return false;
       }
-      if (isEmpty(this.adName)) {
+      if (this.empty(this.adName)) {
         return false;
       }
       if (!this.$utils.isIPv4(this.wsHost)) {
