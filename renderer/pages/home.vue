@@ -110,10 +110,11 @@
               title="開啟登入視窗"
               @click="showModalById('ad-query-modal')"
               :variant="queryADVariant"
-              :disabled="asking || this.empty(this.userid)"
             )
-              b-icon.mr-1(v-if="this.userid === this.nickname" icon="box-arrow-in-right" font-scale="1.25")
-              span.my-auto {{ queryADLabel }}
+              //- b-icon.mr-1(v-if="this.userid === this.nickname" icon="box-arrow-in-right" font-scale="1.25")
+              //- span.my-auto {{ queryADLabel }}
+              b-icon.mr-1(icon="box-arrow-in-right" font-scale="1.25")
+              span.my-auto 登入AD
               
             b-input.ml-1(v-model="nickname" placeholder="... 顯示姓名 ..." trim :disabled="!authority.isAdmin")
             b-modal(
@@ -124,9 +125,12 @@
               no-close-on-backdrop
             )
               template(#modal-title): div(v-html="`AD驗證登入 ${userid}`")
-              b-input-group.ml-1.mb-1(title="AD伺服器IP")
+              b-input-group.ml-1(title="AD伺服器IP")
                 template(#prepend): .mr-1.my-auto ＡＤ主機
                 b-input(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+              b-input-group.ml-1.my-1(:title="`網域帳號`")
+                template(#prepend): .mr-1.my-auto 網域帳號
+                b-input(v-model="adAccount" :state="validAdAccount" :placeholder="'👨‍💻 網域帳號'" trim)
               b-input-group.ml-1(:title="`${userid}的網域密碼`")
                 template(#prepend): .mr-1.my-auto 網域密碼
                 b-input(:type="adPasswordType" v-model="adPassword" :state="validAdPassword" :placeholder="'🔐 網域密碼'" trim @keydown.enter="invokeADQuery(true)")
@@ -182,6 +186,7 @@ export default {
     inputImages: [],
     connectText: '',
     adHost: '',
+    adAccount: '',
     adPassword: '',
     adPasswordIcon: 'eye-slash',
     adPasswordType: 'password',
@@ -255,6 +260,7 @@ export default {
     userQueryStr () { return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}` },
     valid () { return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages) },
     validAdHost () { return this.$utils.isIPv4(this.adHost) === false ? false : null },
+    validAdAccount () { return !this.empty(this.adAccount) },
     validAdPassword () { return this.empty(this.adPassword) ? false : null },
     validHost () { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
     validPort () {
@@ -366,11 +372,16 @@ export default {
       // temporally fix for unable getting userid from os
       if (/^H[A-H]/i.test(val)) {
         this.$store.commit('userid', val)
+        this.adAccount = val
       }
     },
     adHost(val) {
       this.$store.commit('ad', val)
       this.$localForage.setItem('adHost', val)
+    },
+    adAccount(val) {
+      this.$localForage.setItem('adAccount', val)
+      this.$store.commit('userid', val)
     },
     adPassword(val) {
       this.$store.commit('password', val)
@@ -1048,17 +1059,17 @@ export default {
         this.connectText = `AD查詢中`
         return
       }
-      if (this.empty(this.adPassword) || this.validAdHost === false) {
+      if (this.empty(this.adPassword) || this.empty(this.adAccount) || this.validAdHost === false) {
         this.connectText = `缺漏必要欄位無法查詢`
         return
       }
       // hide modal window
       this.hideModalById('ad-query-modal')
-      this.nickname = this.userMap[this.userid] || this.userid
-      if (force || (this.nickname === this.userid && !this.empty(this.adPassword) && !this.empty(this.domain) && this.$utils.isIPv4(this.adHost))) {
+      this.nickname = this.userMap[this.adAccount] || this.adAccount
+      if (force || (!this.empty(this.domain) && this.validAdHost)) {
         this.asking = true
         this.log(this.time(), `透過AD查詢使用者資訊`)
-        const sAMAccountName = `${this.userid}@${this.domain}`
+        const sAMAccountName = `${this.adAccount}@${this.domain}`
         this.ipcRenderer.invoke('ad-user-query', {
           url: `ldap://${this.adHost}`,
           baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=PCNAME,DC=HA,DC=CENWEB,DC=LAND,DC=MOI'
@@ -1069,12 +1080,13 @@ export default {
           const desc = result.description
           this.log(this.time(), `查到 ${sAMAccountName} 描述`, desc)
           this.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
-          const name = desc || this.userMap[this.userid] || this.userid
+          const name = desc || this.userMap[this.adAccount] || this.adAccount
+          this.$store.commit('userid', this.adAccount)
           this.$store.commit('username', name)
           this.$localForage.setItem('nickname', name)
           this.nickname = name
           this.department = group
-          this.connectText = `AD: ${this.userid} ${name} ${group}`
+          this.connectText = `AD: ${this.adAccount} ${name} ${group}`
           this.connect()
         }).catch((err) => {
           console.error(err)
@@ -1256,6 +1268,7 @@ export default {
       this.adHost = await this.$localForage.getItem('adHost')
       this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
+      this.adAccount = await this.$localForage.getItem('adAccount')
       this.adPassword = await this.$localForage.getItem('adPassword')
       // restore effect setting to store
       this.$store.commit('effect', await this.$localForage.getItem('effect'))
