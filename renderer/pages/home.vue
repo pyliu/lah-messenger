@@ -483,7 +483,7 @@ export default {
       ];
     },
     showUnreadChannels() {
-      return ["announcement", this.userid, , `announcement_${this.department}`];
+      return ["announcement", this.userid, `announcement_${this.department}`];
     },
     inChatting() {
       return !this.stickyChannels.includes(this.currentChannel);
@@ -1369,8 +1369,7 @@ export default {
           }
           // send notification to user to login
           this.ipcRenderer.invoke("notification", {
-            message: "請登入網域以讀取最新訊息！",
-            showMainWindow: true,
+            message: "請登入即時通以讀取最新訊息！"
           });
         }
       }
@@ -1472,7 +1471,7 @@ export default {
     queryUserInfo() {
       // dynamic get userinfo from main process
       this.$localForage.getItem("userinfo").then((userinfo) => {
-        // console.log('使用者資訊除錯', userinfo)
+        // console.warn('使用者資訊除錯', userinfo)
         if (userinfo) {
           this.setUserInfo(userinfo);
         } else {
@@ -1482,13 +1481,14 @@ export default {
         }
       });
     },
-    setUserInfo(userinfo) {
+    async setUserInfo(userinfo) {
       this.$store.commit("userinfo", userinfo);
       this.$localForage.setItem("userinfo", userinfo);
       if (!this.$utils.isIPv4(this.adHost)) {
         this.adHost = this.getFirstDNSIp();
       }
-      if (this.userid === this.username) {
+      const cached = await this.$localForage.getItem("nickname");
+      if (this.userid === cached || this.empty(cached)) {
         this.ipcRenderer.invoke(
           "title",
           `${this.ip} / ${this.userid} / ${this.pcname}`
@@ -1496,7 +1496,7 @@ export default {
       } else {
         this.ipcRenderer.invoke(
           "title",
-          `${this.ip} / ${this.userid} / ${this.username} / ${this.pcname}`
+          `${this.ip} / ${this.userid} / ${cached} / ${this.pcname}`
         );
       }
       this.register();
@@ -1581,11 +1581,13 @@ export default {
       // store the last read id
       this.setCache(`${channel}_last_id`, incoming.message.id || incoming.id);
       // sender not me then triggers notification
-      this.ipcRenderer.invoke("notification", {
-        message: title,
-        showMainWindow: false,
-        channel: channel,
-      });
+      if (incoming.sender !== this.userid) {
+        this.ipcRenderer.invoke("notification", {
+          message: title,
+          showMainWindow: this.showUnreadChannels.includes(channel),
+          channel: channel,
+        });
+      }
     },
 
     keydown(event) {
