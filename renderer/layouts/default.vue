@@ -1,10 +1,9 @@
 <template lang="pug">
-  Nuxt
+Nuxt
 </template>
 
 <script>
-export default {
-}
+export default {};
 </script>
 
 <style lang="scss" scoped>

@@ -1621,13 +1621,7 @@ export default {
     },
     visibilityChange(event) {
       this.$store.commit("windowVisible", !document.hidden);
-    },
-    loginAdAttention() {
-      if (this.nickname === this.userid && this.$refs.nametag) {
-        this.attention(this.$refs.nametag, { name: "tada", speed: "" });
-        this.timeout(() => this.loginAdAttention(), 2000);
-      }
-    },
+    }
   },
   created() {
     if (!(this.currentChannel in this.messages) && !this.$isServer) {
@@ -1709,8 +1703,6 @@ export default {
       } else {
         this.$store.commit("authority", authority);
       }
-      this.loginAdAttention();
-
       // use userid for AD login
       if (!this.empty(this.userid) && this.adAccount !== this.userid) {
         this.adAccount = this.userid;

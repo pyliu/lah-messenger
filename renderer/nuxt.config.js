@@ -1,7 +1,7 @@
 export default {
   ssr: false,
   head: {
-    title: '信差服務即時通',
+    title: '桃園即時通',
     meta: [{
       charset: 'utf-8'
     },
@@ -12,7 +12,7 @@ export default {
     {
       hid: 'description',
       name: 'description',
-      content: '信差服務即時通-桃園市桃園地政事務所'
+      content: '桃園即時通-桃園市桃園地政事務所'
     }
     ],
     link: [{

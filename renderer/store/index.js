@@ -55,7 +55,7 @@ const state = () => ({
   userMap: {},
   userinfo: {
     address: [],
-    ipv4: '127.0.0.1',
+    ipv4: '',
     ipv6: '',
     userid: '',
     doamin: '',
