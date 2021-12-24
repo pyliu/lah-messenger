@@ -45,11 +45,11 @@
           span.my-auto 回朔數量
         b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
       
-      b-input-group.my-2(title="通知啟用")
+      b-input-group.my-2(title="收到訊息時是否啟用彈出主視窗")
         template(#prepend)
           b-icon.my-auto.mr-2(icon="alarm-fill" font-scale="2.25" variant="secondary")
           span.my-auto 通知開關
-        b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled title="全所、部門公告通知") 公告
+        b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled readonly title="全所、部門公告通知") 公告
         b-checkbox.ml-2.my-auto(v-model="notification.personal" title="個人通知") 個人
         b-checkbox.ml-2.my-auto(v-model="notification.chat") 聊天室
 

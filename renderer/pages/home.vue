@@ -1526,9 +1526,8 @@ export default {
       if (receivedId > lastReadId) {
         // tell electron window the channels got unread message
         this.ipcRenderer.invoke("unread", channel);
-        // determining wether the message should trigger the system notification
-        this.notifyChannels.includes(channel) &&
-          this.invokeNotification(incoming);
+        // determining wether the message should trigger the system notification or not
+        this.invokeNotification(incoming);
       }
     },
     async invokeNotification(incoming) {
@@ -1580,11 +1579,12 @@ export default {
       );
       // store the last read id
       this.setCache(`${channel}_last_id`, incoming.message.id || incoming.id);
-      // sender not me then triggers notification
+      const showMainWindow = this.notifyChannels.includes(channel);
+      // sender not self and settings allowed then triggers notification
       if (incoming.sender !== this.userid) {
         this.ipcRenderer.invoke("notification", {
           message: title,
-          showMainWindow: this.showUnreadChannels.includes(channel),
+          showMainWindow: showMainWindow,
           channel: channel,
         });
       }
