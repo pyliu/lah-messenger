@@ -69,14 +69,15 @@ if (!gotTheLock) {
           }, icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
           }, {
             type: "separator"
-          }, {
-            label: '關閉程式',
-            click () {
-              app.isQuiting = true
-              app.quit()
-            },
-            icon: nativeImage.createFromPath(path.join(__dirname, 'close.ico')).resize({ width: 16, height: 16 })
           }
+          // ,{
+          //   label: '關閉程式',
+          //   click () {
+          //     app.isQuiting = true
+          //     app.quit()
+          //   },
+          //   icon: nativeImage.createFromPath(path.join(__dirname, 'close.ico')).resize({ width: 16, height: 16 })
+          // }
         ]))
         tray.setIgnoreDoubleClickEvents(true)
         tray.on('click', (event) => {
