@@ -224,11 +224,13 @@ ipcMain.handle('notification', async (event, payload) => {
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple messages coming in at once
-  notifyDebounced('[👉點擊開啟APP視窗]', message, () => {
+  notifyDebounced('[桃園即時通 💬]', message, () => {
     // 視窗置中顯示
     if (showMainWindow) {
-      mainWindow.show()
-      mainWindow.center()
+      if (!mainWindow.isVisible()) {
+        mainWindow.show()
+        mainWindow.center()
+      }
       mainWindow.setAlwaysOnTop(true)
       mainWindow.focus()
       // if (channel) {
