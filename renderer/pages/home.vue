@@ -25,7 +25,7 @@ div
           :title="`${deptChannel.text} 部門公告訊息`"
         ): a.mr-1
           //- b-icon.mr-1(icon="building" variant="primary")
-          span.s-105 🏬 {{ deptChannel.text }}
+          span.s-105 🏛 {{ deptChannel.text }}
           b-badge.notify-dept(
             variant="info",
             pill,
