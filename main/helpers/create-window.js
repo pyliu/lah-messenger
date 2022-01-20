@@ -72,7 +72,8 @@ export default function createWindow(windowName, options) {
     ...options,
     ...state,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: true, // default is false after Electron v5,
+      contextIsolation: false // added for avoiding "require is not defined" issue when upgrade electron from v11.5.0 to v13.6.7
     },
   });
 
