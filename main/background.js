@@ -9,6 +9,7 @@ const qs = require('qs')
 const axios = require('axios')
 // required for PHP backend
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
+axios.defaults.headers.post['SameSite'] = 'None'
 
 import {
   createWindow,
@@ -265,7 +266,13 @@ ipcMain.handle('injectUserinfo', async (event, arg) => {
 ipcMain.handle('userinfo', async (event, arg) => {
   // To find user id starts with 'HX'
   const found = [ ...await si.users() ].find(thisuser => /^H[A-H]/i.test(thisuser.user))
-  !isProd && console.log(`Found User`, found)
+  if (!isProd) {
+    if (found) {
+      console.log(`Found User`, found)
+    } else {
+      console.log(`Can not find user id that starts with H[A-H]`)
+    }
+  }
   /*
     found e.g. => {
       user: 'HA0000',
@@ -302,7 +309,7 @@ ipcMain.handle('userinfo', async (event, arg) => {
     address: [],
     ipv4: '',
     ipv6: '',
-    userid: found.user,
+    userid: found ? found.user : '',
     hostname: os.hostname,
     domain: os.fqdn,
     os: os,

@@ -1,5 +1,5 @@
 <template lang="pug">
-div
+div: client-only
   transition(v-if="connected", name="list", mode="out-in"): div
     b-card.m-1(no-body, header-tag="nav", v-cloak)
       template(#header): b-nav(card-header, tabs, fill)
@@ -780,7 +780,7 @@ export default {
           this.alert(err.toString());
         })
         .finally(() => {
-          this.log("authority", this.authority);
+          // this.log("authority", this.authority);
         });
     },
     loadUserMapData() {
@@ -1474,7 +1474,7 @@ export default {
     queryUserInfo() {
       // dynamic get userinfo from main process
       this.$localForage.getItem("userinfo").then((userinfo) => {
-        // console.warn('使用者資訊除錯', userinfo)
+        console.warn('使用者資訊除錯', userinfo)
         if (userinfo) {
           this.setUserInfo(userinfo);
         } else {

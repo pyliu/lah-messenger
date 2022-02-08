@@ -1,14 +1,14 @@
 <template lang="pug">
-  .d-flex.flex-wrap.justify-content-between(title="Windows + . 開啟系統鍵盤")
-    b-button.border-0(
-      variant="outline-light"
-      v-for="(emojiTxt, idx) in emojis"
-      :key="`emoji_${idx}`"
-      :size="size"
-      :title="emojiLib.unemojify(emojiTxt)"
-      @click="$emit('click', emojiTxt)"
+.d-flex.flex-wrap.justify-content-between(title="Windows + . 開啟系統鍵盤")
+  b-button.border-0(
+    variant="outline-light"
+    v-for="(emojiTxt, idx) in emojis"
+    :key="`emoji_${idx}`"
+    :size="size"
+    :title="emojiLib.unemojify(emojiTxt)"
+    @click="$emit('click', emojiTxt)"
 
-    ) {{ emojiTxt }}
+  ) {{ emojiTxt }}
 </template>
 
 <script>
