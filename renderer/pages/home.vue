@@ -257,7 +257,7 @@ div
               icon="arrow-clockwise",
               animation="spin-pulse"
             )
-            span(v-else) #[b-icon.my-auto(icon="box-arrow-in-right", font-scale="1")] 嘗試連線
+            span(v-else) #[b-icon.my-auto(icon="hdd-network", font-scale="1")] 連線
 
         b-modal#ad-query-modal(
           hide-footer,
@@ -999,7 +999,7 @@ export default {
       return false;
     },
     handleAckMessage(json) {
-      const cmd = json.command;
+      const cmd = json?.command;
       this.log(
         this.time(),
         `處理系統 ACK 訊息 ${cmd} [home::handleAckMessage]`,

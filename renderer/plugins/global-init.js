@@ -1,6 +1,9 @@
 import $ from 'jquery'
 import _ from 'lodash'
 import _md5 from 'md5'
+import { format, formatDistanceToNow } from 'date-fns'
+// Require tw locale
+import { zhTW } from 'date-fns/locale'
 import uploadAxios from 'axios'
 const emoji = require('node-emoji')
 
@@ -167,27 +170,45 @@ export default ({ $axios, store }, inject) => {
       })
     },
     now () {
-      const now = new Date()
-      // e.g. 2020-11-06 13:39:23
-      return now.getFullYear() + '-' +
-        ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + now.getDate()).slice(-2) + ' ' +
-        ('0' + now.getHours()).slice(-2) + ':' +
-        ('0' + now.getMinutes()).slice(-2) + ':' +
-        ('0' + now.getSeconds()).slice(-2)
+      // https://date-fns.org/v2.28.0/docs/format
+      // e.g. 2022-01-22 16:06:23
+      return format(new Date(), 'yyyy-LL-dd HH:mm:ss', { locale: zhTW })
     },
-    tsAd (ts) {
-      if (ts) {
-        const d = new Date(ts)
-        // e.g. 2021-09-23 12:40:23
-        return d.getFullYear() + '-' +
-          ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
-          ('0' + d.getDate()).slice(-2) + ' ' +
-          ('0' + d.getHours()).slice(-2) + ':' +
-          ('0' + d.getMinutes()).slice(-2) + ':' +
-          ('0' + d.getSeconds()).slice(-2)
+    twNow () {
+      const now = new Date()
+      now.setFullYear(now.getFullYear() - 1911)
+      return format(now, 'yyy-LL-dd HH:mm:ss', { locale: zhTW })
+    },
+    toADDate (ts, fmt = 'yyyy-LL-dd HH:mm:ss') {
+      return format(ts, fmt, { locale: zhTW })
+    },
+    tsToAdDateStr (phpTs, full = false) {
+      // PHP time() generate ts by seconds, however js is milliseconds
+      const formatted = format(phpTs * 1000, 'yyyy-LL-dd HH:mm:ss', { locale: zhTW })
+      const parts = formatted.split(' ')
+      return full ? formatted : parts[0]
+    },
+    twDateStr (dateObj) {
+      if (typeof dateObj !== 'object') {
+        console.warn('twDateStr', dateObj, 'is not an object')
+        return ''
       }
-      return 'timestamp is not provided'
+      dateObj.setFullYear(dateObj.getFullYear() - 1911)
+      return format(dateObj, 'yyyLLdd', { locale: zhTW })
+    },
+    twToAdDateObj (twDateStr) {
+      if (isEmpty(twDateStr)) { return null }
+      const Y = twDateStr.substring(0, 3) - 0 + 1911
+      const M = twDateStr.substring(3, 5) - 0 - 1
+      const D = twDateStr.substring(5, 7) - 0
+      return new Date(Y, M, D)
+    },
+    formatDistanceToNow (d = +new Date()) {
+      return formatDistanceToNow(d, {
+        addSuffix: true,
+        includeSeconds: true,
+        locale: zhTW
+      })
     },
     isIPv4 (str) {
       if (_.isEmpty(str)) {
