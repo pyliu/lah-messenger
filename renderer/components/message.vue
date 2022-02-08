@@ -58,7 +58,7 @@
         flip-h
         @click="isMyChannel ? reply() : emitReply()"
       )
-      div(v-if="!isAnnouncement", v-b-tooltip.v-secondary :title="timeDistance") {{ mtime }}
+      div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
     //- my message
     p(ref="myMessage" v-if="myMessage" v-html="message" @click="handleImgClick($event)")
