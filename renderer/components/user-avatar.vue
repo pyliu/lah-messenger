@@ -1,12 +1,12 @@
 <template lang="pug">
-  b-avatar(
-    :src="avatarSrc"
-    :size="size"
-    :title="nametag"
-    v-b-popover.hover.topright="{ content: logon }"
-    button
-    @click="click"
-  )
+b-avatar(
+  :src="avatarSrc"
+  :size="size"
+  :title="nametag"
+  v-b-popover.hover.topright="{ content: logon }"
+  button
+  @click="click"
+)
 </template>
 
 <script>
@@ -25,7 +25,7 @@ export default {
     uid () { return this.userData?.userid },
     uname () { return this.userData?.username || this.userMap[this.userData?.userid] || this.userData?.userid },
     nametag () { return this.uid === this.uname ? this.uid : `${this.uid} ${this.uname}` },
-    logon () { return `登入時間：${this.$utils.toADDate(this.userData.timestamp).split(' ')[1]}` },
+    logon () { return `登入時間：${this.$utils.toADDate(this.userData.timestamp).split(' ')[1]} (${this.$utils.formatDistanceToNow(this.userData.timestamp)})` },
     avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` }
   },
   methods: {
