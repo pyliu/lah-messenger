@@ -1762,7 +1762,7 @@ export default {
   z-index: 1002;
   position: absolute;
   top: calc(33vh - 66vh - 0px);
-  opacity: 0.85;
+  opacity: 0.95;
   border-radius: 15px;
   background-color: lightgrey;
   width: 97.2vw;
