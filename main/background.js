@@ -346,7 +346,7 @@ ipcMain.handle('ad-user-query', async (event, config) => {
   if (user) {
     !isProd && console.log(`找到AD使用者`, user)
     // find user group
-    let group = 'supervisor'
+    let group = 'adm'
     let checked = false
     await ad.isUserMemberOf(config.username, '資訊課') && (group = 'inf') && (checked = true)
     !checked && await ad.isUserMemberOf(config.username, '登記課') && (group = 'reg') && (checked = true)
