@@ -9,7 +9,7 @@ const qs = require('qs')
 const axios = require('axios')
 // required for PHP backend
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
-axios.defaults.headers.post['SameSite'] = 'None'
+axios.defaults.headers.get['SameSite'] = 'None'
 
 import {
   createWindow,
