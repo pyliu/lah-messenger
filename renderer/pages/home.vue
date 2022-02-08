@@ -1474,7 +1474,6 @@ export default {
     queryUserInfo() {
       // dynamic get userinfo from main process
       this.$localForage.getItem("userinfo").then((userinfo) => {
-        console.warn('使用者資訊除錯', userinfo)
         if (userinfo) {
           this.setUserInfo(userinfo);
         } else {
