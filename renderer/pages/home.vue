@@ -1746,7 +1746,7 @@ export default {
 .eye {
   cursor: pointer;
   position: absolute;
-  right: 0.55rem;
+  right: 2rem;
   top: 0.55rem;
 }
 .float-preview {
