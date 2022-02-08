@@ -1,67 +1,67 @@
 <template lang="pug">
-  .mb-1
-    //- show date if the message has previous days' message
-    .d-flex.msg-item.justify-content-center.system.date(
-      v-if="showMdate && id > 0"
-    ): p(v-html="mdate")
+.mb-1
+  //- show date if the message has previous days' message
+  .d-flex.msg-item.justify-content-center.system.date(
+    v-if="showMdate && id > 0"
+  ): p(v-html="mdate")
 
-    .s-75.font-weight-bold.align-middle(
-      v-if="!myMessage && !system"
-      @click="avatarClick($event)"
-      :style="{ cursor: 'pointer' }"
-      title="顯示使用者卡片"
+  .s-75.font-weight-bold.align-middle(
+    v-if="!myMessage && !system"
+    @click="avatarClick($event)"
+    :style="{ cursor: 'pointer' }"
+    title="顯示使用者卡片"
+  )
+    b-avatar.my-auto.mr-1(
+      v-if="['remote'].includes(type) || isAnnouncement"
+      :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
+      size="1.25rem"
+      variant="primary"
+      button
     )
-      b-avatar.my-auto.mr-1(
-        v-if="['remote'].includes(type) || isAnnouncement"
-        :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
-        size="1.25rem"
-        variant="primary"
-        button
+    span.mr-1 {{ sender }}
+    em {{ from }}
+
+  .d-flex.msg-item.my-1(:class="classes")
+
+    //- special card message for announcement
+    announcement-card(
+      v-if="isAnnouncement"
+      :data-json="announcementPayload"
+      :channel="channel"
+      :message-id="id"
+    )
+
+    //- remote or system message
+    p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="handleImgClick($event)")
+
+    //- timestamp for the message
+    .time.s-60.mx-1.text-muted.text-right(v-if="!system")
+      b-icon.align-middle.mr-1.readIcon(
+        v-if="isRead"
+        icon="check"
+        :variant="myMessage ? 'success' : 'light'"
+        title="已讀取"
       )
-      span.mr-1 {{ sender }}
-      em {{ from }}
-
-    .d-flex.msg-item.my-1(:class="classes")
-
-      //- special card message for announcement
-      announcement-card(
-        v-if="isAnnouncement"
-        :data-json="announcementPayload"
-        :channel="channel"
-        :message-id="id"
+      b-icon.mr-1.clickableIcon(
+        v-if="messageRemovable"
+        icon="x-circle"
+        variant="danger"
+        title="移除這則訊息"
+        scale="1.5"
+        @click="remove"
       )
+      b-icon.clickableIcon(
+        v-if="!isAnnouncement && !myMessage && userMap[senderId]"
+        icon="reply-fill"
+        title="回覆此訊息"
+        font-scale="1.5"
+        flip-h
+        @click="isMyChannel ? reply() : emitReply()"
+      )
+      div(v-if="!isAnnouncement", v-b-tooltip.v-secondary :title="timeDistance") {{ mtime }}
 
-      //- remote or system message
-      p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="handleImgClick($event)")
-
-      //- timestamp for the message
-      .time.s-60.mx-1.text-muted.text-right(v-if="!system")
-        b-icon.align-middle.mr-1.readIcon(
-          v-if="isRead"
-          icon="check"
-          :variant="myMessage ? 'success' : 'light'"
-          title="已讀取"
-        )
-        b-icon.mr-1.clickableIcon(
-          v-if="messageRemovable"
-          icon="x-circle"
-          variant="danger"
-          title="移除這則訊息"
-          scale="1.5"
-          @click="remove"
-        )
-        b-icon.clickableIcon(
-          v-if="!isAnnouncement && !myMessage && userMap[senderId]"
-          icon="reply-fill"
-          title="回覆此訊息"
-          font-scale="1.5"
-          flip-h
-          @click="isMyChannel ? reply() : emitReply()"
-        )
-        div(v-if="!isAnnouncement") {{ mtime }}
-
-      //- my message
-      p(ref="myMessage" v-if="myMessage" v-html="message" @click="handleImgClick($event)")
+    //- my message
+    p(ref="myMessage" v-if="myMessage" v-html="message" @click="handleImgClick($event)")
 
 </template>
 
@@ -114,6 +114,7 @@ export default {
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },
     mtime() { return this.raw?.time },
+    timeDistance() { return this.$utils.formatDistanceToNow(+new Date(`${this.raw.date} ${this.raw.time}`)) },
     channel() { return this.raw?.channel },
     prevMdate() {
       if (this.prev) {
