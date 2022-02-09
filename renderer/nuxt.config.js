@@ -58,6 +58,7 @@ export default {
     { src: '~/plugins/axios'},
     { src: '~/plugins/global-init'},
     { src: '~/plugins/global-vue-mixin'},
+    { src: '~/plugins/test'},
   ],
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
