@@ -212,7 +212,8 @@ div: client-only
             b-icon.my-auto.mr-1(
               icon="chat-dots-fill",
               font-scale="2.25",
-              variant="secondary"
+              variant="secondary",
+              animation="fade"
             )
           b-input(
             v-model="wsHost",
@@ -1257,6 +1258,30 @@ export default {
         this.reconnectMs = 20 * 1000;
         this.resetReconnectTimer();
       } else {
+        this.isBusy = true;
+        this.$axios.post(this.$consts.API.JSON.QUERY, {
+          type: 'ping',
+          ip: this.wsHost,
+          port: this.wsPort
+        }).then(({ data }) => {
+          if (this.$utils.statusCheck(data.status)) {
+            this.actualConnect();
+          } else {
+            this.warn('WSS伺服器無回應', data.message)
+            this.connectText = data.message
+            this.reconnectMs = 20 * 1000;
+            this.resetReconnectTimer();
+            this.connecting = false;
+          }
+        }).catch((err) => {
+          this.err(err);
+        }).finally(() => {
+          this.isBusy = false;
+        })
+      }
+    },
+    actualConnect() {
+      if (!this.connected) {
         if (this.validInformation) {
           this.connecting = true;
           try {
