@@ -1527,17 +1527,16 @@ export default {
         this.adHost = this.getFirstDNSIp();
       }
       const cached = await this.$localForage.getItem("nickname");
-      if (this.userid === cached || this.empty(cached)) {
-        this.ipcRenderer.invoke(
-          "title",
-          `${this.ip} / ${this.userid} / ${this.pcname}`
-        );
-      } else {
-        this.ipcRenderer.invoke(
-          "title",
-          `${this.ip} / ${this.userid} / ${cached} / ${this.pcname}`
-        );
+      const parts = [];
+      if (this.ip.startsWith('192.168.') || this.ip.startsWith('220.1.')) {
+        parts.push(this.ip);
       }
+      !this.empty(this.userid) && parts.push(this.userid);
+      if (this.userid !== cached && !this.empty(cached)) {
+        parts.push(cached);
+      }
+      parts.push(this.pcname);
+      this.ipcRenderer.invoke("title", parts.join(' / '));
       this.register();
       // inject userinfo to electron mainWindow as well
       this.ipcRenderer.invoke("injectUserinfo", {
