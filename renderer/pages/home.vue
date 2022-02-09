@@ -299,10 +299,11 @@ div: client-only
             b-icon.my-auto.ml-2.eye(
               ref="eye",
               :icon="adPasswordIcon",
+              :style="'margin-right: 60px'",
               font-scale="1.25",
               variant="secondary",
-              @click="switchAdPasswordIcon",
-              :style="'margin-right: 60px'"
+              title="切換顯示",
+              @click="switchAdPasswordIcon"
             )
             b-button.ml-1(
               :title="`點擊重新查詢 ${userid}`",
@@ -1663,7 +1664,6 @@ export default {
       this.$store.commit("windowVisible", !document.hidden);
     },
     watchModal(bvEvent, modalId) {
-      this.warn('Modal is about to be shown', bvEvent, modalId)
       const type = bvEvent?.type
       if (type === 'shown') {
         this.clearReconnectTimer();
