@@ -1263,7 +1263,7 @@ export default {
         this.reconnectMs = 20 * 1000;
         this.resetReconnectTimer();
       } else {
-        this.isBusy = true;
+        // this.isBusy = true;
         this.$axios.post(this.apiQueryUrl + this.$consts.API.JSON.QUERY, {
           type: 'ping',
           ip: this.wsHost,
@@ -1281,7 +1281,7 @@ export default {
         }).catch((err) => {
           this.err(err);
         }).finally(() => {
-          this.isBusy = false;
+          // this.isBusy = false;
         })
       }
     },
