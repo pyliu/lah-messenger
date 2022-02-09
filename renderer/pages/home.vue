@@ -209,12 +209,13 @@ div: client-only
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend)
-            b-icon.my-auto.mr-1(
-              icon="chat-dots-fill",
-              font-scale="2.25",
-              variant="secondary",
-              animation="fade"
-            )
+            .my-auto.mr-2 伺服器
+            //- b-icon.my-auto.mr-1(
+            //-   icon="chat-dots-fill",
+            //-   font-scale="2.25",
+            //-   variant="secondary",
+            //-   animation="fade"
+            //- )
           b-input(
             v-model="wsHost",
             @keyup.enter.exact="manualConnect",
@@ -521,7 +522,7 @@ export default {
       return result > 99 ? "99+" : result;
     },
     queryADVariant() {
-      if (this.empty(this.nickname)) {
+      if (this.empty(this.userid)) {
         return "outline-danger";
       }
       return this.nickname === this.userid ? "primary" : "success";
