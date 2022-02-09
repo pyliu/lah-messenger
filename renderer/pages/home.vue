@@ -234,30 +234,32 @@ div: client-only
           )
 
         .center
-          b-button#nametag.mx-2(
-            ref="nametag",
-            title="開啟登入視窗",
-            v-b-modal.ad-query-modal,
-            :variant="queryADVariant"
-          )
-            b-icon.mr-1(icon="box-arrow-in-right", font-scale="1.25")
-            span.my-auto 登入
           transition.text-center(
             enter-active-class="animate__slideInUp",
             leave-active-class="animate__slideInDown",
             mode="out-in"
-          ): b-button.animate__animated(
-            v-if="validInformation",
-            @click="manualConnect",
-            :disabled="connecting",
-            variant="success"
           )
-            b-icon(
-              v-if="connecting",
-              icon="arrow-clockwise",
-              animation="spin-pulse"
+            b-button#nametag.mx-2(
+              v-if="!validInformation"
+              ref="nametag",
+              title="開啟登入視窗",
+              v-b-modal.ad-query-modal,
+              :variant="queryADVariant"
             )
-            span(v-else) #[b-icon.my-auto(icon="hdd-network", font-scale="1")] 連線
+              b-icon.mr-1(icon="box-arrow-in-right", font-scale="1.25")
+              span.my-auto 登入
+            b-button.animate__animated(
+              v-else,
+              @click="manualConnect",
+              :disabled="connecting",
+              variant="success"
+            )
+              b-icon(
+                v-if="connecting",
+                icon="arrow-clockwise",
+                animation="spin-pulse"
+              )
+              span(v-else) #[b-icon.my-auto(icon="hdd-network", font-scale="1")] 連線
 
         b-modal#ad-query-modal(
           hide-footer,
@@ -693,6 +695,14 @@ export default {
         });
       }
     },
+    manualLogin(flag) {
+      if (flag) {
+        this.clearReconnectTimer();
+        this.reconnectMs = 20 * 1000;
+      } else {
+        this.resetReconnectTimer();
+      }
+    }
   },
   methods: {
     delaySendChannelActivity: function noop() {},
@@ -1625,6 +1635,16 @@ export default {
     },
     visibilityChange(event) {
       this.$store.commit("windowVisible", !document.hidden);
+    },
+    watchModal(bvEvent, modalId) {
+      this.warn('Modal is about to be shown', bvEvent, modalId)
+      const type = bvEvent?.type
+      if (type === 'shown') {
+        this.clearReconnectTimer();
+        this.reconnectMs = 20 * 1000;
+      } else {
+        this.resetReconnectTimer();
+      }
     }
   },
   created() {
@@ -1715,6 +1735,8 @@ export default {
     window.addEventListener("keydown", this.keydown);
     document.addEventListener("visibilitychange", this.visibilityChange);
     this.$store.commit("windowVisible", !document.hidden);
+    this.$root.$on('bv::modal::shown', this.watchModal);
+    this.$root.$on('bv::modal::hidden', this.watchModal);
   },
   beforeDestroy() {
     // remove timer if user is going to leave the page
@@ -1722,6 +1744,8 @@ export default {
     this.closeWebsocket();
     window.removeEventListener("keydown", this.keydown);
     document.removeEventListener("visibilitychange", this.visibilityChange);
+    this.$root.$off('bv::modal::shown', this.watchModal);
+    this.$root.$off('bv::modal::hidden', this.watchModal);
   },
 };
 </script>
