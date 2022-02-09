@@ -1259,7 +1259,7 @@ export default {
         this.resetReconnectTimer();
       } else {
         this.isBusy = true;
-        this.$axios.post(this.$consts.API.JSON.QUERY, {
+        this.$axios.post(this.apiQueryUrl + this.$consts.API.JSON.QUERY, {
           type: 'ping',
           ip: this.wsHost,
           port: this.wsPort
