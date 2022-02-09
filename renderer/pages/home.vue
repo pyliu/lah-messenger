@@ -308,8 +308,8 @@ div: client-only
             b-button.ml-1(
               :title="`點擊重新查詢 ${userid}`",
               @click="invokeADQuery(true)",
-              :variant="'outline-primary'",
-              :disabled="empty(adPassword) || validAdHost === false"
+              :variant="disabledAdLoginBtn ? 'outline-primary' : 'primary'",
+              :disabled="disabledAdLoginBtn"
             ) 登入
 
   //- 狀態列
@@ -477,6 +477,9 @@ export default {
         this.validPort === null &&
         this.validHost === null
       );
+    },
+    disabledAdLoginBtn() {
+      return this.empty(this.adPassword) || this.validAdHost === false || this.empty(this.userid)
     },
     list() {
       return this.messages[this.currentChannel] || [];
@@ -1399,10 +1402,7 @@ export default {
           }
         } else {
           const IDReady = !isEmpty(this.userid);
-          this.notify(
-            IDReady ? "請輸入正確的連線資訊" : "正在等待取得登入ID ... ",
-            { type: IDReady ? "warning" : "info", pos: "tf", delay: 3000 }
-          );
+          this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2;
             this.resetReconnectTimer();
