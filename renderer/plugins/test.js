@@ -1,3 +1,3 @@
 export default function (ctx) {
-    console.warn(ctx)
+    ctx.isDev && console.warn(ctx)
 }
