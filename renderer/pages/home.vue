@@ -660,7 +660,7 @@ export default {
       });
     },
     authority(val) {
-      this.warn(val);
+      // this.warn(val);
     },
     keyCodes(arr) {
       const md5 = this.$utils.md5(this.keyCodes.join(","));
