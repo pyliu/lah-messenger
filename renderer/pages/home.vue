@@ -209,7 +209,7 @@ div: client-only
 
         b-input-group.my-2(title="信差伺服器資訊")
           template(#prepend)
-            .my-auto.mr-2 伺服器
+            .my-auto.mr-2 即時通伺服器
             //- b-icon.my-auto.mr-1(
             //-   icon="chat-dots-fill",
             //-   font-scale="2.25",
