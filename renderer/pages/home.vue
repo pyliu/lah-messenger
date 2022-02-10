@@ -387,7 +387,6 @@ export default {
     connectedUsersOverlapRatio() {
       return this.connectedUsers.length < 10 ? 0.0 : 0.4;
     },
-
     showInputGroup() {
       return (
         !this.currentChannel.startsWith("announcement") &&
@@ -401,7 +400,6 @@ export default {
     showChatBoard() {
       return this.isChat;
     },
-
     isChat() {
       return (
         !this.currentChannel.startsWith("announcement") && !this.isPersonal
@@ -440,7 +438,6 @@ export default {
     isLds() {
       return this.currentChannel === "lds";
     },
-
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`;
     },
@@ -479,12 +476,11 @@ export default {
       );
     },
     disabledAdLoginBtn() {
-      return this.empty(this.adPassword) || this.validAdHost === false || this.empty(this.userid)
+      return this.empty(this.adPassword) || this.validAdHost === false || this.validAdAccount === false
     },
     list() {
       return this.messages[this.currentChannel] || [];
     },
-
     stickyChannels() {
       return [
         "announcement",
@@ -499,7 +495,6 @@ export default {
     inChatting() {
       return !this.stickyChannels.includes(this.currentChannel);
     },
-
     showChatUnread() {
       return this.chatUnread > 0 || this.chatUnread === "99+";
     },
@@ -542,7 +537,6 @@ export default {
       this.notifySettings.chat && channels.push(this.department);
       return channels;
     },
-
     markdImages() {
       let imgMdText = this.inputImages
         .map((base64, idx) => {
@@ -612,7 +606,7 @@ export default {
       this.$localForage.setItem("wsPort", val);
     },
     userid(val) {
-      this.adAccount = val;
+      val && (this.adAccount = val);
     },
     nickname(val) {
       this.$store.commit("username", val);
@@ -931,23 +925,15 @@ export default {
     },
     register() {
       if (this.connected) {
-        const jsonString = JSON.stringify({
-          type: "command",
-          sender: this.userid,
-          date: this.date(),
-          time: this.time(),
-          message: JSON.stringify({
-            command: "register",
-            ip: this.ip,
-            domain: this.domain,
-            userid: this.userid || this.nickname,
-            username: this.nickname,
-            dept: this.department,
-            timestamp: +new Date(),
-          }),
-          channel: "system",
-        });
-        this.websocket.send(jsonString);
+        this.websocket.send(this.packCommand({
+          command: "register",
+          ip: this.ip,
+          domain: this.domain,
+          userid: this.userid || this.nickname,
+          username: this.nickname,
+          dept: this.department,
+          timestamp: +new Date()
+        }));
         // also update IP entry to API server
         this.reportToAPIServer();
       } else {
@@ -1019,7 +1005,7 @@ export default {
       }
       return false;
     },
-    handleAckMessage(json) {
+    async handleAckMessage(json) {
       const cmd = json?.command;
       this.log(
         this.time(),
@@ -1214,12 +1200,11 @@ export default {
           }
           break;
         case "update_user":
-          const payload = json.payload;
-          this.adAccount = payload.id;
-          this.nickname = payload.name;
-          this.department = payload.dept;
-          // register right away
-          this.register();
+          const payload = json.payload.info;
+          await this.$localForage.setItem("adAccount", payload.id);
+          await this.$localForage.setItem("nickname", payload.name);
+          await this.$localForage.setItem("department", payload.dept);
+          window && window.location.reload();
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
@@ -1254,7 +1239,6 @@ export default {
       }
     },
     handleAdminConnect(info) {
-      console.log(info);
       this.wsHost = info.host;
       this.wsPort = info.port;
       // this.$store.commit("userid", info.id);
@@ -1640,7 +1624,6 @@ export default {
         });
       }
     },
-
     keydown(event) {
       if (event.defaultPrevented) {
         return; // Should do nothing if the default action has been cancelled
