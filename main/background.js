@@ -133,7 +133,7 @@ if (!gotTheLock) {
           }
         })
 
-        // minimize to tray
+        // normal minimize action
         mainWindow.on('minimize', function(event) {
           event.preventDefault()
           mainWindow.webContents.send('set-current-channel', 'chat')
@@ -200,6 +200,15 @@ ipcMain.handle('wss-probe', async (event, payload) => {
     payload.ip,   // (default: 'localhost')
     payload.port  // (default: 80)
   )
+})
+
+ipcMain.handle('show-window', async (event, payload) => {
+  if (mainWindow) {
+    mainWindow.isMinimized() && mainWindow.restore()
+    mainWindow.show()
+    payload.top && mainWindow.setAlwaysOnTop(true)
+    payload.top && mainWindow.focus()
+  }
 })
 
 ipcMain.handle('quit', async (event, str) => {

@@ -708,6 +708,11 @@ export default {
       } else {
         this.resetReconnectTimer();
       }
+    },
+    connected(flag) {
+      flag && this.ipcRenderer.invoke('show-window', {
+        top: true // show window top and focused
+      });
     }
   },
   methods: {
