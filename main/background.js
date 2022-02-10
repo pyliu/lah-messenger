@@ -21,6 +21,7 @@ const isProd = process.env.NODE_ENV === 'production'
 
 let mainWindow = null
 let tray = null
+let rendererReady = false
 
 const closeApp = function () {
   tray && tray.destroy();
@@ -218,8 +219,9 @@ ipcMain.handle('quit', async (event, str) => {
   app.quit()
 })
 
-ipcMain.handle('home-ready', async (event, arg) => {
-  !isProd && console.log(`home.vue ready`, arg)
+ipcMain.handle('home-ready', async (event, payload) => {
+  !isProd && console.log(`home.vue ready`)
+  rendererReady = true
 })
 
 ipcMain.handle('title', async (event, str) => {
