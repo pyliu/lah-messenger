@@ -55,7 +55,7 @@ export default {
     adName: "",
     wsHost: "220.1.34.75",
     wsPort: 8081,
-    department: "supervisor",
+    department: "adm",
     departmentOpts: [
       { value: "reg", text: "登記課" },
       { value: "inf", text: "資訊課" },

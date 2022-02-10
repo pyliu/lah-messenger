@@ -198,6 +198,25 @@ Vue.mixin({
         ...opts,
       })
     },
+    packCommand(commandPayload) {
+      /**
+       * payload e.g.
+        {
+          command: 'update_user',
+          id: 'HAXXXXXXXX',
+          payload: {...}
+        }
+       */
+      const obj = {
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify(commandPayload),
+        channel: 'system'
+      };
+      return JSON.stringify(obj);
+    },
     packImage(base64, alt, channel) {
       return this.packMessage(`![${alt}](${base64})`, { channel: channel || this.currentChannel })
     },

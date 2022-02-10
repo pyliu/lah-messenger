@@ -1213,6 +1213,14 @@ export default {
             }
           }
           break;
+        case "update_user":
+          const payload = json.payload;
+          this.adAccount = payload.id;
+          this.nickname = payload.name;
+          this.department = payload.dept;
+          // register right away
+          this.register();
+          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
       }
