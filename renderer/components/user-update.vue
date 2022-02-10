@@ -96,7 +96,7 @@ export default {
         const cmd = {
           command: 'update_user',
           id: this.userData.id,
-          payload: {
+          info: {
             id: this.adId,
             name: this.adName,
             dept: this.department,
