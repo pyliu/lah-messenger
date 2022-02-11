@@ -85,6 +85,9 @@ export default {
       return true;
     },
   },
+  created () {
+    this.wsHost = this.apiHost;
+  },
   methods: {
     emitConnectInformation() {
       const info = {
