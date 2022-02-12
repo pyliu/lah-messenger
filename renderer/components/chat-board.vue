@@ -29,7 +29,7 @@
       .text-nowrap.mr-auto.lah-shadow {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
       b-avatar-group(size="3rem" :overlap="overlapRatio(deptList.users.length)"): transition-group.d-flex.justify-content-end.flex-wrap(name="listY" mode="out-in"): user-avatar.shadow(
         v-for="(user, uidx) in deptList.users"
-        :key="`avatar_${user.userid}_${uidx}`"
+        :key="`avatar_${user ? user.userid : 'unknown'}_${uidx}`"
         :user-data="user"
       )
 </template>
@@ -69,7 +69,7 @@ export default {
         { text: '無歸屬', users: [] }
       ]
       this.connectedUsers?.forEach(user => {
-        switch (user.dept) {
+        switch (user?.dept) {
           case 'inf':
             filter[0].users.push(user)
             break

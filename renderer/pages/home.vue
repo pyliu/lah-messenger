@@ -179,91 +179,42 @@ div: client-only
       ) 手動登入
       admin-manual-login(v-if="manualLogin", @connect="handleAdminConnect")
       div(v-else)
-        .center.d-flex.my-2(title="連線使用者資訊")
-          b-input-group(v-show="false")
-            template(#prepend): b-icon.my-auto.mr-1(
-              icon="person-badge",
-              font-scale="2.25",
-              variant="secondary"
-            )
-            b-input.mr-1(
-              v-model="nickname",
-              placeholder="... 輸入帳號 ... ",
-              trim,
-              :disabled="!authority.isAdmin"
-            )
-        .center.d-flex.my-2
-          b-input-group(v-show="false")
-            template(#prepend): b-icon.my-auto.mr-1(
-              icon="building",
-              font-scale="2.25",
-              variant="secondary"
-            )
-            b-select(
-              v-model="department",
-              title="選擇所屬部門",
-              :options="departmentOpts",
-              :state="validDepartment",
-              :disabled="!authority.isAdmin"
-            )
-
-        b-input-group.my-2(title="信差伺服器資訊")
-          template(#prepend)
-            .my-auto.mr-2 即時通伺服器
-            //- b-icon.my-auto.mr-1(
-            //-   icon="chat-dots-fill",
-            //-   font-scale="2.25",
-            //-   variant="secondary",
-            //-   animation="fade"
-            //- )
+        b-input-group.my-2(prepend="伺服器")
           b-input(
             v-model="wsHost",
-            @keyup.enter.exact="manualConnect",
             :state="validHost",
             trim,
-            placeholder="... 信差伺服器IP ...",
-            v-b-tooltip="'信差伺服器IP位址'"
+            placeholder="... 即時通伺服器IP ...",
+            v-b-tooltip="'伺服器IP'"
           )
           span.my-auto.mx-1 :
           b-input(
             v-model="wsPort",
             type="number",
-            min="1025",
-            max="65535",
+ 
             :state="validPort",
             style="max-width: 75px",
-            v-b-tooltip="'信差伺服器服務埠號'"
+            v-b-tooltip="'通訊埠號'"
           )
 
         .center
-          transition.text-center(
-            enter-active-class="animate__slideInUp",
-            leave-active-class="animate__slideInDown",
-            mode="out-in"
+          b-button(
+            v-if="validInformation",
+            variant="success",
+            @click="connect",
+            pill
           )
-            b-button#nametag.mx-2(
-              v-if="!validInformation"
-              ref="nametag",
-              title="開啟登入視窗",
-              v-b-modal.ad-query-modal,
-              :variant="queryADVariant"
-            )
-              b-icon.mr-1(icon="box-arrow-in-right", font-scale="1.25")
-              span.my-auto 登入
-            b-button.animate__animated(
-              v-else,
-              @click="manualConnect",
-              :disabled="connecting",
-              variant="success"
-            )
-              b-icon(
-                v-if="connecting",
-                icon="arrow-clockwise",
-                animation="spin-pulse"
-              )
-              span(v-else) #[b-icon.my-auto(icon="hdd-network", font-scale="1")] 連線
+            span.mr-1 {{ adAccount }}
+            b-badge(variant="light") {{ adName }}
+          b-button.ld.ld-breath(
+            v-else,
+            :variant="queryADVariant",
+            @click="$refs.adQueryModal.show()",
+            pill
+          ) 登入
 
-        b-modal#ad-query-modal(
+        b-modal(
+          ref="adQueryModal",
           hide-footer,
           centered,
           scrollable,
@@ -294,7 +245,7 @@ div: client-only
               :state="validAdPassword",
               :placeholder="'🔐 網域密碼'",
               trim,
-              @keydown.enter="invokeADQuery(true)"
+              @keydown.enter="invokeADQuery"
             )
             b-icon.my-auto.ml-2.eye(
               ref="eye",
@@ -307,10 +258,10 @@ div: client-only
             )
             b-button.ml-1(
               :title="`點擊重新查詢 ${userid}`",
-              @click="invokeADQuery(true)",
+              @click="invokeADQuery",
               :variant="disabledAdLoginBtn ? 'outline-primary' : 'primary'",
               :disabled="disabledAdLoginBtn"
-            ) 登入
+            ) 驗證
 
   //- 狀態列
   status(:status-text="connectText")
@@ -336,12 +287,12 @@ export default {
     connectText: "",
     adHost: "",
     adAccount: "",
+    adName: "",
     adPassword: "",
     adPasswordIcon: "eye-slash",
     adPasswordType: "password",
     wsHost: "",
     wsPort: 8081,
-    nickname: "",
     department: "",
     departmentOpts: [
       { value: "", text: "選擇部門" },
@@ -445,6 +396,12 @@ export default {
     userQueryStr() {
       return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`;
     },
+    welcomeMessage() {
+      if (!this.validInformation) {
+        return ''
+      }
+      return `歡迎回來 ${this.adAccount} ${this.adName}`
+    },
     valid() {
       return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages);
     },
@@ -453,6 +410,9 @@ export default {
     },
     validAdAccount() {
       return !this.empty(this.adAccount);
+    },
+    validAdName() {
+      return !this.empty(this.adName);
     },
     validAdPassword() {
       return this.empty(this.adPassword) ? false : null;
@@ -469,7 +429,8 @@ export default {
     },
     validInformation() {
       return (
-        !isEmpty(this.userid) &&
+        this.validAdAccount &&
+        this.validAdName &&
         this.validDepartment === null &&
         this.validPort === null &&
         this.validHost === null
@@ -521,10 +482,10 @@ export default {
       return result > 99 ? "99+" : result;
     },
     queryADVariant() {
-      if (this.empty(this.userid)) {
+      if (this.empty(this.adAccount)) {
         return "outline-danger";
       }
-      return this.nickname === this.userid ? "primary" : "success";
+      return this.empty(this.adName) ? "outline-warning" : "success";
     },
     backFromSettings() {
       return this.$route.query.reconnect === "true";
@@ -600,30 +561,29 @@ export default {
     wsHost(val) {
       this.resetReconnectTimer();
       this.$localForage.setItem("wsHost", val);
+      // api/wss/fe servers are in the same VM  by design
+      this.$store.commit("apiHost", val);
     },
     wsPort(val) {
       this.resetReconnectTimer();
       this.$localForage.setItem("wsPort", val);
     },
     userid(val) {
-      val && (this.adAccount = val);
-    },
-    nickname(val) {
-      this.$store.commit("username", val);
-      this.$localForage.setItem("nickname", val);
-      // temporally fix for unable getting userid from os
-      if (/^H[A-H]/i.test(val) && this.userid !== val) {
-        this.$store.commit("userid", val);
-        this.adAccount = val;
-      }
+      this.warn('使用者ID變動', val);
+      !this.empty(val) && val !== this.adAccount && (this.adAccount = val);
     },
     adHost(val) {
       this.$store.commit("ad", val);
       this.$localForage.setItem("adHost", val);
     },
     adAccount(val) {
+      this.warn('使用者adAccount變動', val);
       this.$localForage.setItem("adAccount", val);
-      this.userid !== val && this.$store.commit("userid", val);
+      this.$store.commit("userid", val);
+    },
+    adName(val) {
+      this.$localForage.setItem("adName", val);
+      this.$store.commit("username", val);
     },
     adPassword(val) {
       this.$store.commit("password", val);
@@ -703,11 +663,11 @@ export default {
         this.resetReconnectTimer();
       }
     },
-    connected(flag) {
-      flag && this.ipcRenderer.invoke('show-window', {
-        top: true // show window top and focused
-      });
-    }
+    // connected(flag) {
+    //   flag && this.ipcRenderer.invoke('show-window', {
+    //     top: true // show window top and focused
+    //   });
+    // }
   },
   methods: {
     delaySendChannelActivity: function noop() {},
@@ -925,23 +885,27 @@ export default {
     },
     register() {
       if (this.connected) {
-        this.websocket.send(this.packCommand({
-          command: "register",
-          ip: this.ip,
-          domain: this.domain,
-          userid: this.userid || this.nickname,
-          username: this.nickname,
-          dept: this.department,
-          timestamp: +new Date()
-        }));
-        // also update IP entry to API server
-        this.reportToAPIServer();
+        if (this.validAdAccount && this.validAdName) {
+          this.websocket.send(this.packCommand({
+            command: "register",
+            ip: this.ip,
+            domain: this.domain,
+            userid: this.adAccount,
+            username: this.adName,
+            dept: this.department,
+            timestamp: +new Date()
+          }));
+          // also update IP entry to API server
+          this.reportToAPIServer();
+        } else {
+          this.warning(`無法使用 ${this.adAccount} / ${this.adName} 登入即時通伺服器！`)
+        }
       } else {
         this.log(this.time(), "尚未連線無法登錄客戶端資料", {
           ip: this.ip,
           domain: this.domain,
-          userid: this.userid,
-          username: this.nickname,
+          userid: this.adAccount,
+          username: this.adName,
           dept: this.department,
         });
       }
@@ -953,8 +917,8 @@ export default {
         note: `${this.domain} ${this.department}`,
         added_type: "DYNAMIC",
         entry_type: "USER",
-        entry_id: this.userid,
-        entry_desc: this.nickname,
+        entry_id: this.adAccount,
+        entry_desc: this.adName,
       });
     },
     async getChannelLastReadId(channel) {
@@ -1094,7 +1058,8 @@ export default {
           this.connectText = `${json.message}`;
           break;
         case "online":
-          this.$store.commit("connectedUsers", json.payload.users);
+          // remove empty value from array
+          this.$store.commit("connectedUsers", json.payload.users.filter(n => n));
           this.connectText = `${json.message}`;
           break;
         case "private_message":
@@ -1202,7 +1167,7 @@ export default {
         case "update_user":
           const payload = json.payload.info;
           await this.$localForage.setItem("adAccount", payload.id);
-          await this.$localForage.setItem("nickname", payload.name);
+          await this.$localForage.setItem("adName", payload.name);
           await this.$localForage.setItem("department", payload.dept);
           window && window.location.reload();
           break;
@@ -1243,15 +1208,11 @@ export default {
       this.wsPort = info.port;
       // this.$store.commit("userid", info.id);
       this.adAccount = info.id;
-      this.nickname = info.name;
+      this.adName = info.name;
       this.department = info.dept;
       this.manualLogin = false;
-      this.manualConnect();
-    },
-    manualConnect() {
-      this.connecting = true;
       this.resetReconnectTimer();
-      this.delayConnect();
+      this.connect();
     },
     connect() {
       if (this.connected) {
@@ -1273,7 +1234,6 @@ export default {
             this.connectText = data.message
             this.reconnectMs = 20 * 1000;
             this.resetReconnectTimer();
-            this.connecting = false;
           }
         }).catch((err) => {
           this.err(err);
@@ -1308,19 +1268,19 @@ export default {
               this.$store.commit("websocket", undefined);
               this.$config.isDev &&
                 console.warn(this.time(), "WS伺服器連線已關閉", e);
-              this.connecting = false;
               this.connectText = `等待重新連線中(${this.wsConnStr})`;
+              this.connecting = false;
             };
             ws.onerror = (e) => {
               this.$store.commit("websocket", undefined);
               this.$config.isDev &&
                 console.warn(this.time(), "WS伺服器連線出錯", e);
               this.connectText = `'WS伺服器連線出錯'`;
-              this.connecting = false;
               this.alert(`WS伺服器連線有問題`, {
                 pos: "tf",
                 subtitle: this.wsConnStr,
               });
+              this.connecting = false;
             };
             ws.onmessage = async (e) => {
               const incoming = JSON.parse(e.data);
@@ -1395,7 +1355,7 @@ export default {
             this.closeWebsocket();
           } finally {
             // delay to reset the back flag (control login panel)
-            setTimeout(() => (this.back = false), 1000);
+            this.timeout(() => (this.back = false), 1000);
           }
         } else {
           const IDReady = !isEmpty(this.userid);
@@ -1452,58 +1412,56 @@ export default {
         );
       }
     },
-    invokeADQuery(force = false) {
+    invokeADQuery() {
       if (this.asking === true) {
         this.connectText = `AD查詢中`;
         return;
       }
       if (
         this.empty(this.adPassword) ||
-        this.empty(this.adAccount) ||
+        this.validAdAccount === false ||
         this.validAdHost === false
       ) {
         this.connectText = `缺漏必要欄位無法查詢`;
         return;
       }
       // hide modal window
-      this.hideModalById("ad-query-modal");
-      this.nickname = this.userMap[this.adAccount] || this.adAccount;
-      if (force || (!this.empty(this.domain) && this.validAdHost)) {
-        this.asking = true;
-        this.log(this.time(), `透過AD查詢使用者資訊`);
-        const sAMAccountName = `${this.adAccount}@${this.domain}`;
-        this.ipcRenderer
-          .invoke("ad-user-query", {
-            url: `ldap://${this.adHost}`,
-            baseDN: `DC=${this.domain.split(".").join(",DC=")}`, // 'DC=PCNAME,DC=HA,DC=CENWEB,DC=LAND,DC=MOI'
-            username: sAMAccountName,
-            password: this.adPassword,
-          })
-          .then((result) => {
-            const group = result.group;
-            const desc = result.description;
-            this.log(this.time(), `查到 ${sAMAccountName} 描述`, desc);
-            this.log(this.time(), `查到 ${sAMAccountName} 部門`, group);
-            const name = desc || this.userMap[this.adAccount] || this.adAccount;
-            this.$store.commit("userid", this.adAccount);
-            this.$store.commit("username", name);
-            this.nickname = name;
-            this.department = group;
-            this.connectText = `AD: ${this.adAccount} ${name} ${group}`;
-            this.connect();
-          })
-          .catch((err) => {
-            console.error(err);
-            this.alert(`AD查詢失敗，密碼錯誤!?`, {
-              title: `ldap://${this.adHost}`,
-              subtitle: sAMAccountName,
-            });
-          })
-          .finally(() => {
-            this.log(this.time(), `透過AD查詢使用者中文姓名結束`);
-            this.asking = false;
+      this.$refs.adQueryModal.hide();
+      this.adName = this.userMap[this.adAccount] || this.adAccount;
+      this.asking = true;
+      this.log(this.time(), `透過AD查詢使用者資訊`);
+      const sAMAccountName = `${this.adAccount}@${this.domain}`;
+      this.ipcRenderer
+        .invoke("ad-user-query", {
+          url: `ldap://${this.adHost}`,
+          baseDN: `DC=${this.domain.split(".").join(",DC=")}`, // 'DC=PCNAME,DC=HA,DC=CENWEB,DC=LAND,DC=MOI'
+          username: sAMAccountName,
+          password: this.adPassword,
+        })
+        .then((result) => {
+          const group = result.group;
+          const desc = result.description;
+          this.log(this.time(), `查到 ${sAMAccountName} 描述`, desc);
+          this.log(this.time(), `查到 ${sAMAccountName} 部門`, group);
+          const name = desc || this.userMap[this.adAccount] || this.adAccount;
+          this.$store.commit("userid", this.adAccount);
+          this.$store.commit("username", name);
+          this.adName = name;
+          this.department = group;
+          this.connectText = `AD: ${this.adAccount} ${name} ${group}`;
+          this.connect();
+        })
+        .catch((err) => {
+          console.error(err);
+          this.alert(`AD查詢失敗，密碼錯誤!?`, {
+            title: `ldap://${this.adHost}`,
+            subtitle: sAMAccountName,
           });
-      }
+        })
+        .finally(() => {
+          this.log(this.time(), `透過AD查詢使用者中文姓名結束`);
+          this.asking = false;
+        });
     },
     queryUserInfo() {
       // dynamic get userinfo from main process
@@ -1523,7 +1481,7 @@ export default {
       if (!this.$utils.isIPv4(this.adHost)) {
         this.adHost = this.getFirstDNSIp();
       }
-      const cached = await this.$localForage.getItem("nickname");
+      const cached = await this.$localForage.getItem("adName");
       const parts = [];
       if (this.ip.startsWith('192.168.') || this.ip.startsWith('220.1.')) {
         parts.push(this.ip);
@@ -1692,19 +1650,18 @@ export default {
       0.5 * 1000
     );
 
-    // auto connect to ws server, delay 30s
-    setTimeout(this.resetReconnectTimer, 30 * 1000);
+    // start reconnect timer
+    // this.resetReconnectTimer();
 
     this.$nextTick(async () => {
       // restore last settings
       this.adAccount = await this.$localForage.getItem("adAccount");
+      this.adName = await this.$localForage.getItem("adName");
       this.adPassword = await this.$localForage.getItem("adPassword");
-      this.nickname = await this.$localForage.getItem("nickname");
-      this.department = await this.$localForage.getItem("department");
+      this.department = await this.$localForage.getItem("department") || 'adm';
       this.adHost = await this.$localForage.getItem("adHost");
-      this.wsHost =
-        (await this.$localForage.getItem("wsHost")) || "220.1.34.75";
-      this.wsPort = (await this.$localForage.getItem("wsPort")) || 8081;
+      this.wsHost = await this.$localForage.getItem("wsHost") || "220.1.34.75";
+      this.wsPort = await this.$localForage.getItem("wsPort") || 8081;
       // restore effect setting to store
       this.$store.commit("effect", await this.$localForage.getItem("effect"));
       // restore history count to store
@@ -1714,20 +1671,13 @@ export default {
       );
       this.$store.commit("fetchingHistory", false);
       this.$store.commit("apiHost", this.wsHost);
-      this.$store.commit(
-        "apiPort",
-        parseInt(await this.$localForage.getItem("apiPort")) || 80
-      );
-      this.$store.commit(
-        "fePort",
-        parseInt(await this.$localForage.getItem("fePort")) || 8080
-      );
+      this.$store.commit("apiPort", parseInt(await this.$localForage.getItem("apiPort")) || 80);
+      this.$store.commit("fePort", parseInt(await this.$localForage.getItem("fePort")) || 8080);
       this.$store.commit("resetUnread", this.userid);
       this.$store.commit("notifySettings", {
         ...this.notifySettings,
         ...(await this.$localForage.getItem("notifySettings")),
       });
-      this.ipcRenderer.invoke("home-ready");
       // back from settings page
       if (this.backFromSettings) {
         this.back = true;
@@ -1748,10 +1698,8 @@ export default {
       } else {
         this.$store.commit("authority", authority);
       }
-      // use userid for AD login
-      if (!this.empty(this.userid) && this.adAccount !== this.userid) {
-        this.adAccount = this.userid;
-      }
+      // tell main process the renderer phase is ready
+      this.ipcRenderer.invoke("home-ready");
     });
     window.addEventListener("keydown", this.keydown);
     document.addEventListener("visibilitychange", this.visibilityChange);

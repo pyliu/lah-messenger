@@ -1,93 +1,93 @@
 <template lang="pug">
-  .vh-100.p-2.gradient-top(v-cloak)
-    .mt-2.d-flex.align-items-center
-      nuxt-link.mr-auto(to="/home?reconnect=true" title="返回主畫面")
-        b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
-        span(style="font-size: 1.5rem;") 返回
-      
-      div
-        b-button.mr-1(variant="warning" @click="logout" title="清除已登入資料")
-          b-icon.mr-1(icon="box-arrow-left" font-scale="1.25")
-          span.my-auto 登出
-        //- b-button(variant="danger" @click="quit")
-        //-   b-icon.mr-1(icon="x-circle" font-scale="1.25")
-        //-   span 關閉程式
-      
-    fieldset
-      legend 個人設定
-      b-input-group.my-2
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
-          span.my-auto 顯示姓名
-        b-input.ml-2(v-model="nickname" placeholder="... 顯示名稱 ..." trim :disabled="!authority.isAdmin")
-      b-input-group.my-2
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
-          span.my-auto 網域密碼
-        b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim @change="queryAd")
-        b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
-        b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD驗證") 驗證
-      b-input-group.my-2
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
-          span.my-auto 所屬部門
-        b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment" :disabled="!authority.isAdmin")
-
-      b-input-group.my-2
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
-          span.my-auto 提示效果
-        b-select.ml-2(v-model="effectVal" :options="effectOpts")
-
-      b-input-group.my-2(title="歷史訊息")
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
-          span.my-auto 回朔數量
-        b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
-      
-      b-input-group.my-2(title="收到訊息時是否啟用彈出主視窗")
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="alarm-fill" font-scale="2.25" variant="secondary")
-          span.my-auto 通知開關
-        b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled readonly title="全所、部門公告通知") 公告
-        b-checkbox.ml-2.my-auto(v-model="notification.personal" title="個人通知") 個人
-        b-checkbox.ml-2.my-auto(v-model="notification.chat") 聊天室
-
+.vh-100.p-2.gradient-top(v-cloak)
+  .mt-2.d-flex.align-items-center
+    nuxt-link.mr-auto(to="/home?reconnect=true" title="返回主畫面")
+      b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
+      span(style="font-size: 1.5rem;") 返回
     
-    fieldset
-      legend 伺服器設定
-      b-input-group.my-2(v-b-tooltip="'Websocket伺服器'")
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="chat" font-scale="2.25" variant="primary")
-          span.my-auto 交談主機
-        b-input.ml-2(v-model="wsHost" :state="validHost" trim)
-        span.my-auto.mx-1 :
-        b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
+    div
+      b-button.mr-1(variant="warning" @click="logout" title="清除已登入資料")
+        b-icon.mr-1(icon="box-arrow-left" font-scale="1.25")
+        span.my-auto 登出
+      //- b-button(variant="danger" @click="quit")
+      //-   b-icon.mr-1(icon="x-circle" font-scale="1.25")
+      //-   span 關閉程式
+    
+  fieldset
+    legend 個人設定
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
+        span.my-auto 顯示姓名
+      b-input.ml-2(v-model="adName" placeholder="... 顯示名稱 ..." trim :disabled="!authority.isAdmin")
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
+        span.my-auto 網域密碼
+      b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim @change="queryAd")
+      b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
+      b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD驗證") 驗證
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
+        span.my-auto 所屬部門
+      b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment" :disabled="!authority.isAdmin")
 
-      b-input-group.my-2(v-b-tooltip="'API伺服器'")
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="hdd-network" font-scale="2.25" variant="info")
-          span.my-auto 查詢主機
-        b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
-        span.my-auto.mx-1 :
-        b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
+        span.my-auto 提示效果
+      b-select.ml-2(v-model="effectVal" :options="effectOpts")
 
-      b-input-group.my-2(v-b-tooltip="'地政智慧管控伺服器'")
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="success")
-          span.my-auto 前端主機
-        b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
-        span.my-auto.mx-1 :
-        b-input(v-model="fePortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+    b-input-group.my-2(title="歷史訊息")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="filter" font-scale="2.25" variant="secondary")
+        span.my-auto 回朔數量
+      b-select.ml-2(v-model="historyCount" :options="[5, 10, 15, 20, 25, 30]")
+    
+    b-input-group.my-2(title="收到訊息時是否啟用彈出主視窗")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="alarm-fill" font-scale="2.25" variant="secondary")
+        span.my-auto 通知開關
+      b-checkbox.ml-2.my-auto(v-model="notification.announcement" disabled readonly title="全所、部門公告通知") 公告
+      b-checkbox.ml-2.my-auto(v-model="notification.personal" title="個人通知") 個人
+      b-checkbox.ml-2.my-auto(v-model="notification.chat") 聊天室
 
-      b-input-group.my-2
-        template(#prepend)
-          b-icon.my-auto.mr-2(icon="badge-ad-fill" font-scale="2.25" variant="dark")
-          span.my-auto ＡＤ主機
-        b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+  
+  fieldset
+    legend 伺服器設定
+    b-input-group.my-2(v-b-tooltip="'Websocket伺服器'")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="chat" font-scale="2.25" variant="primary")
+        span.my-auto 交談主機
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim)
+      span.my-auto.mx-1 :
+      b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
 
-    copyright
-    status
+    b-input-group.my-2(v-b-tooltip="'API伺服器'")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="hdd-network" font-scale="2.25" variant="info")
+        span.my-auto 查詢主機
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+      span.my-auto.mx-1 :
+      b-input(v-model="apiPortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+
+    b-input-group.my-2(v-b-tooltip="'地政智慧管控伺服器'")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="server" font-scale="2.25" variant="success")
+        span.my-auto 前端主機
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+      span.my-auto.mx-1 :
+      b-input(v-model="fePortSetting" type="number" min="80" max="65535" :state="validApiPort" style="max-width: 100px;")
+
+    b-input-group.my-2
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="badge-ad-fill" font-scale="2.25" variant="dark")
+        span.my-auto ＡＤ主機
+      b-input.ml-2(v-model="adHost" placeholder="... AD伺服器IP ..." :state="validAdHost" trim)
+
+  copyright
+  status
 </template>
 
 <script>
@@ -108,10 +108,10 @@ export default {
     wsPort: 8081,
     apiPortSetting: 80,
     fePortSetting: 8080,
+    adName: '',
     adPassword: '',
     adPasswordType: 'password',
     adPasswordIcon: 'eye-slash',
-    nickname: '',
     historyCount: 10,
     notification: {
       announcement: true,
@@ -159,9 +159,9 @@ export default {
       const i = parseInt(trim(this.fePortSetting))
       return (i > 1024 && i < 65536) === false ? false : null
     },
-    validNickname() { return !isEmpty(trim(this.nickname)) },
+    validAdName() { return !isEmpty(trim(this.adName)) },
     validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
-    validInformation() { return !isEmpty(this.userid) && this.validNickname && this.validDepartment === null && this.validPort === null && this.validHost === null },
+    validInformation() { return !isEmpty(this.userid) && this.validAdName && this.validDepartment === null && this.validPort === null && this.validHost === null },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
@@ -192,9 +192,9 @@ export default {
       this.$localForage.setItem('fePort', val)
       this.$store.commit('fePort', val)
     },
-    nickname(val) {
+    adName(val) {
       this.$store.commit('username', val)
-      this.$localForage.setItem('nickname', val)
+      this.$localForage.setItem('adName', val)
     },
     department(val) {
       this.$store.commit('userdept', val)
@@ -236,8 +236,7 @@ export default {
     },
     async restore() {
       // restore last settings
-      this.nickname = await this.$localForage.getItem('nickname')
-      this.empty(this.nickname) && (this.nickname = this.userid)
+      this.adName = await this.$localForage.getItem('adName')
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
@@ -283,8 +282,8 @@ export default {
         this.log(this.time(), `查到 ${sAMAccountName} 部門`, group)
         const name = desc || this.userMap[this.userid] || this.userid
         this.$store.commit('username', name)
-        this.$localForage.setItem('nickname', name)
-        this.nickname = name
+        this.$localForage.setItem('adName', name)
+        this.adName = name
         this.department = group
         this.connectText = `AD: ${this.userid} ${name} ${group}`
         this.notify(`已查到 ${this.userid} 姓名為 ${name} 部門 ${group}`, { type: 'info' })
