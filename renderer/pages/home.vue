@@ -201,6 +201,7 @@ div: client-only
           b-button(
             v-if="validInformation",
             variant="success",
+            :disabled="connecting",
             @click="connect",
             pill
           )
