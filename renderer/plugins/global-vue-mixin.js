@@ -144,7 +144,7 @@ Vue.mixin({
     },
     clearReconnectTimer() {
       if (this.timer !== null) {
-        this.$config.isDev && console.log(this.time(), "清除重新連線檢查定時器")
+        this.$config.isDev && this.log("清除重新連線檢查定時器")
         clearInterval(this.timer)
         this.$store.commit('timer', null)
       }
@@ -355,7 +355,7 @@ Vue.mixin({
           this.$emit('busyOn', this)
         }
       } else {
-        console.error(`${opts.selector} not found in DOM`)
+        this.err(`${opts.selector} not found in DOM`)
       }
     },
     timeout (func, ms) {
@@ -486,12 +486,12 @@ Vue.mixin({
               this.err(err)
               reject(err)
             }).finally(() => {
-              opts.type === 'danger' ? this.err(msg, opts) : this.$config.isDev && console.log(msg, opts)
+              opts.type === 'danger' ? this.err(msg, opts) : this.$config.isDev && this.log(msg, opts)
             })
           }
         })
       }
-      this.$config.isDev && console.log(`document不可見，略過notify訊息`, msg)
+      this.$config.isDev && this.warn(`document不可見，略過notify訊息`, msg)
     },
     warning (message, opts = {}) {
       if (!empty(message)) {
@@ -619,7 +619,7 @@ Vue.mixin({
         this.$emit(evtName, evt)
         return evt
       } else {
-        console.warn('CustomEvent not defined?')
+        this.warn('CustomEvent not defined?')
       }
     },
     async setCache (key, val, expire_timeout = 0) {
@@ -660,7 +660,7 @@ Vue.mixin({
           return item.value
         }
       } catch (err) {
-        console.error(err)
+        this.err(err)
       }
       return false
     },
@@ -679,7 +679,7 @@ Vue.mixin({
           return expireTime - (now - ts) // milliseconds
         }
       } catch (err) {
-        console.error(err)
+        this.err(err)
       }
       return false
     },
@@ -688,7 +688,7 @@ Vue.mixin({
       try {
         await this.$localForage.removeItem(key)
       } catch (err) {
-        console.error(err)
+        this.err(err)
       }
       return true
     },
@@ -700,7 +700,7 @@ Vue.mixin({
     err () { this.$config.isDev && console.error(`🚩 ${this.time()}`, ...arguments ) },
     debug () {
       this.debugMessage = String(arguments[0])
-      this.$config.isDev && console.log(arguments)
+      this.$config.isDev && this.warn(arguments)
     }
   }
 })
