@@ -344,7 +344,7 @@ export default {
     showInputGroup() {
       return (
         !this.currentChannel.startsWith("announcement") &&
-        this.currentChannel !== this.userid &&
+        this.currentChannel !== this.adAccount &&
         this.currentChannel !== "chat"
       );
     },
@@ -360,7 +360,7 @@ export default {
       );
     },
     isPersonal() {
-      return this.userid === this.currentChannel;
+      return this.adAccount === this.currentChannel;
     },
     isAnnouncement() {
       return this.currentChannel === "announcement";
@@ -448,13 +448,13 @@ export default {
     stickyChannels() {
       return [
         "announcement",
-        this.userid,
+        this.adAccount,
         "chat",
         ...this.departmentChannels.map((item) => item.value),
       ];
     },
     showUnreadChannels() {
-      return ["announcement", this.userid, `announcement_${this.department}`];
+      return ["announcement", this.adAccount, `announcement_${this.department}`];
     },
     inChatting() {
       return !this.stickyChannels.includes(this.currentChannel);
@@ -495,7 +495,7 @@ export default {
     },
     notifyChannels() {
       const channels = ["announcement", `announcement_${this.department}`];
-      this.notifySettings.personal && channels.push(this.userid);
+      this.notifySettings.personal && channels.push(this.adAccount);
       // add chatting channel to the list
       this.notifySettings.chat && channels.push("lds");
       this.notifySettings.chat && channels.push(this.department);
@@ -529,7 +529,7 @@ export default {
         time: this.time(),
         message: this.markdMessage,
         prepend: false,
-        sender: this.userid,
+        sender: this.adAccount,
         type: "mine",
       };
     },
@@ -544,9 +544,9 @@ export default {
       // this.delaySendChannelActivity(oVal, nVal)
 
       if (!(nVal in this.messages)) {
-        this.$store.commit("addChannel", nVal || this.userid);
+        this.$store.commit("addChannel", nVal || this.adAccount);
         this.log(this.time(), `add channel ${nVal} to $store!`);
-        this.$store.commit("resetUnread", nVal || this.userid);
+        this.$store.commit("resetUnread", nVal || this.adAccount);
         this.log(this.time(), `add unread ${nVal} to $store!`);
       }
 
@@ -814,13 +814,13 @@ export default {
         const nCName = this.getChannelName(nVal);
         !this.stickyChannels.includes(oVal) &&
           this.currentChannel !== oVal &&
-          this.sendTo(`${this.username || this.userid} 離開 ${oCName} 頻道`, {
+          this.sendTo(`${this.username || this.adAccount} 離開 ${oCName} 頻道`, {
             sender: "system",
             channel: oVal,
           });
         !this.stickyChannels.includes(nVal) &&
           this.currentChannel === nVal &&
-          this.sendTo(`${this.username || this.userid} 進入 ${nCName} 頻道`, {
+          this.sendTo(`${this.username || this.adAccount} 進入 ${nCName} 頻道`, {
             sender: "system",
             channel: nVal,
           });
@@ -830,7 +830,7 @@ export default {
       const cName = this.getChannelName(this.currentChannel);
       !this.stickyChannels.includes(this.currentChannel) &&
         this.sendTo(
-          `${this.username || this.userid} 離開 ${cName} 頻道 (程式已關閉)`,
+          `${this.username || this.adAccount} 離開 ${cName} 頻道 (程式已關閉)`,
           { sender: "system", channel: this.currentChannel }
         );
     },
@@ -934,7 +934,7 @@ export default {
       // sticky channels
       this.queryChannelUnreadCount("announcement");
       this.queryChannelUnreadCount(`announcement_${this.userdept}`);
-      this.queryChannelUnreadCount(this.userid);
+      this.queryChannelUnreadCount(this.adAccount);
       // chatting channels
       this.queryChannelUnreadCount("lds");
       this.queryChannelUnreadCount(this.userdept);
@@ -943,7 +943,7 @@ export default {
       const lastReadId = await this.getChannelLastReadId(channel);
       const jsonString = JSON.stringify({
         type: "command",
-        sender: this.userid,
+        sender: this.adAccount,
         date: this.date(),
         time: this.time(),
         message: JSON.stringify({
@@ -959,7 +959,7 @@ export default {
       try {
         const jsonString = JSON.stringify({
           type: "command",
-          sender: this.userid,
+          sender: this.adAccount,
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({ command: "mychannel" }),
@@ -1025,7 +1025,7 @@ export default {
               this.websocket.send(
                 JSON.stringify({
                   type: "command",
-                  sender: this.userid,
+                  sender: this.adAccount,
                   date: this.date(),
                   time: this.time(),
                   channel: "system",
@@ -1070,7 +1070,7 @@ export default {
           const insertedChannel = json.payload.channel;
           const userName = this.userMap[insertedChannel] || insertedChannel;
           if (
-            insertedChannel !== this.userid &&
+            insertedChannel !== this.adAccount &&
             !insertedChannel?.startsWith("announcement") &&
             !this.chatRooms.includes(insertedChannel)
           ) {
@@ -1087,7 +1087,7 @@ export default {
             // add sent message to my channel
             this.websocket.send(
               this.packMessage(`${toHeader}\n${md}`, {
-                channel: this.userid,
+                channel: this.adAccount,
                 title: remove, // use title field to store inserted info for now
                 priority: 4,
                 flag: 1, // now use flag === 1 to indicate the message is a pm sent by myself
@@ -1110,7 +1110,7 @@ export default {
           if (json.cascade) {
             this.warn("訊息設定已讀", "連帶更新", json.cascade);
             // to set read for the cascade message in my channel
-            const myList = this.messages[this.userid];
+            const myList = this.messages[this.adAccount];
             if (Array.isArray(myList)) {
               const found = myList.find((message) => {
                 const removeJson = JSON.parse(message.remove || message.title);
@@ -1122,7 +1122,7 @@ export default {
               if (found) {
                 const json = {
                   type: "command",
-                  sender: this.userid,
+                  sender: this.adAccount,
                   date: this.date(),
                   time: this.time(),
                   channel: "system",
@@ -1132,7 +1132,7 @@ export default {
                   channel: found.channel,
                   id: found.id,
                   flag: found.flag,
-                  sender: this.userid,
+                  sender: this.adAccount,
                   cascade: false, // stop cascading, since this is the stop point
                 };
                 this.websocket.send(JSON.stringify(json));
@@ -1149,7 +1149,7 @@ export default {
               // will set read at server side when detected the message is read
               // const json = {
               //   type: "command",
-              //   sender: this.userid,
+              //   sender: this.adAccount,
               //   date: this.date(),
               //   time: this.time(),
               //   channel: 'system'
@@ -1159,7 +1159,7 @@ export default {
               //   channel: found.channel,
               //   id: found.id,
               //   flag: found.flag,
-              //   sender: this.userid,
+              //   sender: this.adAccount,
               //   cascade: false // stop cascading, since this is the stop point
               // }
               // this.websocket.send(JSON.stringify(json))
@@ -1361,7 +1361,7 @@ export default {
             this.timeout(() => (this.back = false), 1000);
           }
         } else {
-          const IDReady = !isEmpty(this.userid);
+          const IDReady = !isEmpty(this.adAccount);
           this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2;
@@ -1379,7 +1379,7 @@ export default {
       if (this.connected) {
         const jsonString = JSON.stringify({
           type: "command",
-          sender: this.userid,
+          sender: this.adAccount,
           date: this.date(),
           time: this.time(),
           message: JSON.stringify({
@@ -1489,8 +1489,8 @@ export default {
       if (this.ip.startsWith('192.168.') || this.ip.startsWith('220.1.')) {
         parts.push(this.ip);
       }
-      !this.empty(this.userid) && parts.push(this.userid);
-      if (this.userid !== cached && !this.empty(cached)) {
+      !this.empty(this.adAccount) && parts.push(this.adAccount);
+      if (this.adAccount !== cached && !this.empty(cached)) {
         parts.push(cached);
       }
       parts.push(this.pcname);
@@ -1570,14 +1570,14 @@ export default {
       const title = temp.innerText.substring(0, 18) + " ... ";
 
       this.warn(
-        `呼叫主程序發出通知 SENDER: ${incoming.sender} MY ID: ${this.userid}`,
+        `呼叫主程序發出通知 SENDER: ${incoming.sender} MY ID: ${this.adAccount}`,
         title
       );
       // store the last read id
       this.setCache(`${channel}_last_id`, incoming.message.id || incoming.id);
       const showMainWindow = this.notifyChannels.includes(channel);
       // sender not self and settings allowed then triggers notification
-      if (incoming.sender !== this.userid) {
+      if (incoming.sender !== this.adAccount) {
         this.ipcRenderer.invoke("notification", {
           message: title,
           showMainWindow: showMainWindow,
@@ -1676,7 +1676,7 @@ export default {
       this.$store.commit("apiHost", this.wsHost);
       this.$store.commit("apiPort", parseInt(await this.$localForage.getItem("apiPort")) || 80);
       this.$store.commit("fePort", parseInt(await this.$localForage.getItem("fePort")) || 8080);
-      this.$store.commit("resetUnread", this.userid);
+      this.$store.commit("resetUnread", this.adAccount);
       this.$store.commit("notifySettings", {
         ...this.notifySettings,
         ...(await this.$localForage.getItem("notifySettings")),
