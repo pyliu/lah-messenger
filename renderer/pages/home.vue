@@ -204,14 +204,16 @@ div: client-only
             @click="connect",
             pill
           )
-            span.mr-1 {{ adAccount }}
-            b-badge(variant="light") {{ adName }}
+            span.mr-1 {{ adName }}
+            b-badge(variant="light") {{ adAccount }}
           b-button.ld.ld-breath(
             v-else,
             :variant="queryADVariant",
             @click="$refs.adQueryModal.show()",
             pill
-          ) 登入
+          )
+            b-icon.mr-1(icon="box-arrow-right" font-scale="1.25")
+            span 登入
 
         b-modal(
           ref="adQueryModal",
