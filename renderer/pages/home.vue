@@ -1456,9 +1456,8 @@ export default {
         })
         .catch((err) => {
           console.error(err);
-          this.alert(`AD查詢失敗，密碼錯誤!?`, {
-            title: `ldap://${this.adHost}`,
-            subtitle: sAMAccountName,
+          this.alert(`查詢 ${sAMAccountName} 帳號失敗，密碼錯誤!?`, {
+            title: `ldap://${this.adHost}`
           });
         })
         .finally(() => {
