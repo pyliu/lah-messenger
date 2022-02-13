@@ -1172,6 +1172,23 @@ export default {
           await this.$localForage.setItem("adAccount", payload.id);
           await this.$localForage.setItem("adName", payload.name);
           await this.$localForage.setItem("department", payload.dept);
+          // refresh cached userinfo
+          const userinfo = await this.$localForage.getItem("userinfo");
+          /**
+           * const userinfo = {
+              userid: 'HAXXXXXXX',
+              user: {user: 'HAXXXXXXXX', ...},
+              ...
+            }
+            */
+          await this.$localForage.setItem("userinfo", {
+            ...userinfo,
+            userid: payload.id,
+            user: {
+              ...userinfo.user,
+              user: payload.id
+            }
+          });
           window && window.location.reload();
           break;
         default:
@@ -1224,25 +1241,7 @@ export default {
         this.reconnectMs = 20 * 1000;
         this.resetReconnectTimer();
       } else {
-        // this.isBusy = true;
-        this.$axios.post(this.apiQueryUrl + this.$consts.API.JSON.QUERY, {
-          type: 'ping',
-          ip: this.wsHost,
-          port: this.wsPort
-        }).then(({ data }) => {
-          if (this.$utils.statusCheck(data.status)) {
-            this.actualConnect();
-          } else {
-            this.warn('WSS伺服器無回應', data.message)
-            this.connectText = data.message
-            this.reconnectMs = 20 * 1000;
-            this.resetReconnectTimer();
-          }
-        }).catch((err) => {
-          this.err(err);
-        }).finally(() => {
-          // this.isBusy = false;
-        })
+        this.actualConnect();
       }
     },
     actualConnect() {
