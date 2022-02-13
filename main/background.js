@@ -276,15 +276,8 @@ ipcMain.handle('injectUserinfo', async (event, arg) => {
 ipcMain.handle('userinfo', async (event, arg) => {
   // To find user id starts with 'HX'
   const found = [ ...await si.users() ].find(thisuser => /^H[A-H]/i.test(thisuser.user))
-  if (!isProd) {
-    if (found) {
-      console.log(`Found User`, found)
-    } else {
-      console.log(`Can not find user id that starts with H[A-H]`)
-    }
-  }
   /*
-    found e.g. => {
+    expect found format => {
       user: 'HA0000',
       tty: 'console',
       date: '',
@@ -293,9 +286,16 @@ ipcMain.handle('userinfo', async (event, arg) => {
       command: ''
     }
    */
+  if (!isProd) {
+    if (found) {
+      console.log(`Found User`, found)
+    } else {
+      console.log(`Can not find user id that starts with H[A-H]`)
+    }
+  }
   const os = await si.osInfo()
   /*
-    os e.g. => {
+    expect os format => {
       arch: "x64"
       build: "19042"
       codename: ""

@@ -1479,6 +1479,10 @@ export default {
       });
     },
     async setUserInfo(userinfo) {
+      // if userid is empty, uses adAccount instead
+      if (this.empty(userinfo?.userid)) {
+        userinfo.userid = this.adAccount;
+      }
       this.$store.commit("userinfo", userinfo);
       this.$localForage.setItem("userinfo", userinfo);
       if (!this.$utils.isIPv4(this.adHost)) {
