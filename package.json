@@ -43,7 +43,7 @@
     "@babel/preset-typescript": "^7.13.0",
     "electron": "^17.0.0",
     "electron-builder": "^22.14.13",
-    "node-sass": "7.0.0",
+    "node-sass": "5.0.0",
     "nuxtron": "^0.3.1",
     "pug": "^3.0.2",
     "pug-plain-loader": "^1.1.0",
