@@ -1169,27 +1169,31 @@ export default {
           break;
         case "update_user":
           const payload = json.payload.info;
-          await this.$localForage.setItem("adAccount", payload.id);
-          await this.$localForage.setItem("adName", payload.name);
-          await this.$localForage.setItem("department", payload.dept);
-          // refresh cached userinfo
-          const userinfo = await this.$localForage.getItem("userinfo");
-          /**
-           * const userinfo = {
-              userid: 'HAXXXXXXX',
-              user: {user: 'HAXXXXXXXX', ...},
-              ...
-            }
-            */
-          await this.$localForage.setItem("userinfo", {
-            ...userinfo,
-            userid: payload.id,
-            user: {
-              ...userinfo.user,
-              user: payload.id
-            }
-          });
-          window && window.location.reload();
+          if (payload && payload.id && payload.name && payload.dept) {
+            await this.$localForage.setItem("adAccount", payload.id);
+            await this.$localForage.setItem("adName", payload.name);
+            await this.$localForage.setItem("department", payload.dept);
+            // refresh cached userinfo
+            const userinfo = await this.$localForage.getItem("userinfo");
+            /**
+             * const userinfo = {
+                userid: 'HAXXXXXXX',
+                user: {user: 'HAXXXXXXXX', ...},
+                ...
+              }
+              */
+            await this.$localForage.setItem("userinfo", {
+              ...userinfo,
+              userid: payload.id,
+              user: {
+                ...userinfo.user,
+                user: payload.id
+              }
+            });
+            window && window.location.reload();
+          } else {
+            this.warn('更新使用者登入資訊失敗', json);
+          }
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
