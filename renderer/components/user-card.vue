@@ -121,7 +121,11 @@ export default {
           userData: this.userData
         },
         on: {
-          update: () => { this.hideModalById(`${this.userData.id}-update-modal`) }
+          update: (cmd) => {
+            this.hideModalById(`${this.userData.id}-update-modal`)
+            this.log('更新訊息已送出', cmd)
+            this.notify(`更新 ${this.userData.id} / ${this.userData.name} 訊息已送出`)
+          }
         }
       }), {
         id: `${this.userData.id}-update-modal`,
