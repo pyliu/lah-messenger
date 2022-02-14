@@ -488,7 +488,7 @@ export default {
       if (this.empty(this.adAccount)) {
         return "outline-danger";
       }
-      return this.empty(this.adName) ? "outline-warning" : "success";
+      return this.empty(this.adName) ? "warning" : "success";
     },
     backFromSettings() {
       return this.$route.query.reconnect === "true";
