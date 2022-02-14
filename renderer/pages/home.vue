@@ -1220,7 +1220,10 @@ export default {
                 user: payload.id
               }
             });
-            window.location.reload();
+            this.timeout(() => {
+              this.connectText = "♻ 登入資訊更新，重新整理頁面";
+              window.location.reload();
+            }, 1000);
           } else {
             this.warn("update_user 指令帶入之json物件參數(json.message)有誤", json);
           }
