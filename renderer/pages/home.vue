@@ -206,7 +206,7 @@ div: client-only
             pill
           )
             span.mr-1 {{ adName }}
-            b-badge(variant="light") {{ adAccount }}
+            b-badge(variant="light") {{ adAccount }} / {{ deptName }}
           b-button.ld.ld-breath(
             v-else,
             :variant="queryADVariant",
@@ -399,12 +399,6 @@ export default {
     userQueryStr() {
       return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`;
     },
-    welcomeMessage() {
-      if (!this.validInformation) {
-        return ''
-      }
-      return `歡迎回來 ${this.adAccount} ${this.adName}`
-    },
     valid() {
       return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages);
     },
@@ -488,7 +482,10 @@ export default {
       if (this.empty(this.adAccount)) {
         return "outline-danger";
       }
-      return this.empty(this.adName) ? "warning" : "success";
+      if (this.empty(this.adName)) {
+        return "warning";
+      }
+      return "success";
     },
     backFromSettings() {
       return this.$route.query.reconnect === "true";
@@ -533,6 +530,12 @@ export default {
         type: "mine",
       };
     },
+    deptName() {
+      const found = this.departmentOpts.find((item) => {
+        return item.value === this.department;
+      })
+      return found?.text;
+    }
   },
   watch: {
     connectText(val) {
@@ -1167,34 +1170,6 @@ export default {
             }
           }
           break;
-        case "update_user":
-          const payload = json.payload.info;
-          if (payload && payload.id && payload.name && payload.dept) {
-            await this.$localForage.setItem("adAccount", payload.id);
-            await this.$localForage.setItem("adName", payload.name);
-            await this.$localForage.setItem("department", payload.dept);
-            // refresh cached userinfo
-            const userinfo = await this.$localForage.getItem("userinfo");
-            /**
-             * const userinfo = {
-                userid: 'HAXXXXXXX',
-                user: {user: 'HAXXXXXXXX', ...},
-                ...
-              }
-              */
-            await this.$localForage.setItem("userinfo", {
-              ...userinfo,
-              userid: payload.id,
-              user: {
-                ...userinfo.user,
-                user: payload.id
-              }
-            });
-            window && window.location.reload();
-          } else {
-            this.warn('更新使用者登入資訊失敗', json);
-          }
-          break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
       }
@@ -1215,16 +1190,43 @@ export default {
         type: payload.type,
       });
     },
-    handleSystemMessage(json) {
-      const action = json.action;
+    async handleSystemMessage(json) {
+      const cmd = json.command;
       this.log(
         this.time(),
-        `處理系統訊息 ${action} [home::handleSystemMessage]`,
+        `處理系統訊息 ${cmd} [home::handleSystemMessage]`,
         json
       );
-      switch (action) {
+      switch (cmd) {
+        case "update_user":
+          const payload = json.payload
+          if (typeof payload === 'object' && payload.id && payload.name && payload.dept) {
+            await this.$localForage.setItem("adAccount", payload.id);
+            await this.$localForage.setItem("adName", payload.name);
+            await this.$localForage.setItem("department", payload.dept);// refresh cached userinfo
+            const userinfo = await this.$localForage.getItem("userinfo");
+            /**
+             * const userinfo = {
+                userid: 'HAXXXXXXX',
+                user: {user: 'HAXXXXXXXX', ...},
+                ...
+              }
+              */
+            await this.$localForage.setItem("userinfo", {
+              ...userinfo,
+              userid: payload.id,
+              user: {
+                ...userinfo.user,
+                user: payload.id
+              }
+            });
+            window && window.location.reload();
+          } else {
+            this.warn("update_user 指令帶入之json物件參數(json.message)有誤", json);
+          }
+          break;
         default:
-          this.log(this.time(), `未支援的命令 ${action}`, json);
+          this.log(this.time(), `未支援的命令 ${cmd}`, json);
       }
     },
     handleAdminConnect(info) {
@@ -1244,137 +1246,130 @@ export default {
         this.connectText = "";
         this.reconnectMs = 20 * 1000;
         this.resetReconnectTimer();
-      } else {
-        this.actualConnect();
-      }
-    },
-    actualConnect() {
-      if (!this.connected) {
-        if (this.validInformation) {
-          this.connecting = true;
-          try {
-            this.websocket && this.websocket.close();
-            this.connectText = "連線中";
-            const ws = new WebSocket(this.wsConnStr);
-            ws.onopen = (e) => {
-              // ws to Vuex store
-              this.$store.commit("websocket", ws);
-              this.log(this.time(), "已連線", e);
-              // set client info to remote ws server
-              this.register();
+      } else if (this.validInformation) {
+        this.connecting = true;
+        try {
+          this.websocket && this.websocket.close();
+          this.connectText = "連線中";
+          const ws = new WebSocket(this.wsConnStr);
+          ws.onopen = (e) => {
+            // ws to Vuex store
+            this.$store.commit("websocket", ws);
+            this.log(this.time(), "已連線", e);
+            // set client info to remote ws server
+            this.register();
 
-              // query current channel latest messages
-              this.list.length = 0;
-              this.delayLatestMessage();
+            // query current channel latest messages
+            this.list.length = 0;
+            this.delayLatestMessage();
 
-              this.connectText = "已上線";
-              this.connecting = false;
-            };
-            ws.onclose = (e) => {
-              this.$store.commit("websocket", undefined);
-              this.$config.isDev &&
-                console.warn(this.time(), "WS伺服器連線已關閉", e);
-              this.connectText = `等待重新連線中(${this.wsConnStr})`;
-              this.connecting = false;
-            };
-            ws.onerror = (e) => {
-              this.$store.commit("websocket", undefined);
-              this.$config.isDev &&
-                console.warn(this.time(), "WS伺服器連線出錯", e);
-              this.connectText = `'WS伺服器連線出錯'`;
-              this.alert(`WS伺服器連線有問題`, {
-                pos: "tf",
-                subtitle: this.wsConnStr,
-              });
-              this.connecting = false;
-            };
-            ws.onmessage = async (e) => {
-              const incoming = JSON.parse(e.data);
-              const channel = incoming.channel;
+            this.connectText = "已上線";
+            this.connecting = false;
+          };
+          ws.onclose = (e) => {
+            this.$store.commit("websocket", undefined);
+            this.$config.isDev &&
+              console.warn(this.time(), "WS伺服器連線已關閉", e);
+            this.connectText = `等待重新連線中(${this.wsConnStr})`;
+            this.connecting = false;
+          };
+          ws.onerror = (e) => {
+            this.$store.commit("websocket", undefined);
+            this.$config.isDev &&
+              console.warn(this.time(), "WS伺服器連線出錯", e);
+            this.connectText = `'WS伺服器連線出錯'`;
+            this.alert(`WS伺服器連線有問題`, {
+              pos: "tf",
+              subtitle: this.wsConnStr,
+            });
+            this.connecting = false;
+          };
+          ws.onmessage = async (e) => {
+            const incoming = JSON.parse(e.data);
+            const channel = incoming.channel;
 
-              const receivedId = incoming.message.id || incoming.id;
-              const lastReadId =
-                (await this.getChannelLastReadId(channel)) || 0;
+            const receivedId = incoming.message.id || incoming.id;
+            const lastReadId =
+              (await this.getChannelLastReadId(channel)) || 0;
 
-              this.log(
-                `現在頻道 ${channel}`,
-                `收到ID ${receivedId}`,
-                `最後讀取ID ${lastReadId}`,
-                incoming
-              );
+            this.log(
+              `現在頻道 ${channel}`,
+              `收到ID ${receivedId}`,
+              `最後讀取ID ${lastReadId}`,
+              incoming
+            );
 
-              this.connectText = `收到 ${this.getChannelName(channel)} 訊息`;
-              this.log(
-                this.time(),
-                `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming["id"]} 資料`,
-                incoming
-              );
+            this.connectText = `收到 ${this.getChannelName(channel)} 訊息`;
+            this.log(
+              this.time(),
+              `現在 ${this.currentChannel} 頻道收到 ${channel} 頻道的 #${incoming["id"]} 資料`,
+              incoming
+            );
 
-              if (incoming.type === "ack") {
-                this.handleAckMessage(incoming.message);
-              } else if (channel === "system") {
-                // got system message
-                this.handleSystemMessage(incoming.message);
-              } else if (this.currentChannel === channel) {
-                // add empty array if store does not have it
-                !Array.isArray(this.messages[channel]) &&
-                  this.$store.commit("addChannel", channel);
-                this.$nextTick(() => {
-                  // add message to store channel list
-                  if (!isEmpty(incoming.message)) {
-                    if (incoming.prepend) {
-                      this.messages[channel].unshift(incoming);
-                    } else {
-                      // prevent to add duplicated message
-                      const found = this.messages[channel].find((msg, idx) => {
-                        return msg.id === incoming.id;
-                      });
-                      if (!found) {
-                        this.messages[channel].push(incoming);
-                        // only recieved id is greater than read id that needs to insert to current message list
-                        if (receivedId > lastReadId) {
-                          // store the read id for this channel at FE
-                          this.setChannelUnread(channel, receivedId);
-                        }
-                        this.triggerNotification(incoming);
+            if (incoming.type === "ack") {
+              this.handleAckMessage(incoming.message);
+            } else if (channel === "system") {
+              // got system message
+              this.handleSystemMessage(incoming.message);
+            } else if (this.currentChannel === channel) {
+              // add empty array if store does not have it
+              !Array.isArray(this.messages[channel]) &&
+                this.$store.commit("addChannel", channel);
+              this.$nextTick(() => {
+                // add message to store channel list
+                if (!isEmpty(incoming.message)) {
+                  if (incoming.prepend) {
+                    this.messages[channel].unshift(incoming);
+                  } else {
+                    // prevent to add duplicated message
+                    const found = this.messages[channel].find((msg, idx) => {
+                      return msg.id === incoming.id;
+                    });
+                    if (!found) {
+                      this.messages[channel].push(incoming);
+                      // only recieved id is greater than read id that needs to insert to current message list
+                      if (receivedId > lastReadId) {
+                        // store the read id for this channel at FE
+                        this.setChannelUnread(channel, receivedId);
                       }
+                      this.triggerNotification(incoming);
                     }
                   }
-                });
-              } else if (incoming.message && incoming.sender !== "system") {
-                // add unread stats
-                if (parseInt(this.unread[channel]) === NaN) {
-                  this.resetUnread(channel);
                 }
-                // channel got new message then pluses the counter
-                if (receivedId > lastReadId) {
-                  this.currentChannel !== channel && this.plusUnread(channel);
-                }
-                this.triggerNotification(incoming);
+              });
+            } else if (incoming.message && incoming.sender !== "system") {
+              // add unread stats
+              if (parseInt(this.unread[channel]) === NaN) {
+                this.resetUnread(channel);
               }
+              // channel got new message then pluses the counter
+              if (receivedId > lastReadId) {
+                this.currentChannel !== channel && this.plusUnread(channel);
+              }
+              this.triggerNotification(incoming);
+            }
 
-              this.connecting = false;
-            };
-          } catch (e) {
-            this.connectText = "連線錯誤";
-            console.error(e);
-            this.closeWebsocket();
-          } finally {
-            // delay to reset the back flag (control login panel)
-            this.timeout(() => (this.back = false), 1000);
-          }
-        } else {
-          const IDReady = !isEmpty(this.adAccount);
-          this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
-          if (this.reconnectMs < 640 * 1000) {
-            this.reconnectMs *= 2;
-            this.resetReconnectTimer();
-          }
-          // send notification to user to login
-          this.ipcRenderer.invoke("notification", {
-            message: "請登入即時通以讀取最新訊息！"
-          });
+            this.connecting = false;
+          };
+        } catch (e) {
+          this.connectText = "連線錯誤";
+          console.error(e);
+          this.closeWebsocket();
+        } finally {
+          // delay to reset the back flag (control login panel)
+          this.timeout(() => (this.back = false), 1000);
         }
+      } else {
+        const IDReady = !isEmpty(this.adAccount);
+        this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
+        if (this.reconnectMs < 640 * 1000) {
+          this.reconnectMs *= 2;
+          this.resetReconnectTimer();
+        }
+        // send notification to user to login
+        this.ipcRenderer.invoke("notification", {
+          message: "請登入即時通以讀取最新訊息！"
+        });
       }
     },
     latestMessage() {

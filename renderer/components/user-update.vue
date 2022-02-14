@@ -81,10 +81,10 @@ export default {
       return found ? found.value : 'adm'
     }
   },
-  created () {
-    this.adId = this.userData.id
-    this.adName = this.userData.name
-    this.department = this.unit
+  async created () {
+    this.adId = await this.$localForage.getItem("adAccount");
+    this.adName = await this.$localForage.getItem("adName");
+    this.department = await this.$localForage.getItem("department");
     this.ext = this.userData.ext
     this.uIp = this.userData.ip
     this.work = this.userData.work
