@@ -1220,7 +1220,7 @@ export default {
                 user: payload.id
               }
             });
-            window && window.location.reload();
+            window.location.reload();
           } else {
             this.warn("update_user 指令帶入之json物件參數(json.message)有誤", json);
           }
