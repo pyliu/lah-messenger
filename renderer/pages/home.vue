@@ -1640,6 +1640,7 @@ export default {
     watchModal(bvEvent, modalId) {
       const type = bvEvent?.type
       if (type === 'shown') {
+        this.$store.commit("lastModalId", modalId);
         this.clearReconnectTimer();
         this.reconnectMs = 20 * 1000;
       } else {

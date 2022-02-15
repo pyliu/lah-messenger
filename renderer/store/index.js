@@ -114,7 +114,8 @@ const state = () => ({
     announcement: true,
     personal: true,
     chat: true
-  }
+  },
+  lastModalId: ''
 })
 
 const getters = {
@@ -203,7 +204,8 @@ const getters = {
   statusText: state => state.statusText,
 
   emojiTxt: state => state.emojiTxt,
-  emojiCode: state => emojiLib.unemojify(state.emojiTxt)
+  emojiCode: state => emojiLib.unemojify(state.emojiTxt),
+  lastModalId: state => state.lastModalId
 }
 
 // only sync operation
@@ -368,6 +370,9 @@ const mutations = {
   },
   statusText (state, string) {
     state.statusText = string
+  },
+  lastModalId (state, id) {
+    state.lastModalId = id
   }
 }
 
