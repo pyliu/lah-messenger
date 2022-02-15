@@ -650,7 +650,7 @@ export default {
           });
           this.timeout(() => {
             this.connectText = "♻ 重新整理頁面";
-            window.location.reload();
+            this.ipcRenderer.invoke("reload");
           }, 3000)
             .then((timeoutHandle) => {
               // handle resolved
@@ -1220,10 +1220,8 @@ export default {
                 user: payload.id
               }
             });
-            this.timeout(() => {
-              this.connectText = "♻ 登入資訊更新，重新整理頁面";
-              window.location.reload();
-            }, 1000);
+            this.connectText = "♻ 登入資訊更新，重新整理頁面";
+            this.ipcRenderer.invoke("reload");
           } else {
             this.warn("update_user 指令帶入之json物件參數(json.message)有誤", json);
           }
@@ -1371,7 +1369,8 @@ export default {
         }
         // send notification to user to login
         this.ipcRenderer.invoke("notification", {
-          message: "請登入即時通以讀取最新訊息！"
+          message: "請登入即時通以讀取最新訊息！",
+          showMainWindow: true
         });
       }
     },

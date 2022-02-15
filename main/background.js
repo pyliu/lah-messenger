@@ -171,6 +171,10 @@ app.on('window-all-closed', closeApp)
  */
 const { ipcMain } = require('electron')
 
+ipcMain.handle('reload', async (event, payload) => {
+  await mainWindow.loadURL('app://./home')
+})
+
 ipcMain.handle('add-ip-entry', async (event, payload) => {
   // get all possible ipv4 address
   const nets = require('os').networkInterfaces()
