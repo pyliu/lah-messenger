@@ -172,7 +172,12 @@ app.on('window-all-closed', closeApp)
 const { ipcMain } = require('electron')
 
 ipcMain.handle('reload', async (event, payload) => {
-  await mainWindow.loadURL('app://./home')
+  if (isProd) {
+    await mainWindow.loadURL('app://./home')
+  } else {
+    const port = process.argv[2]
+    await mainWindow.loadURL(`http://localhost:${port}/home`)
+  }
 })
 
 ipcMain.handle('add-ip-entry', async (event, payload) => {
