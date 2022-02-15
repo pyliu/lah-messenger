@@ -743,7 +743,7 @@ export default {
         }
       );
     },
-    loadAuthority() {
+    loadApiUserData() {
       this.$axios
         .post(this.userQueryStr, {
           type: "authentication",
@@ -751,8 +751,10 @@ export default {
         })
         .then(({ data }) => {
           if (this.$utils.statusCheck(data.status)) {
-            this.$store.commit("authority", data.authority);
             this.setCache("userAuthority", data.authority, 12 * 60 * 60 * 1000);
+            this.setCache("apiUserinfo", data.info, 12 * 60 * 60 * 1000);
+            this.$store.commit("authority", data.authority);
+            this.$store.commit("apiUserinfo", data.authority);
           } else {
             this.warning(data.message);
           }
@@ -1361,17 +1363,30 @@ export default {
           this.timeout(() => (this.back = false), 1000);
         }
       } else {
-        const IDReady = !isEmpty(this.adAccount);
-        this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
-        if (this.reconnectMs < 640 * 1000) {
-          this.reconnectMs *= 2;
-          this.resetReconnectTimer();
+        // try to get user info from api server
+        if (
+          this.apiUserinfo &&
+          !this.empty(this.apiUserinfo.id) &&
+          !this.empty(this.apiUserinfo.name) &&
+          !this.empty(this.apiUserinfo.unit)
+        ) {
+          this.adAccount = this.apiUserinfo.id;
+          this.adName = this.apiUserinfo.name;
+          this.department = this.apiUserinfo.unit;
+          this.$nextTick(this.connect)
+        } else {
+          const IDReady = !isEmpty(this.adAccount);
+          this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
+          if (this.reconnectMs < 640 * 1000) {
+            this.reconnectMs *= 2;
+            this.resetReconnectTimer();
+          }
+          // send notification to user to login
+          this.ipcRenderer.invoke("notification", {
+            message: "請登入即時通以讀取最新訊息！",
+            showMainWindow: true
+          });
         }
-        // send notification to user to login
-        this.ipcRenderer.invoke("notification", {
-          message: "請登入即時通以讀取最新訊息！",
-          showMainWindow: true
-        });
       }
     },
     latestMessage() {
@@ -1699,10 +1714,12 @@ export default {
       }
       // checking api server for the user authority
       const authority = await this.getCache("userAuthority");
-      if (authority === false) {
-        this.loadAuthority();
+      const apiUserinfo = await this.getCache("apiUserinfo");
+      if (authority === false || apiUserinfo === false) {
+        this.loadApiUserData();
       } else {
         this.$store.commit("authority", authority);
+        this.$store.commit("apiUserinfo", apiUserinfo);
       }
       // tell main process the renderer phase is ready
       this.ipcRenderer.invoke("home-ready");

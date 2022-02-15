@@ -52,6 +52,7 @@ const state = () => ({
     isUserMgtStaff: false,
     isNotifyMgtStaff: false
   },
+  apiUserinfo: {},
   userMap: {},
   userinfo: {
     address: [],
@@ -119,6 +120,7 @@ const state = () => ({
 const getters = {
   windowVisible: state => state.windowVisible,
   authority: state => state.authority,
+  apiUserinfo: state => state.apiUserinfo,
   websocket: state => state.websocket,
   connected: state => state.websocket && state.websocket.readyState === 1,
   disconnected: state => empty(state.websocket) || state.websocket.readyState === 3,
@@ -209,6 +211,9 @@ const mutations = {
   windowVisible (state, flag) { state.windowVisible = flag },
   authority (state, payloadObj) {
     state.authority = { ...state.authority, ...payloadObj }
+  },
+  apiUserinfo (state, payloadObj) {
+    state.apiUserinfo = { ...state.apiUserinfo, ...payloadObj }
   },
   websocket (state, ws) {
     state.websocket && state.websocket.close()

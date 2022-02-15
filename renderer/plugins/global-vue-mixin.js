@@ -35,6 +35,7 @@ Vue.mixin({
     ...mapGetters([
       'windowVisible',
       'authority',
+      'apiUserinfo',
       'websocket',
       'connected',
       'disconnected',
