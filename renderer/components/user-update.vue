@@ -39,8 +39,8 @@ export default {
     userData: { type: Object, required: true }
   },
   data: () => ({
-    adId: "",
-    adName: "",
+    adId: '',
+    adName: '',
     ext: '',
     uIp: '',
     work: '',
@@ -82,9 +82,9 @@ export default {
     }
   },
   async created () {
-    this.adId = await this.$localForage.getItem("adAccount");
-    this.adName = await this.$localForage.getItem("adName");
-    this.department = await this.$localForage.getItem("department");
+    this.adId = this.userData.id;
+    this.adName = this.userData.name;
+    this.department = this.unit;
     this.ext = this.userData.ext
     this.uIp = this.userData.ip
     this.work = this.userData.work
