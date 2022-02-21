@@ -1,4 +1,5 @@
-```journey
+```mermaid
+journey
     title Dev Roadmap
     section 2021-04
       發想: 3
