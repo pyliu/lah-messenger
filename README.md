@@ -13,7 +13,7 @@ journey
     section 2022~
       正式上線及後續改進: 8
  ```
-<div class="d-flex flex-nowrap"><img src="snap2.jpg" class="img-thumbnail mx-2"> <img src="snap.jpg" class="img-thumbnail"></div>
+<div class="d-flex flex-nowrap justify-content-center"><img src="snap2.jpg" class="img-thumbnail mx-2"></div>
 
 ## Dev Usage
 
