@@ -13,7 +13,7 @@
       .mr-auto
         b-icon(icon="people-fill")
         span.mx-1 線上使用者
-        b-badge(pill variant="secondary") {{ connectedUsersCount }}
+        b-badge(pill :variant="connectedUsersBadgeVariant") {{ connectedUsersCount }}
       b-checkbox(
         v-model="ascending"
         v-b-tooltip="'優先顯示人數較少的部門'"
@@ -103,6 +103,15 @@ export default {
         if (a.users.length < b.users.length) { return this.ascending ? -1: 1 }
         return 0
       })
+    },
+    connectedUsersBadgeVariant () {
+      if (this.connectedUsersCount > 100) {
+        return 'danger'
+      }
+      if (this.connectedUsersCount > 75) {
+        return 'warning'
+      }
+      return 'success'
     }
   },
   watch: {
