@@ -396,9 +396,26 @@ ipcMain.handle('ad-user-query', async (event, config) => {
 })
 
 ipcMain.handle('open-image', async (event, payload) => {
-  const buf = Buffer.from(payload.src, 'base64')
-  // const filepath = path.join(os.tmpdir(), 'tmp.jpg')
-  const filepath = path.join(os.homedir(), 'tmp.jpg')
+  const parts = payload.src?.split(',')
+  let buf, tmpFilename
+  if (Array.isArray(parts)) {
+    //check extension
+    switch (parts[0]) {
+      case "data:image/jpeg;base64":
+        tmpFilename = "tmp.jpeg"
+        break
+      case "data:image/png;base64":
+        tmpFilename = "tmp.png"
+        break
+      default:
+        // for most cases
+        tmpFilename = 'tmp.jpg'
+    }
+    buf = Buffer.from(parts[1], 'base64')
+  } else {
+    buf = Buffer.from(payload.src, 'base64')
+  }
+  const filepath = path.join(os.homedir(), tmpFilename)
   fs.writeFile(filepath, buf, (error) => {
     if (error) { throw new Error(error) }
     // open the image
