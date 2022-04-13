@@ -275,7 +275,6 @@ div: client-only
 
 <script>
 import trim from "lodash/trim";
-import isEmpty from "lodash/isEmpty";
 import debounce from "lodash/debounce";
 import ImageUpload from "~/components/image-upload.vue";
 import DOMPurify from "dompurify";
@@ -425,7 +424,7 @@ export default {
       return i > 1024 && i < 65535;
     },
     validDepartment() {
-      return !isEmpty(trim(this.department));
+      return !this.$utils.empty(trim(this.department));
     },
     validInformation() {
       return (
@@ -856,7 +855,7 @@ export default {
     sendTo(message, opts = {}) {
       message = trim(message);
       !this.connected && this.connect();
-      if (!isEmpty(message)) {
+      if (!this.$utils.empty(message)) {
         if (this.connected) {
           const jsonStr = this.packMessage(message, {
             channel: this.currentChannel,
@@ -1318,7 +1317,7 @@ export default {
                 this.$store.commit("addChannel", channel);
               this.$nextTick(() => {
                 // add message to store channel list
-                if (!isEmpty(incoming.message)) {
+                if (!this.$utils.empty(incoming.message)) {
                   if (incoming.prepend) {
                     this.messages[channel].unshift(incoming);
                   } else {
@@ -1373,7 +1372,7 @@ export default {
           this.department = this.apiUserinfo.unit;
           this.$nextTick(this.connect)
         } else {
-          const IDReady = !isEmpty(this.adAccount);
+          const IDReady = !this.$utils.empty(this.adAccount);
           this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
           if (this.reconnectMs < 640 * 1000) {
             this.reconnectMs *= 2;
