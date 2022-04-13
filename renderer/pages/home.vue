@@ -196,7 +196,7 @@ div: client-only
             type="number",
  
             :state="validPort",
-            style="max-width: 75px",
+            style="max-width: 100px",
             v-b-tooltip="'通訊埠號'"
           )
 
