@@ -182,7 +182,7 @@ div: client-only
       ) 手動登入
       admin-manual-login(v-if="manualLogin", @connect="handleAdminConnect")
       div(v-else)
-        b-input-group.my-2(prepend="伺服器")
+        b-input-group.my-3(prepend="伺服器")
           b-input(
             v-model="wsHost",
             :state="validHost",
@@ -200,24 +200,24 @@ div: client-only
             v-b-tooltip="'通訊埠號'"
           )
 
-        .center
+        .center(v-if="validHost && validPort")
           b-button(
             v-if="validInformation",
-            variant="success",
+            :variant="success",
             :disabled="connecting",
             @click="connect",
             pill
           )
             span.mr-1 {{ adName }}
             b-badge(variant="light") {{ adAccount }} / {{ deptName }}
-          b-button.ld.ld-breath(
+          b-button.ld.ld-jump(
             v-else,
             :variant="queryADVariant",
             @click="$refs.adQueryModal.show()",
             pill
           )
             b-icon.mr-1(icon="box-arrow-right" font-scale="1.25")
-            span 登入
+            span 登入 #[b-badge(v-if="!$utils.empty(adAccount)", variant="light") {{ adAccount }}]
 
         b-modal(
           ref="adQueryModal",
