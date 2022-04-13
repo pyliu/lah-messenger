@@ -422,7 +422,7 @@ export default {
     },
     validPort() {
       const i = parseInt(trim(this.wsPort));
-      return i < 1025 || i < 65535;
+      return i > 1024 && i < 65535;
     },
     validDepartment() {
       return !isEmpty(trim(this.department));
