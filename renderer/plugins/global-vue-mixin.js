@@ -83,7 +83,8 @@ Vue.mixin({
       'statusText',
       'emojiTxt',
       'emojiCode',
-      'lastModalId'
+      'lastModalId',
+      'tySvrIp'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },
@@ -96,7 +97,40 @@ Vue.mixin({
     belongToSupervisor () { return ['supervisor', 'director', 'secretary'].includes(this.userdept)  },
     apiQueryUrl () { return `http://${this.apiHost}:${this.apiPort}` },
     feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` },
-    uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`}
+    uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`},
+    site () {
+      if (/^192\.168\.[1-9]\./gm.test(this.ip) || /^220\.1\.33\./gm.test(this.ip)) {
+        return 'H0'
+      }
+      if (/^192\.168\.1[1-9]\./gm.test(this.ip) || /^220\.1\.34\./gm.test(this.ip)) {
+        return 'HA'
+      }
+      if (/^192\.168\.2[1-9]\./gm.test(this.ip) || /^220\.1\.35\./gm.test(this.ip)) {
+        return 'HB'
+      }
+      if (/^192\.168\.3[1-9]\./gm.test(this.ip) || /^220\.1\.36\./gm.test(this.ip)) {
+        return 'HC'
+      }
+      if (/^192\.168\.4[1-9]\./gm.test(this.ip) || /^220\.1\.37\./gm.test(this.ip)) {
+        return 'HD'
+      }
+      if (/^192\.168\.5[1-9]\./gm.test(this.ip) || /^220\.1\.38\./gm.test(this.ip)) {
+        return 'HE'
+      }
+      if (/^192\.168\.6[1-9]\./gm.test(this.ip) || /^220\.1\.39\./gm.test(this.ip)) {
+        return 'HF'
+      }
+      if (/^192\.168\.7[1-9]\./gm.test(this.ip) || /^220\.1\.40\./gm.test(this.ip)) {
+        return 'HG'
+      }
+      if (/^192\.168\.8[1-9]\./gm.test(this.ip) || /^220\.1\.41\./gm.test(this.ip)) {
+        return 'HH'
+      }
+      return ''
+    },
+    defaultSvrIp () {
+      return this.tySvrIp.get(this.site)
+    }
   },
   methods: {
     ...mapActions([

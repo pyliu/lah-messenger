@@ -150,10 +150,13 @@ div: client-only
   //- 登入介面
   .center.vh-100(v-else, v-cloak)
     .w-75
-      .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak, fluid)
+      //- .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak, fluid)
+      .center.logo
+        b-img.mr-1(src="tyland.jpg", fluid, style="max-width: 96px")
+        H1  桃園即時通
 
-      .center(style="margin-top: 3rem"): b-iconstack#main_logo_icon.iconstack(
-        font-scale="7.5",
+      b-iconstack#main_logo_icon.iconstack(
+        font-scale="3",
         v-cloak
       )
         b-icon(
@@ -183,9 +186,9 @@ div: client-only
           b-input(
             v-model="wsHost",
             :state="validHost",
-            trim,
             placeholder="... 即時通伺服器IP ...",
-            v-b-tooltip="'伺服器IP'"
+            v-b-tooltip="'伺服器IP'",
+            trim
           )
           span.my-auto.mx-1 :
           b-input(
@@ -415,22 +418,22 @@ export default {
       return this.empty(this.adPassword) ? false : null;
     },
     validHost() {
-      return this.$utils.isIPv4(this.wsHost) === false ? false : null;
+      return this.$utils.isIPv4(this.wsHost);
     },
     validPort() {
       const i = parseInt(trim(this.wsPort));
-      return i < 1025 || i > 65535 || this.empty(this.wsPort) ? false : null;
+      return i < 1025 || i < 65535;
     },
     validDepartment() {
-      return isEmpty(trim(this.department)) === true ? false : null;
+      return !isEmpty(trim(this.department));
     },
     validInformation() {
       return (
         this.validAdAccount &&
         this.validAdName &&
-        this.validDepartment === null &&
-        this.validPort === null &&
-        this.validHost === null
+        this.validDepartment &&
+        this.validPort &&
+        this.validHost
       );
     },
     disabledAdLoginBtn() {
@@ -668,12 +671,7 @@ export default {
       } else {
         this.resetReconnectTimer();
       }
-    },
-    // connected(flag) {
-    //   flag && this.ipcRenderer.invoke('show-window', {
-    //     top: true // show window top and focused
-    //   });
-    // }
+    }
   },
   methods: {
     delaySendChannelActivity: function noop() {},
@@ -1384,7 +1382,7 @@ export default {
           // send notification to user to login
           this.ipcRenderer.invoke("notification", {
             message: "請登入即時通以讀取最新訊息！",
-            showMainWindow: true
+            showMainWindow: false
           });
         }
       }
@@ -1646,21 +1644,38 @@ export default {
       } else {
         this.resetReconnectTimer();
       }
+    },
+    addCurrentChannel() {
+      if (!(this.currentChannel in this.messages) && !this.$isServer) {
+        this.$store.commit("addChannel", this.currentChannel);
+        this.log(
+          this.time(),
+          `add channel ${this.currentChannel} to $store! [messageMixin::created]`
+        );
+        this.$store.commit("resetUnread", this.currentChannel);
+        this.log(
+          this.time(),
+          `add unread ${this.currentChannel} to $store! [messageMixin::created]`
+        );
+      }
+    },
+    checkDefaultSvrIp() {
+      if (this.$utils.empty(this.wsHost)) {
+        if (this.$utils.empty(this.defaultSvrIp)) {
+          this.timeout(this.checkDefaultSvrIp, 400);
+        } else {
+          this.wsHost = this.defaultSvrIp
+        }
+      }
+    },
+    checkDefaultDept() {
+      if (this.$utils.empty(this.department)) {
+        this.department = 'adm'
+      }
     }
   },
   created() {
-    if (!(this.currentChannel in this.messages) && !this.$isServer) {
-      this.$store.commit("addChannel", this.currentChannel);
-      this.log(
-        this.time(),
-        `add channel ${this.currentChannel} to $store! [messageMixin::created]`
-      );
-      this.$store.commit("resetUnread", this.currentChannel);
-      this.log(
-        this.time(),
-        `add unread ${this.currentChannel} to $store! [messageMixin::created]`
-      );
-    }
+    this.addCurrentChannel();
     this.ipcRendererSetup();
     this.queryUserInfo();
   },
@@ -1673,16 +1688,16 @@ export default {
     );
 
     // start reconnect timer
-    // this.resetReconnectTimer();
+    this.resetReconnectTimer();
 
     this.$nextTick(async () => {
       // restore last settings
       this.adAccount = await this.$localForage.getItem("adAccount");
       this.adName = await this.$localForage.getItem("adName");
       this.adPassword = await this.$localForage.getItem("adPassword");
-      this.department = await this.$localForage.getItem("department") || 'adm';
+      this.department = await this.$localForage.getItem("department");
       this.adHost = await this.$localForage.getItem("adHost");
-      this.wsHost = await this.$localForage.getItem("wsHost") || "220.1.34.75";
+      this.wsHost = await this.$localForage.getItem("wsHost");
       this.wsPort = await this.$localForage.getItem("wsPort") || 8081;
       // restore effect setting to store
       this.$store.commit("effect", await this.$localForage.getItem("effect"));
@@ -1730,6 +1745,8 @@ export default {
     this.$store.commit("windowVisible", !document.hidden);
     this.$root.$on('bv::modal::shown', this.watchModal);
     this.$root.$on('bv::modal::hidden', this.watchModal);
+    this.checkDefaultSvrIp();
+    this.checkDefaultDept();
   },
   beforeDestroy() {
     // remove timer if user is going to leave the page
@@ -1749,13 +1766,16 @@ export default {
 }
 .logo {
   position: absolute;
-  left: 80px;
-  top: 75px;
+  left: 95px;
+  top: 165px;
 
   animation: fadeInDown; /* referring directly to the animation's @keyframe declaration */
   animation-duration: 2000ms; /* don't forget to set a duration! */
 }
 .iconstack {
+  position: absolute;
+  right: 45px;
+  bottom: 35px;
   animation: rubberBand;
   animation-duration: 2s;
 }

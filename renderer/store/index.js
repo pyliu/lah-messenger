@@ -115,7 +115,18 @@ const state = () => ({
     personal: true,
     chat: true
   },
-  lastModalId: ''
+  lastModalId: '',
+  tySvrIp: new Map([
+    ['H0', '220.1.33.'],
+    ['HA', '220.1.34.75'],
+    ['HB', '220.1.35.84'],
+    ['HC', '220.1.36.14'],
+    ['HD', '220.1.37.1'],
+    ['HE', '220.1.38.'],
+    ['HF', '220.1.39.235'],
+    ['HG', '220.1.40.'],
+    ['HH', '220.1.41.']
+  ])
 })
 
 const getters = {
@@ -205,7 +216,9 @@ const getters = {
 
   emojiTxt: state => state.emojiTxt,
   emojiCode: state => emojiLib.unemojify(state.emojiTxt),
-  lastModalId: state => state.lastModalId
+  lastModalId: state => state.lastModalId,
+
+  tySvrIp: state => state.tySvrIp
 }
 
 // only sync operation
