@@ -50,6 +50,10 @@ import trim from "lodash/trim";
 
 export default {
   emit: ["connect"],
+  props: {
+    defId: { type: String, default: '' },
+    defName: { type: String, default: '' }
+  },
   data: () => ({
     adId: "",
     adName: "",
@@ -87,6 +91,8 @@ export default {
   },
   created () {
     this.wsHost = this.apiHost;
+    this.adId = this.defId;
+    this.adName = this.defName;
   },
   methods: {
     emitConnectInformation() {

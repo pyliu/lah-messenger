@@ -149,14 +149,13 @@ div: client-only
 
   //- 登入介面
   .center.vh-100(v-else, v-cloak)
-    .w-75
+    .w-75.mt-n5
       //- .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak, fluid)
-      .center.logo
-        b-img.mr-1(src="tyland.jpg", fluid, style="max-width: 96px")
-        H1  桃園即時通
-
-      b-iconstack#main_logo_icon.iconstack(
-        font-scale="3",
+      .center.mb-5.logo
+        b-img(src="tyland.jpg", fluid, style="max-width: 96px")
+        H1 桃園即時通
+      .center: b-iconstack#main_logo_icon.iconstack(
+        font-scale="6",
         v-cloak
       )
         b-icon(
@@ -178,9 +177,16 @@ div: client-only
       .d-flex.justify-content-end: b-checkbox(
         v-if="authority.isAdmin",
         v-model="manualLogin",
+        size="sm",
         switch
       ) 手動登入
-      admin-manual-login(v-if="manualLogin", @connect="handleAdminConnect")
+
+      admin-manual-login(
+        v-if="manualLogin",
+        :def-id="adAccount",
+        :def-name="adName",
+        @connect="handleAdminConnect"
+      )
       div(v-else)
         b-input-group.my-3(prepend="伺服器")
           b-input(
@@ -194,21 +200,22 @@ div: client-only
           b-input(
             v-model="wsPort",
             type="number",
- 
+
             :state="validPort",
             style="max-width: 100px",
             v-b-tooltip="'通訊埠號'"
           )
-
         .center(v-if="validHost && validPort")
           b-button(
             v-if="validInformation",
-            :variant="success",
+            :variant="queryADVariant",
             :disabled="connecting",
             @click="connect",
+            title="連線",
             pill
           )
-            span.mr-1 {{ adName }}
+            b-icon(icon="box-arrow-right" font-scale="1.25")
+            span.mx-1 {{ adName }}
             b-badge(variant="light") {{ adAccount }} / {{ deptName }}
           b-button.ld.ld-jump(
             v-else,
@@ -482,7 +489,7 @@ export default {
     },
     queryADVariant() {
       if (this.empty(this.adAccount)) {
-        return "outline-danger";
+        return "primary";
       }
       if (this.empty(this.adName)) {
         return "warning";
@@ -568,13 +575,15 @@ export default {
     },
     wsHost(val) {
       this.resetReconnectTimer();
-      this.$localForage.setItem("wsHost", val);
-      // api/wss/fe servers are in the same VM  by design
-      this.$store.commit("apiHost", val);
+      if (this.$utils.isIPv4(val) || this.$utils.empty(val)) {
+        this.$localForage.setItem("wsHost", val);
+        // api/wss/fe servers are in the same VM  by design
+        this.$store.commit("apiHost", val);
+      }
     },
     wsPort(val) {
       this.resetReconnectTimer();
-      this.$localForage.setItem("wsPort", val);
+      this.validPort && this.$localForage.setItem("wsPort", val);
     },
     userid(val) {
       this.warn('使用者ID變動', val);
@@ -741,46 +750,55 @@ export default {
       );
     },
     loadApiUserData() {
-      this.$axios
-        .post(this.userQueryStr, {
-          type: "authentication",
-          ip: this.ip,
-        })
-        .then(({ data }) => {
-          if (this.$utils.statusCheck(data.status)) {
-            this.setCache("userAuthority", data.authority, 12 * 60 * 60 * 1000);
-            this.setCache("apiUserinfo", data.info, 12 * 60 * 60 * 1000);
-            this.$store.commit("authority", data.authority);
-            this.$store.commit("apiUserinfo", data.authority);
-          } else {
-            this.warning(data.message);
-          }
-        })
-        .catch((err) => {
-          this.alert(err.toString());
-        })
-        .finally(() => {
-          // this.log("authority", this.authority);
-        });
+      if (this.validHost) {
+        this.$axios
+          .post(this.userQueryStr, {
+            type: "authentication",
+            ip: this.ip,
+          })
+          .then(({ data }) => {
+            if (this.$utils.statusCheck(data.status)) {
+              this.setCache("userAuthority", data.authority, 12 * 60 * 60 * 1000);
+              this.setCache("apiUserinfo", data.info, 12 * 60 * 60 * 1000);
+              this.$store.commit("authority", data.authority);
+              this.$store.commit("apiUserinfo", data.info);
+            } else {
+              this.warning(data.message);
+            }
+          })
+          .catch((err) => {
+            this.alert(err.toString());
+          })
+          .finally(() => {
+            // this.log("authority", this.authority);
+            // this.log("info", this.apiUserinfo);
+          });
+      } else {
+        this.timeout(this.loadApiUserData, 400);
+      }
     },
     loadUserMapData() {
-      // refresh user name mapping from API server
-      this.$axios
-        .post(this.userQueryStr, {
-          type: "user_mapping",
-        })
-        .then(({ data }) => {
-          if (this.$utils.statusCheck(data.status)) {
-            this.$store.commit("userMap", data.data);
-            this.setCache("userMap", data.data, 12 * 60 * 60 * 1000);
-          } else {
-            this.warning(data.message);
-          }
-        })
-        .catch((err) => {
-          this.alert(err.toString());
-        })
-        .finally(() => {});
+      if (this.validHost) {
+        // refresh user name mapping from API server
+        this.$axios
+          .post(this.userQueryStr, {
+            type: "user_mapping",
+          })
+          .then(({ data }) => {
+            if (this.$utils.statusCheck(data.status)) {
+              this.$store.commit("userMap", data.data);
+              this.setCache("userMap", data.data, 12 * 60 * 60 * 1000);
+            } else {
+              this.warning(data.message);
+            }
+          })
+          .catch((err) => {
+            this.alert(err.toString());
+          })
+          .finally(() => {});
+      } else {
+        this.timeout(this.loadUserMapData, 400);
+      }
     },
     reply(raw) {
       const sender = this.userMap[raw["sender"]] || raw["sender"];
@@ -1764,19 +1782,17 @@ export default {
   color: #007bff;
 }
 .logo {
-  position: absolute;
-  left: 95px;
-  top: 165px;
-
   animation: fadeInDown; /* referring directly to the animation's @keyframe declaration */
   animation-duration: 2000ms; /* don't forget to set a duration! */
 }
 .iconstack {
-  position: absolute;
-  right: 45px;
-  bottom: 35px;
   animation: rubberBand;
   animation-duration: 2s;
+  animation-delay: 2s;
+  animation-iteration-count: 2;
+  &:hover {
+    animation-play-state: paused;
+  }
 }
 .eye {
   cursor: pointer;
