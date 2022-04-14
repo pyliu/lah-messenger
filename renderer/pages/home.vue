@@ -1,5 +1,5 @@
 <template lang="pug">
-div: client-only
+.main-window: client-only
   transition(v-if="connected", name="list", mode="out-in"): div
     b-card.m-1(no-body, header-tag="nav", v-cloak)
       template(#header): b-nav(card-header, tabs, fill)
@@ -185,6 +185,7 @@ div: client-only
         v-if="manualLogin",
         :def-id="adAccount",
         :def-name="adName",
+        :def-dept="department"
         @connect="handleAdminConnect"
       )
       div(v-else)
@@ -286,6 +287,7 @@ import debounce from "lodash/debounce";
 import ImageUpload from "~/components/image-upload.vue";
 import DOMPurify from "dompurify";
 import Markd from "marked";
+import { threadId } from "worker_threads";
 
 export default {
   transition: "list",
@@ -305,6 +307,7 @@ export default {
     adPasswordType: "password",
     wsHost: "",
     wsPort: 8081,
+    syncDepartmentTimer: null,
     department: "",
     departmentOpts: [
       { value: "", text: "選擇部門" },
@@ -496,9 +499,6 @@ export default {
       }
       return "success";
     },
-    backFromSettings() {
-      return this.$route.query.reconnect === "true";
-    },
     notifyChannels() {
       const channels = ["announcement", `announcement_${this.department}`];
       this.notifySettings.personal && channels.push(this.adAccount);
@@ -540,10 +540,26 @@ export default {
       };
     },
     deptName() {
-      const found = this.departmentOpts.find((item) => {
-        return item.value === this.department;
-      })
-      return found?.text;
+      switch (this.department) {
+        case 'inf':
+          return '資訊課'
+        case 'adm':
+          return '行政課'
+        case 'reg':
+          return '登記課'
+        case 'sur':
+          return '測量課'
+        case 'val':
+          return '地價課'
+        case 'hr':
+          return '人事室'
+        case 'acc':
+          return '會計室'
+        case 'supervisor':
+          return '主任祕書室'
+        default:
+          return '未知部門'
+      }
     }
   },
   watch: {
@@ -679,6 +695,36 @@ export default {
       } else {
         this.resetReconnectTimer();
       }
+    },
+    apiUserinfo(val) {
+      const deptname = val?.unit;
+      let deptval = '';
+      switch (deptname) {
+        case '資訊課':
+          deptval = 'inf';
+          break;
+        case '行政課':
+          deptval = 'adm';
+          break;
+        case '登記課':
+          deptval = 'reg';
+          break;
+        case '測量課':
+          deptval = 'sur';
+          break;
+        case '地價課':
+          deptval = 'val';
+          break;
+        case '人事室':
+          deptval = 'hr';
+          break;
+        case '會計室':
+          deptval = 'acc';
+          break;
+        default:
+          deptval = 'supervisor';
+      }
+      this.department = deptval;
     }
   },
   methods: {
@@ -1259,6 +1305,7 @@ export default {
       this.connect();
     },
     connect() {
+      this.syncApiDepartment();
       if (this.connected) {
         this.log(this.time(), "已連線，略過檢查");
         this.connectText = "";
@@ -1379,29 +1426,17 @@ export default {
         }
       } else {
         // try to get user info from api server
-        if (
-          this.apiUserinfo &&
-          !this.empty(this.apiUserinfo.id) &&
-          !this.empty(this.apiUserinfo.name) &&
-          !this.empty(this.apiUserinfo.unit)
-        ) {
-          this.adAccount = this.apiUserinfo.id;
-          this.adName = this.apiUserinfo.name;
-          this.department = this.apiUserinfo.unit;
-          this.$nextTick(this.connect)
-        } else {
-          const IDReady = !this.$utils.empty(this.adAccount);
-          this.connectText = IDReady ? "請輸入正確的連線資訊" : "自動取得登入ID ... ";
-          if (this.reconnectMs < 640 * 1000) {
-            this.reconnectMs *= 2;
-            this.resetReconnectTimer();
-          }
-          // send notification to user to login
-          this.ipcRenderer.invoke("notification", {
-            message: "請登入即時通以讀取最新訊息！",
-            showMainWindow: false
-          });
+        const IDReady = !this.$utils.empty(this.adAccount);
+        this.connectText = '請先登入系統';
+        if (this.reconnectMs < 640 * 1000) {
+          this.reconnectMs *= 2;
+          this.resetReconnectTimer();
         }
+        // send notification to user to login
+        this.ipcRenderer.invoke("notification", {
+          message: "請登入即時通以讀取最新訊息！",
+          showMainWindow: false
+        });
       }
     },
     latestMessage() {
@@ -1685,30 +1720,44 @@ export default {
         }
       }
     },
-    checkDefaultDept() {
-      if (this.$utils.empty(this.department)) {
-        this.department = 'adm'
+    async syncApiDepartment() {
+      if (!this.$utils.empty(this.apiUserinfo)) {
+        const apiDeptName = this.apiUserinfo?.unit;
+        if (this.deptName !== apiDeptName) {
+          this.warning(`您的部門(${this.deptName})已修正為${apiDeptName}，如欲變更請洽管理者至「智慧管控系統」「員工管理」頁面進行修改。`);
+          let deptval = '';
+          switch (apiDeptName) {
+            case '資訊課':
+              deptval = 'inf';
+              break;
+            case '行政課':
+              deptval = 'adm';
+              break;
+            case '登記課':
+              deptval = 'reg';
+              break;
+            case '測量課':
+              deptval = 'sur';
+              break;
+            case '地價課':
+              deptval = 'val';
+              break;
+            case '人事室':
+              deptval = 'hr';
+              break;
+            case '會計室':
+              deptval = 'acc';
+              break;
+            default:
+              deptval = 'supervisor';
+          }
+          this.department = deptval;
+        } else {
+          this.log(this.time(), '無須同步部門資訊');
+        }
       }
-    }
-  },
-  created() {
-    this.addCurrentChannel();
-    this.ipcRendererSetup();
-    this.queryUserInfo();
-  },
-  mounted() {
-    this.delayConnect = debounce(this.connect, 1500);
-    this.delayLatestMessage = debounce(this.latestMessage, 400);
-    this.delaySendChannelActivity = debounce(
-      this.sendChannelActivity,
-      0.5 * 1000
-    );
-
-    // start reconnect timer
-    this.resetReconnectTimer();
-
-    this.$nextTick(async () => {
-      // restore last settings
+    },
+    async restoreSettings() {
       this.adAccount = await this.$localForage.getItem("adAccount");
       this.adName = await this.$localForage.getItem("adName");
       this.adPassword = await this.$localForage.getItem("adPassword");
@@ -1732,12 +1781,26 @@ export default {
         ...this.notifySettings,
         ...(await this.$localForage.getItem("notifySettings")),
       });
-      // back from settings page
-      if (this.backFromSettings) {
-        this.back = true;
-        this.setCurrentChannel("chat");
-        this.connect();
-      }
+    }
+  },
+  created() {
+    this.addCurrentChannel();
+    this.ipcRendererSetup();
+    this.queryUserInfo();
+  },
+  mounted() {
+    this.delayConnect = debounce(this.connect, 1500);
+    this.delayLatestMessage = debounce(this.latestMessage, 400);
+    this.delaySendChannelActivity = debounce(
+      this.sendChannelActivity,
+      0.5 * 1000
+    );
+
+    // start reconnect timer
+    this.resetReconnectTimer();
+
+    this.$nextTick(async () => {
+      this.restoreSettings();
       // restore usermap
       const mapping = await this.getCache("userMapping");
       if (mapping === false) {
@@ -1754,6 +1817,7 @@ export default {
         this.$store.commit("authority", authority);
         this.$store.commit("apiUserinfo", apiUserinfo);
       }
+      this.checkDefaultSvrIp();
       // tell main process the renderer phase is ready
       this.ipcRenderer.invoke("home-ready");
     });
@@ -1762,8 +1826,6 @@ export default {
     this.$store.commit("windowVisible", !document.hidden);
     this.$root.$on('bv::modal::shown', this.watchModal);
     this.$root.$on('bv::modal::hidden', this.watchModal);
-    this.checkDefaultSvrIp();
-    this.checkDefaultDept();
   },
   beforeDestroy() {
     // remove timer if user is going to leave the page

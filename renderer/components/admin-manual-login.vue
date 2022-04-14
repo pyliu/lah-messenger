@@ -52,7 +52,8 @@ export default {
   emit: ["connect"],
   props: {
     defId: { type: String, default: '' },
-    defName: { type: String, default: '' }
+    defName: { type: String, default: '' },
+    defDept: { type: String, default: 'adm' }
   },
   data: () => ({
     adId: "",
@@ -93,6 +94,7 @@ export default {
     this.wsHost = this.apiHost;
     this.adId = this.defId;
     this.adName = this.defName;
+    this.department = this.defDept;
   },
   methods: {
     emitConnectInformation() {

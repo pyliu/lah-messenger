@@ -1,7 +1,7 @@
 <template lang="pug">
-.vh-100.p-2.gradient-top(v-cloak)
+.vh-100.p-2.gradient-top.main-window(v-cloak)
   .mt-2.d-flex.align-items-center
-    nuxt-link.mr-auto(to="/home?reconnect=true" title="返回主畫面")
+    nuxt-link.mr-auto(to="/home" title="返回主畫面")
       b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
       span(style="font-size: 1.5rem;") 返回
     
@@ -31,7 +31,12 @@
       template(#prepend)
         b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
         span.my-auto 所屬部門
-      b-select.ml-2(v-model="department" :options="departmentOpts" :state="validDepartment" :disabled="!authority.isAdmin")
+      b-select.ml-2(
+        v-model="department",
+        :options="departmentOpts",
+        :state="validDepartment",
+        :disabled="!isAdmin"
+      )
 
     b-input-group.my-2
       template(#prepend)
@@ -92,19 +97,18 @@
 
 <script>
 import trim from 'lodash/trim'
-import isEmpty from 'lodash/isEmpty'
 
 export default {
   transition: 'list',
   head: {
-    title: `公告信差即時通-設定`
+    title: `桃園即時通-設定`
   },
   fetch () {
     this.restore()
   },
   data: () => ({
     adHost: '',
-    wsHost: '220.1.34.75',
+    wsHost: undefined,
     wsPort: 8081,
     apiPortSetting: 80,
     fePortSetting: 8080,
@@ -119,7 +123,7 @@ export default {
       chat: false
     },
     fixNotify: true,
-    department: 'reg',
+    department: 'adm',
     departmentOpts: [
       { value: '', text: '請選擇部門' },
       { value: 'reg', text: '登記課' },
@@ -141,6 +145,25 @@ export default {
     ]
   }),
   computed: {
+    // load user authority from API server, but need to wait apiQueryUrl updated in the mounted method
+    userQueryStr() {
+      return `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`;
+    },
+    isAdmin() {
+      return this.authority.isAdmin
+    },
+    departmentName() {
+      const found = this.departmentOpts.find((item) => {
+        return item.value === this.department;
+      })
+      return found?.text;
+    },
+    apiDepartmentName() {
+      return this.apiUserinfo?.unit
+    },
+    deptNotSync() {
+      return !this.$utils.empty(this.apiDepartmentName) && this.apiDepartmentName !== this.departmentName
+    },
     wsConnStr() {
       return `ws://${this.wsHost}:${this.wsPort}`
     },
@@ -159,9 +182,9 @@ export default {
       const i = parseInt(trim(this.fePortSetting))
       return (i > 1024 && i < 65536) === false ? false : null
     },
-    validAdName() { return !isEmpty(trim(this.adName)) },
-    validDepartment() { return isEmpty(trim(this.department)) === true ? false : null },
-    validInformation() { return !isEmpty(this.userid) && this.validAdName && this.validDepartment === null && this.validPort === null && this.validHost === null },
+    validAdName() { return !this.$utils.empty(trim(this.adName)) },
+    validDepartment() { return this.$utils.empty(trim(this.department)) === true ? false : null },
+    validInformation() { return !this.$utils.empty(this.userid) && this.validAdName && this.validDepartment === null && this.validPort === null && this.validHost === null },
 
     stickyChannels() { return ['announcement', this.userid, 'chat'] },
     inChatting() { return !this.stickyChannels.includes(this.currentChannel) },
@@ -240,7 +263,7 @@ export default {
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
-      this.wsHost = await this.$localForage.getItem('wsHost') || '220.1.34.75'
+      this.wsHost = await this.$localForage.getItem('wsHost') || this.defaultSvrIp
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
       this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10
@@ -252,7 +275,8 @@ export default {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {
         if (answer) {
           this.$localForage.clear()
-          this.restore()
+          // set default department
+          this.department = 'adm'
           this.$router.push('/home?reconnect=true')
         }
       })
@@ -296,12 +320,14 @@ export default {
       })
     }
   },
-  mounted () {
+  created () {
     this.restore()
+  },
+  async mounted () {
     this.clearReconnectTimer()
     this.setCurrentChannel('chat')
   },
-  destroyed () {
+  beforeDestroy () {
     this.closeWebsocket()
   }
 }
