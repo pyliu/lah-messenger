@@ -2,7 +2,7 @@
   transition(
     enter-active-class="animate__flipInX"
     leave-active-class="animate__flipOutX"
-  ): .main-window.p-2.s-80.animate__animated(v-show="show" :class="classes"): span
+  ): .p-2.s-80.animate__animated(v-show="show" :class="classes"): span
     a.mr-1(
       href="https://github.com/pyliu/LAH-NUXTJS"
       target="_blank"
