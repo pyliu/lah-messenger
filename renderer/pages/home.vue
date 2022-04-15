@@ -540,26 +540,7 @@ export default {
       };
     },
     deptName() {
-      switch (this.department) {
-        case 'inf':
-          return '資訊課'
-        case 'adm':
-          return '行政課'
-        case 'reg':
-          return '登記課'
-        case 'sur':
-          return '測量課'
-        case 'val':
-          return '地價課'
-        case 'hr':
-          return '人事室'
-        case 'acc':
-          return '會計室'
-        case 'supervisor':
-          return '主任祕書室'
-        default:
-          return '未知部門'
-      }
+      return this.getDepartmentName(this.department)
     }
   },
   watch: {
@@ -1266,7 +1247,8 @@ export default {
           if (typeof payload === 'object' && payload.id && payload.name && payload.dept) {
             await this.$localForage.setItem("adAccount", payload.id);
             await this.$localForage.setItem("adName", payload.name);
-            await this.$localForage.setItem("department", payload.dept);// refresh cached userinfo
+            await this.$localForage.setItem("department", payload.dept);  // refresh cached userinfo
+            this.refreshApiDepartment(payload.dept);
             const userinfo = await this.$localForage.getItem("userinfo");
             /**
              * const userinfo = {
@@ -1720,6 +1702,20 @@ export default {
         }
       }
     },
+    refreshApiDepartment(val) {
+      if (!this.$utils.empty(val)) {
+        const deptname = this.getDepartmentName(val);
+        this.$store.commit('apiUserinfo', { unit: deptname });
+        this.setCache("apiUserinfo", this.apiUserinfo, this.userDataCacheDuration);
+        // sync to API server
+        this.ipcRenderer.invoke("change-user-dept", {
+          api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`,
+          type: "upd_dept",
+          id: this.userid,
+          dept: deptname
+        })
+      }
+    },
     async syncApiDepartment() {
       if (!this.$utils.empty(this.apiUserinfo)) {
         const apiDeptName = this.apiUserinfo?.unit;
@@ -1781,6 +1777,28 @@ export default {
         ...this.notifySettings,
         ...(await this.$localForage.getItem("notifySettings")),
       });
+    },
+    getDepartmentName(val) {
+      switch (val) {
+        case 'inf':
+          return '資訊課'
+        case 'adm':
+          return '行政課'
+        case 'reg':
+          return '登記課'
+        case 'sur':
+          return '測量課'
+        case 'val':
+          return '地價課'
+        case 'hr':
+          return '人事室'
+        case 'acc':
+          return '會計室'
+        case 'supervisor':
+          return '主任祕書室'
+        default:
+          return '未知部門'
+      }
     }
   },
   created() {
