@@ -804,8 +804,8 @@ export default {
           })
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
-              this.setCache("userAuthority", data.authority, 12 * 60 * 60 * 1000);
-              this.setCache("apiUserinfo", data.info, 12 * 60 * 60 * 1000);
+              this.setCache("userAuthority", data.authority, this.userDataCacheDuration);
+              this.setCache("apiUserinfo", data.info, this.userDataCacheDuration);
               this.$store.commit("authority", data.authority);
               this.$store.commit("apiUserinfo", data.info);
             } else {
@@ -833,7 +833,7 @@ export default {
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
               this.$store.commit("userMap", data.data);
-              this.setCache("userMap", data.data, 12 * 60 * 60 * 1000);
+              this.setCache("userMap", data.data, this.userDataCacheDuration);
             } else {
               this.warning(data.message);
             }

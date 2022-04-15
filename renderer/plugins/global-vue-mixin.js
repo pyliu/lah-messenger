@@ -84,7 +84,8 @@ Vue.mixin({
       'emojiTxt',
       'emojiCode',
       'lastModalId',
-      'tySvrIp'
+      'tySvrIp',
+      'userDataCacheDuration'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },

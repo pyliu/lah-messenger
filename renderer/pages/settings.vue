@@ -223,16 +223,18 @@ export default {
       this.$localForage.setItem('department', val)
       // update local userinfo cache
       this.$store.commit('userdept', val)
-      this.$store.commit('apiUserinfo', { unit: this.departmentName })
-      this.setCache("apiUserinfo", this.apiUserinfo, 12 * 60 * 60 * 1000)
-      // sync to API server
-      const { ipcRenderer } = require("electron")
-      ipcRenderer.invoke("change-user-dept", {
-        api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`,
-        type: "upd_dept",
-        id: this.userid,
-        dept: this.departmentName
-      })
+      if (!this.$utils.empty(val)) {
+        this.$store.commit('apiUserinfo', { unit: this.departmentName })
+        this.setCache("apiUserinfo", this.apiUserinfo, this.userDataCacheDuration)
+        // sync to API server
+        const { ipcRenderer } = require("electron")
+        ipcRenderer.invoke("change-user-dept", {
+          api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`,
+          type: "upd_dept",
+          id: this.userid,
+          dept: this.departmentName
+        })
+      }
     },
     effectVal(val) {
       this.$store.commit('effect', val)

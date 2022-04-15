@@ -218,7 +218,8 @@ const getters = {
   emojiCode: state => emojiLib.unemojify(state.emojiTxt),
   lastModalId: state => state.lastModalId,
 
-  tySvrIp: state => state.tySvrIp
+  tySvrIp: state => state.tySvrIp,
+  userDataCacheDuration: state => 12 * 60 * 60 * 1000
 }
 
 // only sync operation
