@@ -1,5 +1,5 @@
 <template lang="pug">
-.vh-100.p-2.gradient-top.main-window(v-cloak)
+.vh-100.p-2.gradient-top(v-cloak)
   .mt-2.d-flex.align-items-center
     nuxt-link.mr-auto(to="/home" title="返回主畫面")
       b-icon.mr-1(icon="arrow-left-circle-fill" font-scale="2")
@@ -220,8 +220,19 @@ export default {
       this.$localForage.setItem('adName', val)
     },
     department(val) {
-      this.$store.commit('userdept', val)
       this.$localForage.setItem('department', val)
+      // update local userinfo cache
+      this.$store.commit('userdept', val)
+      this.$store.commit('apiUserinfo', { unit: this.departmentName })
+      this.setCache("apiUserinfo", this.apiUserinfo, 12 * 60 * 60 * 1000)
+      // sync to API server
+      const { ipcRenderer } = require("electron")
+      ipcRenderer.invoke("change-user-dept", {
+        api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`,
+        type: "upd_dept",
+        id: this.userid,
+        dept: this.departmentName
+      })
     },
     effectVal(val) {
       this.$store.commit('effect', val)
@@ -323,7 +334,7 @@ export default {
   created () {
     this.restore()
   },
-  async mounted () {
+  mounted () {
     this.clearReconnectTimer()
     this.setCurrentChannel('chat')
   },

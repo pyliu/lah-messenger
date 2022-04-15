@@ -203,6 +203,18 @@ ipcMain.handle('add-ip-entry', async (event, payload) => {
   }
 })
 
+ipcMain.handle('change-user-dept', async (event, payload) => {
+  axios.post(
+    payload.api,
+    qs.stringify(payload)
+  ).then(({ data }) => {
+    data.status < 1 && !isProd && console.warn(data.message, payload.ip)
+  }).catch(error => {
+    console.error(error)
+    notify(error.message, payload.ip)
+  })
+})
+
 ipcMain.handle('wss-probe', async (event, payload) => {
   // https://www.npmjs.com/package/tcp-ping-sync
   const { probe } = require('tcp-ping-sync')

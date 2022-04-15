@@ -1,5 +1,5 @@
 <template lang="pug">
-.main-window: client-only
+div: client-only
   transition(v-if="connected", name="list", mode="out-in"): div
     b-card.m-1(no-body, header-tag="nav", v-cloak)
       template(#header): b-nav(card-header, tabs, fill)
