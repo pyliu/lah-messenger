@@ -287,7 +287,6 @@ import debounce from "lodash/debounce";
 import ImageUpload from "~/components/image-upload.vue";
 import DOMPurify from "dompurify";
 import Markd from "marked";
-import { threadId } from "worker_threads";
 
 export default {
   transition: "list",
@@ -336,6 +335,7 @@ export default {
     back: false,
     keyCodes: [],
     manualLogin: false,
+    notifyUnreadTimer: null
   }),
   async fetch() {
     // restore image memento
@@ -1625,13 +1625,12 @@ export default {
       );
       // store the last read id
       this.setCache(`${channel}_last_id`, incoming.message.id || incoming.id);
-      const showMainWindow = this.notifyChannels.includes(channel);
+      // const showMainWindow = this.notifyChannels.includes(channel);
       // sender not self and settings allowed then triggers notification
       if (incoming.sender !== this.adAccount) {
         this.ipcRenderer.invoke("notification", {
           message: title,
-          showMainWindow: showMainWindow,
-          channel: channel,
+          showMainWindow: false
         });
       }
     },
@@ -1799,6 +1798,29 @@ export default {
         default:
           return '未知部門'
       }
+    },
+    totalUnread() {
+      let count = 0
+      for (const [channel, value] of Object.entries(this.unread)) {
+        count += parseInt(value) || 0
+      }
+      return count
+    },
+    notifyUnread() {
+      const total = this.totalUnread();
+      clearTimeout(this.notifyUnreadTimer);
+      if (total > 0) {
+        const message = `您有 ${total} 個未讀訊息!`;
+        this.ipcRenderer.invoke("notification", {
+          message: message,
+          showMainWindow: false
+        });
+        this.warn(message);
+      }
+      // check every 30min
+      this.timeout(this.notifyUnread, 30 * 60 * 1000).then(handler => {
+        this.notifyUnreadTimer = handler;
+      });
     }
   },
   created() {
@@ -1838,6 +1860,7 @@ export default {
       this.checkDefaultSvrIp();
       // tell main process the renderer phase is ready
       this.ipcRenderer.invoke("home-ready");
+      this.timeout(this.notifyUnread, 30 * 1000);
     });
     window.addEventListener("keydown", this.keydown);
     document.addEventListener("visibilitychange", this.visibilityChange);
@@ -1853,7 +1876,7 @@ export default {
     document.removeEventListener("visibilitychange", this.visibilityChange);
     this.$root.$off('bv::modal::shown', this.watchModal);
     this.$root.$off('bv::modal::hidden', this.watchModal);
-  },
+  }
 };
 </script>
 

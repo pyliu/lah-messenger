@@ -252,7 +252,6 @@ ipcMain.handle('title', async (event, str) => {
 
 ipcMain.handle('notification', async (event, payload) => {
   const message = typeof payload === 'string' ? payload : payload.message
-  const channel = payload.channel
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple messages coming in at once
