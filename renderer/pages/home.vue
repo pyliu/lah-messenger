@@ -285,8 +285,6 @@ div: client-only
 import trim from "lodash/trim";
 import debounce from "lodash/debounce";
 import ImageUpload from "~/components/image-upload.vue";
-import DOMPurify from "dompurify";
-import Markd from "marked";
 
 export default {
   transition: "list",
@@ -512,9 +510,9 @@ export default {
         .map((base64, idx) => {
           return `![preview-${idx}](${base64})`;
         })
-        .join('<hr style="margin:5px"/>');
+        .join('***\n');
       if (!this.empty(this.inputText) && !this.empty(imgMdText)) {
-        imgMdText = `<hr style="margin:5px"/> ${imgMdText}`;
+        imgMdText = `***\n ${imgMdText}`;
       }
       return imgMdText;
     },
@@ -523,9 +521,10 @@ export default {
         return "";
       }
       // markd treat '\s{2}\n' to break line
-      return DOMPurify?.sanitize(
-        Markd(`${this.inputText}${this.markdImages}`.replaceAll("\n", "  \n"))
-      );
+      // return DOMPurify?.sanitize(
+      //   Markd(`${this.inputText}${this.markdImages}`.replaceAll("\n", "  \n"))
+      // );
+      return this.$utils.convertMarkd(`${this.inputText}${this.markdImages}`);
     },
     messagePreviewJson() {
       return {
@@ -1126,7 +1125,7 @@ export default {
               userName,
               ""
             );
-            const md = DOMPurify?.sanitize(Markd(`${json.payload.message}`));
+            const md = this.$utils.convertMarkd(`${json.payload.message}`);
             const remove = JSON.stringify({
               to: insertedChannel,
               id: insertedId,

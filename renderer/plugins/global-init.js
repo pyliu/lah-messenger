@@ -7,6 +7,13 @@ import { zhTW } from 'date-fns/locale'
 import uploadAxios from 'axios'
 const emoji = require('node-emoji')
 
+import DOMPurify from 'dompurify'
+import { marked } from 'marked'
+marked.setOptions({
+  breaks: true,
+  sanitizer: DOMPurify.sanitize
+})
+
 export default ({ $axios, store }, inject) => {
   // global const variables, use this.$consts.xxxx to access them in Vue
   const consts = {
@@ -101,6 +108,19 @@ export default ({ $axios, store }, inject) => {
     equal: _.isEqual,
     debounce: _.debounce, // _.debounce(func, wait, options)
     md5: _md5,
+    /**
+     * marked
+     */
+    marked,
+    convertMarkd (text, inline = false) {
+      if (inline) {
+        return DOMPurify?.sanitize(marked.parseInline(text?.trimEnd()))
+      }
+      return DOMPurify?.sanitize(marked.parse(text?.trimEnd()))
+    },
+    convertInlineMarkd (text) {
+      return DOMPurify?.sanitize(marked.parseInline(text?.trimEnd()))
+    },
     /**
      * usage in Vue
      * this.$utils.animated('.my-element', { name: 'bounce', duration: 'faster', delay: '' }).then((message) => {

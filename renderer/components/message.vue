@@ -109,7 +109,13 @@ export default {
     system() { return 'system' === this.sender },
     id() { return this.raw?.id },
     type() { return this.raw?.type },
-    message() { return this.$utils.emojify(this.raw?.message) },
+    message() {
+      const markd = this.$utils.emojify(this.$utils.convertMarkd(this.raw?.message))
+      if (/!\[\.+\]\(\.+\)/gm.test(markd)) {
+        return this.$utils.convertInlineMarkd(markd)
+      }
+      return markd
+    },
     senderId() { return this.raw?.sender },
     sender() { return this.userMap[this.senderId] || this.senderId },
     from() { return this.raw?.ip },

@@ -76,8 +76,6 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 import ImageUpload from '~/components/image-upload.vue'
 import AnnouncementCard from '~/components/announcement-card.vue'
 import Message from '~/components/message.vue'
-import DOMPurify from 'dompurify'
-import Markd from 'marked'
 
 export default {
   name: 'MessageInput',
@@ -125,13 +123,16 @@ export default {
     mergedMessage () {
         let imgMdText = this.images.map((base64, idx) => {
           return `![給${this.toName}${idx}](${base64})`
-        }).join('<hr style="margin:5px"/>')
+        }).join('\n***\n')
         if (!this.empty(this.message) && !this.empty(imgMdText)) {
-          imgMdText = `<hr style="margin:5px"/> ${imgMdText}`
+          imgMdText = `\n***\n ${imgMdText}`
         }
-        return `${this.message}  \n${imgMdText}`
+        return `${this.message}\n${imgMdText}`
     },
-    markdMergedMessage () { return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n'))) },
+    markdMergedMessage () {
+      // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
+      return this.$utils.convertMarkd(this.mergedMessage)
+    },
     announcementJson () {
       // announcement-card required json
       return {

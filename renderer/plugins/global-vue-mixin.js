@@ -217,7 +217,7 @@ Vue.mixin({
         name = this.userMap[to]
       }
       const avatar = `<span class="b-avatar-img"><img src="${this.apiQueryUrl}/get_user_img.php?id=${to}_avatar&name=${name}_avatar" alt="avatar" class="avatar mt-n1"></span>`
-      return `給 ${avatar} ${name} ${this.empty(preview) ? '' : `- ${preview}`} <hr style="margin:5px"/>`
+      return `給 ${avatar} ${name} ${this.empty(preview) ? '' : `- ${preview}`} ***\n`
     },
     packMessage(text, opts = {}) {
       return JSON.stringify({

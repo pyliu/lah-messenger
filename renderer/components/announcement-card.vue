@@ -22,8 +22,6 @@
 </template>
 
 <script>
-import DOMPurify from 'dompurify'
-import Markd from 'marked'
 import isEmpty from 'lodash/isEmpty'
 export default {
   props: {
@@ -59,10 +57,14 @@ export default {
     },
     sender () { return this.userMap[this.dataJson.sender] || this.dataJson.sender },
     content () {
-      if (isEmpty(this.dataJson.content) || !DOMPurify.sanitize) {
+      if (isEmpty(this.dataJson.content)) {
         return ''
       }
-      return DOMPurify.sanitize(Markd(this.dataJson.content.replaceAll('\n', '  \n')))
+      const markd = this.$utils.convertMarkd(this.dataJson.content)
+      if (/!\[\.+\]\(\.+\)/gm.test(markd)) {
+        return this.$utils.convertInlineMarkd(markd)
+      }
+      return markd
     }
   },
   methods: {
