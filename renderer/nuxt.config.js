@@ -12,7 +12,7 @@ export default {
     {
       hid: 'description',
       name: 'description',
-      content: '桃園即時通-桃園市桃園地政事務所'
+      content: '桃園即時通-桃園市地政局'
     }
     ],
     link: [{

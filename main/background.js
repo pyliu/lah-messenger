@@ -84,7 +84,7 @@ if (!gotTheLock) {
         tray.on('click', (event) => {
           mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
         })
-        tray.setToolTip('桃園即時通')
+        tray.setToolTip('桃園即時通 v' + app.getVersion())
 
         mainWindow = createWindow('main', {
           width: isProd ? 490 : 960,
@@ -275,13 +275,9 @@ ipcMain.handle('notification', async (event, payload) => {
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
-  const chatChannels = ['lds', 'reg', 'val', 'adm', 'sur', 'acc', 'hr', 'supervisor']
-  // unread meesage does not come to chat channels showing the main window
-  if (!chatChannels.includes(channel)) {
-    mainWindow.show()
-  }
   // very important notification
   if (annChannels.includes(channel)) {
+    mainWindow.show()
     mainWindow.center()
     mainWindow.setAlwaysOnTop(true)
     mainWindow.focus()
@@ -437,4 +433,10 @@ ipcMain.handle('open-image', async (event, payload) => {
       }
     })
   })
+})
+
+ipcMain.handle('version', async (event, payload) => {
+  const version = app.getVersion()
+  !isProd && console.log(`APP version is`, version)
+  return version
 })
