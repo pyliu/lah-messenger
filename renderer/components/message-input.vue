@@ -160,9 +160,15 @@ export default {
       }
     },
     toUsersOpts () {
-      const opts = this.connectedUsers.map((user) => {
-        return { value: user.userid, text: `${user.userid} ${user.username}`}
-      })
+      const opts = [
+        ...this.$utils.orderBy(
+          this.$utils.uniqBy(this.connectedUsers.map((user) => {
+            return { value: user.userid, text: `${user.userid} ${user.username}`}
+          }), 'value'),
+          'value'
+        )
+      ]
+
       const found = opts.find(opt => {
         return opt.value === this.toUser
       })

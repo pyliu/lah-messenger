@@ -107,6 +107,8 @@ export default ({ $axios, store }, inject) => {
     empty: _.isEmpty, // '0' is not empty
     equal: _.isEqual,
     debounce: _.debounce, // _.debounce(func, wait, options)
+    uniqBy: _.uniqBy,
+    orderBy: _.orderBy,
     md5: _md5,
     /**
      * marked
