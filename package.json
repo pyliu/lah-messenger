@@ -2,7 +2,7 @@
   "private": true,
   "name": "lah-messenger",
   "description": "messenger cient for tyland",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "pyliu <pangyu.liu@gmail.com>",
   "main": "app/background.js",
   "scripts": {
@@ -38,11 +38,12 @@
     "nuxt": "^2.15.8",
     "qs": "^6.9.4",
     "systeminformation": "^5.8.8",
-    "tcp-ping-sync": "^2.0.0"
+    "tcp-ping-sync": "^2.0.0",
+    "vue-infinite-autocomplete": "^4.1.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",
-    "electron": "^18.0.3",
+    "electron": "^18.1.0",
     "electron-builder": "^22.14.13",
     "node-sass": "5.0.0",
     "nuxtron": "^0.3.1",
