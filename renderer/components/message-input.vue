@@ -12,10 +12,8 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
       :options="priorityOpts"
     )
   b-input-group(v-if="pickUser" size="sm" prepend="傳給")
-    //- b-select(v-model="toUser" :options="toUsersOpts" :disabled="toMe")
-    user-select(v-model="toUser", :disabled="toMe")
+    b-select(v-model="toUser" :options="toUsersOpts" :disabled="toMe")
     b-checkbox.my-auto.ml-1(v-model="toMe") 給我自己
-  //- user-select
   b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
@@ -78,11 +76,10 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 import ImageUpload from '~/components/image-upload.vue'
 import AnnouncementCard from '~/components/announcement-card.vue'
 import Message from '~/components/message.vue'
-import UserSelect from './user-select.vue'
 
 export default {
   name: 'MessageInput',
-  components: { ImageUpload, AnnouncementCard, Message, UserSelect },
+  components: { ImageUpload, AnnouncementCard, Message },
   props: {
     to: { type: String, required: true },
     text: { type: String, default: '' },
@@ -190,9 +187,6 @@ export default {
     },
     realtime (flag) {
       this.$localForage.setItem('message-input-realtime', flag)
-    },
-    toUser (val) {
-      this.warn(val)
     }
   },
   created () {

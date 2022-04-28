@@ -38,8 +38,7 @@
     "nuxt": "^2.15.8",
     "qs": "^6.9.4",
     "systeminformation": "^5.8.8",
-    "tcp-ping-sync": "^2.0.0",
-    "vue-infinite-autocomplete": "^4.1.1"
+    "tcp-ping-sync": "^2.0.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",
