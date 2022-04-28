@@ -47,6 +47,16 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+.open-os-explorer {
+  cursor: pointer;
+  color: #007bff;
+  font-weight:400;
+  &:hover {
+    font-weight:700;
+    // color: #1d1aca;
+  }
+}
+
 .title {
   font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

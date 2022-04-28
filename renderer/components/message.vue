@@ -114,7 +114,8 @@ export default {
       if (/!\[\.+\]\(\.+\)/gm.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
-      return markd
+      // add open-os-explorer class for the file path uri
+      return this.$utils.replaceFilepath(markd)
     },
     senderId() { return this.raw?.sender },
     sender() { return this.userMap[this.senderId] || this.senderId },

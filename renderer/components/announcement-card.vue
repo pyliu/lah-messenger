@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import isEmpty from 'lodash/isEmpty'
 export default {
   props: {
     dataJson: { type: Object, required: true },
@@ -57,14 +56,15 @@ export default {
     },
     sender () { return this.userMap[this.dataJson.sender] || this.dataJson.sender },
     content () {
-      if (isEmpty(this.dataJson.content)) {
+      if (this.$utils.empty(this.dataJson.content)) {
         return ''
       }
-      const markd = this.$utils.convertMarkd(this.dataJson.content)
+      let markd = this.$utils.convertMarkd(this.dataJson.content)
       if (/!\[\.+\]\(\.+\)/gm.test(markd)) {
-        return this.$utils.convertInlineMarkd(markd)
+        markd = this.$utils.convertInlineMarkd(markd)
       }
-      return markd
+      // add open-os-explorer class for the file path uri
+      return this.$utils.replaceFilepath(markd)
     }
   },
   methods: {

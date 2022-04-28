@@ -276,6 +276,12 @@ export default ({ $axios, store }, inject) => {
     length (chinese) {
       return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
     },
+    replaceFilepath (str) {
+      return str?.replace(/([C-Z]:\\[^\s]+)|(\\\\[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\\[^\s<]+)/gm, (a, b) => {
+        // console.warn(a, b)
+        return `<span class="open-os-explorer">${a}</span>`
+      })
+    },
     log: console.log.bind(console),
     warn: console.warn.bind(console),
     assert: console.assert.bind(console),
