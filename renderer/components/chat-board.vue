@@ -29,7 +29,7 @@
       switch
     )
       b-icon(icon="filter" rotate="180" font-scale="1.25")
-  b-list-group.online-users-list(flush): b-list-group-item(
+  b-list-group.online-users-list.mt-n1(flush): b-list-group-item(
     v-for="(deptList, idx) in onlineUsersByDept"
     :key="`dept_${idx}`"
     v-if="deptList.users.length > 0"
