@@ -32,7 +32,7 @@
     )
 
     //- remote or system message
-    p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="handleImgClick($event)")
+    p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
 
     //- timestamp for the message
     .time.s-60.mx-1.text-muted.text-right(v-if="!system")
@@ -61,7 +61,7 @@
       div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
     //- my message
-    p(ref="myMessage" v-if="myMessage" v-html="message" @click="handleImgClick($event)")
+    p(ref="myMessage" v-if="myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
 
 </template>
 
@@ -215,24 +215,6 @@ export default {
         this.connected && this.websocket.send(JSON.stringify(json))
         // in case remote not read the message, checks again after 20s
         this.timeout(() => this.checkReadCommand(), 20000)
-      }
-    },
-    handleImgClick (event) {
-      const element = event.target
-      if (element.tagName === 'IMG') {
-        if (element.src.startsWith('data:')) {
-          // not click on avatar img
-          const { ipcRenderer } = require('electron')
-          ipcRenderer.invoke('open-image', {
-            src: element.src,
-            alt: element.alt
-          })
-        } else if (this.$utils.$(element).hasClass('avatar') && this.cascadeInfo) {
-          this.modal(this.$createElement(UserCard, { props: { id: this.cascadeInfo.to } }), {
-            title: this.cascadeInfo.to,
-            size: 'xl'
-          })
-        } 
       }
     },
     avatarClick (event) {

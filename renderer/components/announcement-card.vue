@@ -1,24 +1,24 @@
 <template lang="pug">
-  b-card.announcement-card(
-    :header-border-variant="borderVariant"
-    :header-bg-variant="borderVariant"
-    :header-text-variant="textVariant"
-    :header="header"
-  )
-    template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
-      span(style="width: 380px").mr-auto {{ dataJson.title }}
-      b-icon.ml-1.removeIcon(
-        v-if="mine && dataJson.id > 0"
-        icon="x-circle"
-        title="移除這則公告"
-        scale="1.25"
-        @click="remove"
-      )
-      span.ml-1 \#{{ dataJson.id }}
-    b-card-text(ref="content" v-html="content" @click="handleImgClick($event)")
-    template(#footer): .d-flex.justify-content-between.small.text-muted
-      span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
-      span {{ dataJson.create_datetime }}
+b-card.announcement-card(
+  :header-border-variant="borderVariant"
+  :header-bg-variant="borderVariant"
+  :header-text-variant="textVariant"
+  :header="header"
+)
+  template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
+    span(style="width: 380px").mr-auto {{ dataJson.title }}
+    b-icon.ml-1.removeIcon(
+      v-if="mine && dataJson.id > 0"
+      icon="x-circle"
+      title="移除這則公告"
+      scale="1.25"
+      @click="remove"
+    )
+    span.ml-1 \#{{ dataJson.id }}
+  b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
+  template(#footer): .d-flex.justify-content-between.small.text-muted
+    span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
+    span {{ dataJson.create_datetime }}
 </template>
 
 <script>
@@ -93,14 +93,18 @@ export default {
       })
       this.websocket && this.websocket.send(jsonString)
     },
-    handleImgClick (event) {
+    handleSpecialClick (event) {
       const element = event.target
+      const { ipcRenderer } = require('electron')
       if (element.tagName === 'IMG' && element.src.startsWith('data:')) {
         // click on img
-        const { ipcRenderer } = require('electron')
         ipcRenderer.invoke('open-image', {
           src: element.src,
           alt: element.alt
+        })
+      } else if (element.classList.contains('open-os-explorer')) {
+        ipcRenderer.invoke('open-explorer', {
+          path: element.innerText
         })
       }
     }

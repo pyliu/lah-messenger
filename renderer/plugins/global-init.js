@@ -282,6 +282,21 @@ export default ({ $axios, store }, inject) => {
         return `<span class="open-os-explorer">${a}</span>`
       })
     },
+    handleSpecialClick (event) {
+      const element = event.target
+      const { ipcRenderer } = require('electron')
+      if (element.tagName === 'IMG' && element.src.startsWith('data:')) {
+        // click on img
+        ipcRenderer.invoke('open-image', {
+          src: element.src,
+          alt: element.alt
+        })
+      } else if (element.classList.contains('open-os-explorer')) {
+        ipcRenderer.invoke('open-explorer', {
+          path: element.innerText
+        })
+      }
+    },
     log: console.log.bind(console),
     warn: console.warn.bind(console),
     assert: console.assert.bind(console),

@@ -402,6 +402,11 @@ ipcMain.handle('ad-user-query', async (event, config) => {
   return undefined
 })
 
+ipcMain.handle('open-explorer', async (event, payload) => {
+  // open the path
+  require('child_process').exec(`start "" "${payload.path || payload}"`)
+})
+
 ipcMain.handle('open-image', async (event, payload) => {
   const parts = payload.src?.split(',')
   let buf, tmpFilename
