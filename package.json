@@ -2,7 +2,7 @@
   "private": true,
   "name": "lah-messenger",
   "description": "messenger cient for tyland",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "pyliu <pangyu.liu@gmail.com>",
   "main": "app/background.js",
   "scripts": {

@@ -1691,7 +1691,8 @@ export default {
         );
       }
     },
-    checkDefaultSvrIp() {
+    async checkDefaultSvrIp() {
+      this.wsHost = await this.$localForage.getItem("wsHost");
       if (this.$utils.empty(this.wsHost)) {
         if (this.$utils.empty(this.defaultSvrIp)) {
           this.timeout(this.checkDefaultSvrIp, 400);
