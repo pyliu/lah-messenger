@@ -2,7 +2,7 @@
   "private": true,
   "name": "lah-messenger",
   "description": "messenger cient for tyland",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "pyliu <pangyu.liu@gmail.com>",
   "main": "app/background.js",
   "scripts": {
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",
-    "electron": "^18.1.0",
+    "electron": "^18.2.1",
     "electron-builder": "^22.14.13",
     "node-sass": "5.0.0",
     "nuxtron": "^0.3.1",
