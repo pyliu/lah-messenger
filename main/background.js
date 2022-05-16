@@ -290,7 +290,7 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
   if (payload.unread > 0) {
     // change ico to notice one
     iconPath = path.join(__dirname, 'message_notice.ico')
-    tray.setToolTip('您有' + payload.unread + '則未讀訊息💬')
+    tray.setToolTip('👉 您有' + payload.unread + '則未讀訊息！')
   } else {
     tray.setToolTip('桃園即時通 v' + app.getVersion())
   }
