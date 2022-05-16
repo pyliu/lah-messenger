@@ -705,6 +705,11 @@ export default {
           deptval = 'supervisor';
       }
       this.department = deptval;
+    },
+    totalUnread (val) {
+      this.ipcRenderer.invoke("toggleUnreadTrayIcon", {
+        unread: val
+      });
     }
   },
   methods: {
@@ -1816,9 +1821,11 @@ export default {
           showMainWindow: false
         });
         this.warn(message);
+      } else {
+
       }
       // check every 30min
-      this.timeout(this.notifyUnread, 30 * 60 * 1000).then(handler => {
+      this.timeout(this.notifyUnread, 15 * 60 * 1000).then(handler => {
         this.notifyUnreadTimer = handler;
       });
     }

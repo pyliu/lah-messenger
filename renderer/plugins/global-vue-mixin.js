@@ -41,6 +41,7 @@ Vue.mixin({
       'disconnected',
       'messages',
       'unread',
+      'totalUnread',
       'userMap',
       'userinfo',
       'username',

@@ -3,6 +3,7 @@ import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
 import random from 'lodash/random'
 import emojiLib from 'node-emoji'
+import { stat } from 'original-fs'
 
 // smileys
 const faces = [
@@ -139,6 +140,7 @@ const getters = {
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
+  totalUnread: state => Object.values(state.unread).reduce((a, b) => a + b),
   userMap: state => state.userMap,
   userinfo: state => state.userinfo,
   username: state => state.username,

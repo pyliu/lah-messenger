@@ -284,6 +284,20 @@ ipcMain.handle('unread', async (event, channel) => {
   }
 })
 
+ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
+  !isProd && console.log(`change tray icon`, payload)
+  let iconPath = path.join(__dirname, 'message.ico')
+  if (payload.unread > 0) {
+    // change ico to notice one
+    iconPath = path.join(__dirname, 'message_notice.ico')
+    tray.setToolTip('您有' + payload.unread + '則未讀訊息💬')
+  } else {
+    tray.setToolTip('桃園即時通 v' + app.getVersion())
+  }
+  const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+  tray.setImage(trayIcon)
+})
+
 ipcMain.handle('injectUserinfo', async (event, arg) => {  
   // inject userinfo to main window
   mainWindow.userinfo = arg
