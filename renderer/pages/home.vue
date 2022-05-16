@@ -1804,17 +1804,9 @@ export default {
           return '未知部門'
       }
     },
-    totalUnread() {
-      let count = 0
-      for (const [channel, value] of Object.entries(this.unread)) {
-        count += parseInt(value) || 0
-      }
-      return count
-    },
     notifyUnread() {
-      const total = this.totalUnread();
       clearTimeout(this.notifyUnreadTimer);
-      if (total > 0) {
+      if (this.totalUnread > 0) {
         const message = `您有 ${total} 個未讀訊息!`;
         this.ipcRenderer.invoke("notification", {
           message: message,
@@ -1867,7 +1859,7 @@ export default {
       this.checkDefaultSvrIp();
       // tell main process the renderer phase is ready
       this.ipcRenderer.invoke("home-ready");
-      this.timeout(this.notifyUnread, 30 * 1000);
+      this.timeout(this.notifyUnread, 60 * 1000);
     });
     window.addEventListener("keydown", this.keydown);
     document.addEventListener("visibilitychange", this.visibilityChange);
