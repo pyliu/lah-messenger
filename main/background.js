@@ -296,6 +296,8 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
   }
   const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
   tray.setImage(trayIcon)
+  // also update icon for the main window
+  mainWindow.setIcon(iconPath)
 })
 
 ipcMain.handle('injectUserinfo', async (event, arg) => {  
