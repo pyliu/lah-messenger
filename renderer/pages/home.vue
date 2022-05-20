@@ -1818,8 +1818,8 @@ export default {
       } else {
 
       }
-      // check every 15min
-      this.timeout(this.checkUnread, this.$config.isDev ? 10 * 1000 : 15 * 60 * 1000).then(handler => {
+      // check every 10min
+      this.timeout(this.checkUnread, this.$config.isDev ? 10 * 1000 : 10 * 60 * 1000).then(handler => {
         this.checkUnreadTimer = handler;
       });
     }
