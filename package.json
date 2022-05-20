@@ -34,7 +34,7 @@
     "marked": "^4.0.14",
     "md5": "^2.3.0",
     "node-emoji": "^1.11.0",
-    "node-notifier": "^10.0.0",
+    "node-notifier": "^10.0.1",
     "nuxt": "^2.15.8",
     "qs": "^6.9.4",
     "systeminformation": "^5.8.8",

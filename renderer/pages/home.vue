@@ -333,7 +333,7 @@ export default {
     back: false,
     keyCodes: [],
     manualLogin: false,
-    notifyUnreadTimer: null
+    checkUnreadTimer: null
   }),
   async fetch() {
     // restore image memento
@@ -951,6 +951,8 @@ export default {
           }));
           // also update IP entry to API server
           this.reportToAPIServer();
+          // check unread posts
+          this.checkUnread();
         } else {
           this.warning(`無法使用 ${this.adAccount} / ${this.adName} 登入即時通伺服器！`)
         }
@@ -1419,7 +1421,7 @@ export default {
           this.resetReconnectTimer();
         }
         // send notification to user to login
-        this.ipcRenderer.invoke("notification", {
+        this.ipcRenderer.invoke('notification', {
           message: "請登入即時通以讀取最新訊息！",
           showMainWindow: false
         });
@@ -1632,7 +1634,7 @@ export default {
       // const showMainWindow = this.notifyChannels.includes(channel);
       // sender not self and settings allowed then triggers notification
       if (incoming.sender !== this.adAccount) {
-        this.ipcRenderer.invoke("notification", {
+        this.ipcRenderer.invoke('notification', {
           message: title,
           showMainWindow: false
         });
@@ -1804,11 +1806,11 @@ export default {
           return '未知部門'
       }
     },
-    notifyUnread() {
-      clearTimeout(this.notifyUnreadTimer);
+    checkUnread() {
+      clearTimeout(this.checkUnreadTimer);
       if (this.totalUnread > 0) {
-        const message = `您有 ${total} 個未讀訊息!`;
-        this.ipcRenderer.invoke("notification", {
+        const message = `您有 ${this.totalUnread} 個未讀訊息!`;
+        this.ipcRenderer.invoke('notification', {
           message: message,
           showMainWindow: false
         });
@@ -1816,9 +1818,9 @@ export default {
       } else {
 
       }
-      // check every 30min
-      this.timeout(this.notifyUnread, 15 * 60 * 1000).then(handler => {
-        this.notifyUnreadTimer = handler;
+      // check every 15min
+      this.timeout(this.checkUnread, this.$config.isDev ? 10 * 1000 : 15 * 60 * 1000).then(handler => {
+        this.checkUnreadTimer = handler;
       });
     }
   },
@@ -1859,7 +1861,6 @@ export default {
       this.checkDefaultSvrIp();
       // tell main process the renderer phase is ready
       this.ipcRenderer.invoke("home-ready");
-      this.timeout(this.notifyUnread, 60 * 1000);
     });
     window.addEventListener("keydown", this.keydown);
     document.addEventListener("visibilitychange", this.visibilityChange);

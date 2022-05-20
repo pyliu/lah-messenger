@@ -255,7 +255,19 @@ ipcMain.handle('notification', async (event, payload) => {
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
   // to prevent multiple messages coming in at once
-  notifyDebounced('[桃園即時通 💬]', message, () => {
+  notifyDebounced('[桃園即時通 💬]', message, (err, response, metadata) => {
+    // Response is response from notification
+    // Metadata contains activationType, activationAt, deliveredAt
+    // console.warn(err, typeof response, metadata)
+    // click the balloon shows the window
+    if (!err && response !== 'timeout') {
+      if (!mainWindow.isVisible()) {
+        mainWindow.show()
+        mainWindow.center()
+      }
+      mainWindow.setAlwaysOnTop(true)
+      mainWindow.focus()
+    }
     // 視窗置中顯示
     if (showMainWindow) {
       if (!mainWindow.isVisible()) {

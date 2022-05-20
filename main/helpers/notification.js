@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce'
 const isProd = process.env.NODE_ENV === 'production'
 
 const notify = function (message, title, callback) {
-  const iconPath = path.join(__dirname, 'message.ico')
+  const iconPath = isProd ? path.join(__dirname, '..', 'message_notice.ico') : path.join(__dirname, 'message_notice.ico')
   !isProd && console.log(`notification icon path`, iconPath)
   notifier.notify(
     {
