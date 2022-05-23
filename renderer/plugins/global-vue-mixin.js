@@ -139,6 +139,8 @@ Vue.mixin({
       'resetUnread',
       'plusUnread'
     ]),
+    $,  // jQuery '$'
+    empty,
     getFirstDNSIp () {
       const dnses = [...this.userinfo.dns]
       if (!empty(dnses)) {
@@ -192,7 +194,6 @@ Vue.mixin({
       this.websocket && this.websocket.close()
       this.$store.commit('websocket', undefined)
     },
-    empty,
     date() {
       const now = new Date()
       return (
@@ -321,7 +322,6 @@ Vue.mixin({
           return channelId
       }
     },
-    $,  // jQuery '$',
     parseHTML (string) {
       const context = document.implementation.createHTMLDocument()
       // Set the base href for the created document so any parsed elements with URLs
