@@ -309,7 +309,7 @@ export default {
       font-weight: bold;
       padding: 5px 10px 5px 10px;
       border-radius: 10px;
-      background: #e9ebec;
+      background: #8dcbea;
       color: #2e2e2e;
       font-size: .75rem;
       max-width: 95%;
