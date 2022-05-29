@@ -264,8 +264,8 @@ ipcMain.handle('notification', async (event, payload) => {
     !isProd && console.warn(err, typeof response, metadata)
     // pull app from the tray
     if (!mainWindow.isVisible()) {
-      mainWindow.restore()
       mainWindow.minimize()
+      mainWindow.restore()
     }
     // flash the windows when got notification
     mainWindow.flashFrame(true)
@@ -315,8 +315,8 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
     tray.setToolTip('👉 您有' + payload.unread + '則未讀訊息！')
     // pull app from the tray
     if (!mainWindow.isVisible()) {
-      mainWindow.restore()
       mainWindow.minimize()
+      mainWindow.restore()
     }
     // flash the window to catch attention
     mainWindow.flashFrame(true)
