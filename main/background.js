@@ -313,6 +313,11 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
     // change ico to notice one
     iconPath = path.join(__dirname, 'message_notice.ico')
     tray.setToolTip('👉 您有' + payload.unread + '則未讀訊息！')
+    // pull app from the tray
+    if (!mainWindow.isVisible()) {
+      mainWindow.restore()
+      mainWindow.minimize()
+    }
     // flash the window to catch attention
     mainWindow.flashFrame(true)
   } else {
