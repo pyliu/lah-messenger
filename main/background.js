@@ -112,8 +112,6 @@ if (!gotTheLock) {
         mainWindow.on('focus', () => {
           // when browser window focused, set always on top attr to false
           mainWindow.setAlwaysOnTop(false)
-          // disable flash frame when forcused
-          mainWindow.flashFrame(false)
         })
 
         if (isProd) {
@@ -289,8 +287,6 @@ ipcMain.handle('notification', async (event, payload) => {
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
-  // flash the window to catch attention
-  mainWindow.flashFrame(true)
   // very important notification
   if (annChannels.includes(channel)) {
     mainWindow.show()
@@ -307,8 +303,11 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
     // change ico to notice one
     iconPath = path.join(__dirname, 'message_notice.ico')
     tray.setToolTip('👉 您有' + payload.unread + '則未讀訊息！')
+    // flash the window to catch attention
+    mainWindow.flashFrame(true)
   } else {
     tray.setToolTip('桃園即時通 v' + app.getVersion())
+    mainWindow.flashFrame(false)
   }
   const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
   tray.setImage(trayIcon)
