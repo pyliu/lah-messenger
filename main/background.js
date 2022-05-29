@@ -112,6 +112,8 @@ if (!gotTheLock) {
         mainWindow.on('focus', () => {
           // when browser window focused, set always on top attr to false
           mainWindow.setAlwaysOnTop(false)
+          // disable flash frame when forcused
+          mainWindow.flashFrame(false)
         })
 
         if (isProd) {
@@ -287,6 +289,8 @@ ipcMain.handle('notification', async (event, payload) => {
 ipcMain.handle('unread', async (event, channel) => {
   !isProd && console.log(`Set channel Unread`, channel)
   const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
+  // flash the window to catch attention
+  mainWindow.flashFrame(true)
   // very important notification
   if (annChannels.includes(channel)) {
     mainWindow.show()
