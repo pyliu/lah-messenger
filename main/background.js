@@ -257,13 +257,18 @@ ipcMain.handle('notification', async (event, payload) => {
   const message = typeof payload === 'string' ? payload : payload.message
   const showMainWindow = payload.showMainWindow
   !isProd && console.log(`trigger notification`, payload)
+  // pull app from the tray
+  if (!mainWindow.isVisible()) {
+    mainWindow.restore()
+    mainWindow.minimize()
+  }
+  // flash the windows when got notification
+  mainWindow.flashFrame(true)
   // to prevent multiple messages coming in at once
   notifyDebounced('[桃園即時通 💬]', message, (err, response, metadata) => {
     // Response is response from notification
     // Metadata contains activationType, activationAt, deliveredAt
     !isProd && console.warn(err, typeof response, metadata)
-    // flash the windows when got notification
-    mainWindow.flashFrame(true)
     // click the balloon shows the window
     if (!err && response !== 'timeout') {
       if (!mainWindow.isVisible()) {
