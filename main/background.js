@@ -112,6 +112,8 @@ if (!gotTheLock) {
         mainWindow.on('focus', () => {
           // when browser window focused, set always on top attr to false
           mainWindow.setAlwaysOnTop(false)
+          // stop flashing frame
+          mainWindow.flashFrame(false)
         })
 
         if (isProd) {
@@ -137,6 +139,7 @@ if (!gotTheLock) {
         // normal minimize action
         mainWindow.on('minimize', function(event) {
           event.preventDefault()
+          // set channel to default
           mainWindow.webContents.send('set-current-channel', 'chat')
         })
         
@@ -259,6 +262,8 @@ ipcMain.handle('notification', async (event, payload) => {
     // Response is response from notification
     // Metadata contains activationType, activationAt, deliveredAt
     !isProd && console.warn(err, typeof response, metadata)
+    // flash the windows when got notification
+    mainWindow.flashFrame(true)
     // click the balloon shows the window
     if (!err && response !== 'timeout') {
       if (!mainWindow.isVisible()) {
