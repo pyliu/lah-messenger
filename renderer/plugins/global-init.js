@@ -277,10 +277,12 @@ export default ({ $axios, store }, inject) => {
       return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
     },
     replaceFilepath (str) {
-      return str?.replace(/([C-Z]:\\.+[\\(\.a-z{,4})^<^>])|(\\\\.+[\\(\.a-z{,4})^<^>])/igm, token => {
-        // console.warn(a, b)
+      return str?.replace(/(([c-z]:\\|\\\\).+(\\(.+\.[a-z]{1,4})?))/igm, token => {
         return `<span class="open-os-explorer">${token}</span>`
       })
+      // const regex = /(([c-z]:\\|\\\\).+(\\(.+\.[a-z]{1,4})?))/gi
+      // const subst = `<span class="open-os-explorer">$1</span>`
+      // return str?.replace(regex, subst)
     },
     handleSpecialClick (event) {
       const element = event.target
