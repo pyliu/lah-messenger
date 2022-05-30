@@ -1,5 +1,6 @@
 import { app, Tray, Menu, nativeImage, dialog } from 'electron'
 import serve from 'electron-serve'
+import { isEmpty } from 'lodash';
 
 const fs = require('fs')
 const os = require('os');
@@ -240,15 +241,26 @@ ipcMain.handle('show-message-box', (event, arg) => {
   const options = {
     ...{
       type: 'info',
-      title: '訊息',
+      title: '📢 訊息',
       message: '請輸入訊息',
-      block: false
+      detail: undefined,
+      block: false,
+      browser: false
     },
     ...arg
   }
-  dialog.showMessageBox(options.block ? mainWindow : null, options, (response, checkboxChecked) => {
-    // event.sender.send('show-message-box-response', [response, checkboxChecked])
-  })
+  if (options.browser) {
+    const combined = isEmpty(options.detail) ? options.message : `${options.message} - ${options.detail}`
+    mainWindow.webContents.send('in-browser-notify', {
+      message: combined,
+      type: options.type,
+      title: options.title
+    })
+  } else {
+    dialog.showMessageBox(options.block ? mainWindow : null, options, (response, checkboxChecked) => {
+      // event.sender.send('show-message-box-response', [response, checkboxChecked])
+    })
+  }
 });
 
 ipcMain.handle('quit', async (event, str) => {

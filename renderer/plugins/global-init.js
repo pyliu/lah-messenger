@@ -298,10 +298,11 @@ export default ({ $axios, store }, inject) => {
         const path = element.innerText
         if (path) {
           clipboard.writeText(path)
-          // ipcRenderer.invoke('show-message-box', {
-          //   message: `路徑已複製至剪貼簿`,
-          //   detail: path
-          // })
+          ipcRenderer.invoke('show-message-box', {
+            message: `路徑已複製至剪貼簿`,
+            detail: path,
+            browser: true
+          })
           ipcRenderer.invoke('open-explorer', { path })
         }
       }

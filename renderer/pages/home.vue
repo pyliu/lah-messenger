@@ -1570,6 +1570,12 @@ export default {
       this.ipcRenderer.on("set-current-channel", (event, channel) => {
         this.setCurrentChannel(channel);
       });
+      this.ipcRenderer.on("in-browser-notify", (event, payload) => {
+        this.notify(payload.message, {
+          type: payload.type || 'info',
+          title: payload.title || '📢 通知'
+        })
+      });
     },
     async triggerNotification(incoming) {
       const channel = incoming.channel;
