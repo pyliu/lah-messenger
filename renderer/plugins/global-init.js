@@ -299,7 +299,8 @@ export default ({ $axios, store }, inject) => {
         if (path) {
           clipboard.writeText(path)
           ipcRenderer.invoke('show-message-box', {
-            message: `路徑已複製至剪貼簿`,
+            title: '✂️ 剪貼簿',
+            message: `路徑已複製`,
             detail: path,
             browser: true
           })
