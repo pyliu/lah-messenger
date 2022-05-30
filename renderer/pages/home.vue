@@ -510,9 +510,9 @@ export default {
         .map((base64, idx) => {
           return `![preview-${idx}](${base64})`;
         })
-        .join('***\n');
+        .join('\n');
       if (!this.empty(this.inputText) && !this.empty(imgMdText)) {
-        imgMdText = `***\n ${imgMdText}`;
+        imgMdText = `\n***\n${imgMdText}`;
       }
       return imgMdText;
     },
@@ -524,7 +524,7 @@ export default {
       // return DOMPurify?.sanitize(
       //   Markd(`${this.inputText}${this.markdImages}`.replaceAll("\n", "  \n"))
       // );
-      return this.$utils.convertMarkd(`${this.inputText}${this.markdImages}`);
+      return this.$utils.convertMarkd(`${this.inputText} ${this.markdImages}`);
     },
     messagePreviewJson() {
       return {

@@ -123,11 +123,11 @@ export default {
     mergedMessage () {
         let imgMdText = this.images.map((base64, idx) => {
           return `![給${this.toName}${idx}](${base64})`
-        }).join('\n***\n')
-        if (!this.empty(this.message) && !this.empty(imgMdText)) {
-          imgMdText = `\n***\n ${imgMdText}`
-        }
-        return `${this.message}\n${imgMdText}`
+        }).join('\n')
+        // if (!this.empty(this.message) && !this.empty(imgMdText)) {
+        //   imgMdText = `\n***\n ${imgMdText}`
+        // }
+        return `${this.message}\n***\n${imgMdText}`
     },
     markdMergedMessage () {
       // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
@@ -153,7 +153,8 @@ export default {
         channel: this.toUser,
         date: this.date(),
         time: this.time(),
-        message: this.markdMergedMessage,
+        // message: this.markdMergedMessage,
+        message: this.mergedMessage,
         prepend: false,
         sender: this.userid,
         type: "remote"
