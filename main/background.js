@@ -1,4 +1,4 @@
-import { app, Tray, Menu, nativeImage } from 'electron'
+import { app, Tray, Menu, nativeImage, dialog } from 'electron'
 import serve from 'electron-serve'
 
 const fs = require('fs')
@@ -235,6 +235,21 @@ ipcMain.handle('show-window', async (event, payload) => {
     payload.top && mainWindow.focus()
   }
 })
+
+ipcMain.handle('show-message-box', (event, arg) => {
+  const options = {
+    ...{
+      type: 'info',
+      title: '訊息',
+      message: '請輸入訊息',
+      block: false
+    },
+    ...arg
+  }
+  dialog.showMessageBox(options.block ? mainWindow : null, options, (response, checkboxChecked) => {
+    // event.sender.send('show-message-box-response', [response, checkboxChecked])
+  })
+});
 
 ipcMain.handle('quit', async (event, str) => {
   app.isQuiting = true

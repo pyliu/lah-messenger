@@ -277,8 +277,9 @@ export default ({ $axios, store }, inject) => {
       return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
     },
     replaceFilepath (str) {
-      return str?.replace(/(([c-z]:\\|\\\\).+(\\(.+\.[a-z]{1,4})?))/igm, token => {
-        return `<span class="open-os-explorer">${token}</span>`
+      str = str?.replace('<br/>', '\n')
+      return str?.replace(/(([c-z]:\\|\\\\)[^\s\r\n\t]+(\\(.+\.[a-z]{1,4})?))/igm, token => {
+        return `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">${token}</span>`
       })
       // const regex = /(([c-z]:\\|\\\\).+(\\(.+\.[a-z]{1,4})?))/gi
       // const subst = `<span class="open-os-explorer">$1</span>`
@@ -286,7 +287,7 @@ export default ({ $axios, store }, inject) => {
     },
     handleSpecialClick (event) {
       const element = event.target
-      const { ipcRenderer } = require('electron')
+      const { ipcRenderer, clipboard } = require('electron')
       if (element.tagName === 'IMG' && element.src.startsWith('data:')) {
         // click on img
         ipcRenderer.invoke('open-image', {
@@ -294,9 +295,15 @@ export default ({ $axios, store }, inject) => {
           alt: element.alt
         })
       } else if (element.classList.contains('open-os-explorer')) {
-        ipcRenderer.invoke('open-explorer', {
-          path: element.innerText
-        })
+        const path = element.innerText
+        if (path) {
+          clipboard.writeText(path)
+          // ipcRenderer.invoke('show-message-box', {
+          //   message: `路徑已複製至剪貼簿`,
+          //   detail: path
+          // })
+          ipcRenderer.invoke('open-explorer', { path })
+        }
       }
     },
     log: console.log.bind(console),
