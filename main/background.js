@@ -265,7 +265,7 @@ ipcMain.handle('notification', async (event, payload) => {
     // pull app from the tray
     if (!mainWindow.isVisible()) {
       mainWindow.minimize()
-      mainWindow.restore()
+      // mainWindow.restore()
     }
     // flash the windows when got notification
     mainWindow.flashFrame(true)
@@ -316,7 +316,7 @@ ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
     // pull app from the tray
     if (!mainWindow.isVisible()) {
       mainWindow.minimize()
-      mainWindow.restore()
+      // mainWindow.restore()
     }
     // flash the window to catch attention
     mainWindow.flashFrame(true)
