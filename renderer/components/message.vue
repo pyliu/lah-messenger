@@ -136,9 +136,9 @@ export default {
     mdate() {
       // announcement card date is inside the message
       if (this.isAnnouncement) {
-        return this.raw?.message?.create_datetime?.split(' ')[0]
+        return '📅 ' + this.raw?.message?.create_datetime?.split(' ')[0]
       }
-      return this.raw?.date
+      return '📅 ' + this.raw?.date
     },
     classes() {
       return [
@@ -309,7 +309,7 @@ export default {
       font-weight: bold;
       padding: 5px 10px 5px 10px;
       border-radius: 10px;
-      background: #8dcbea;
+      background: #bdc1bd;
       color: #2e2e2e;
       font-size: .75rem;
       max-width: 95%;
@@ -320,7 +320,8 @@ export default {
   &.date {
     p {
       width: 100%;
-      padding: 5px 15px 5px 15px;
+      font-size: 1rem;
+      background-color: #cad8f6;
     }
   }
   .time {

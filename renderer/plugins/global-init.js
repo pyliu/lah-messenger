@@ -277,13 +277,13 @@ export default ({ $axios, store }, inject) => {
       return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
     },
     replaceFilepath (str) {
-      str = str?.replace('<br/>', '\n')
-      return str?.replace(/(([c-z]:\\|\\\\)[^\s\r\n\t]+(\\(.+\.[a-z]{1,4})?))/igm, token => {
-        return `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">${token}</span>`
-      })
-      // const regex = /(([c-z]:\\|\\\\).+(\\(.+\.[a-z]{1,4})?))/gi
-      // const subst = `<span class="open-os-explorer">$1</span>`
-      // return str?.replace(regex, subst)
+      // str = str?.replace('<br/>', '\n')
+      // return str?.replace(/(([c-z]:\\|\\\\)[^\s\r\n\t]+(\\(.+\.[a-z]{1,4})?))/igm, token => {
+      //   return `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">${token}</span>`
+      // })
+      const regex = /(([c-z]:\\|\\\\)[^\s\n\r\t]+(\\(.+\.[a-z]{1,4})?))/gim
+      const subst = `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">$1</span>`
+      return str?.replace(regex, subst)
     },
     handleSpecialClick (event) {
       const element = event.target
