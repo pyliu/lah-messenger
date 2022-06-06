@@ -3,7 +3,7 @@
   //- show date if the message has previous days' message
   .d-flex.msg-item.justify-content-center.system.date(
     v-if="showMdate && id > 0"
-  ): p(v-html="mdate")
+  ): p(v-html="'📅 ' + mdate")
 
   .s-75.font-weight-bold.align-middle(
     v-if="!myMessage && !system"
@@ -102,8 +102,10 @@ export default {
     announcementPayload () { return this.raw?.message },
     isAnnouncement() { return typeof this.announcementPayload === 'object' },
     myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
-
-    showMdate() { return this.prevMdate !== this.mdate },
+    showMdate() {
+      console.warn(this.prevMdate, this.mdate)
+      return this.prevMdate !== this.mdate
+    },
     isMyChannel() { return this.currentChannel === this.userid },
     myMessage() { return this.userid === this.senderId },
     system() { return 'system' === this.sender },
@@ -136,9 +138,9 @@ export default {
     mdate() {
       // announcement card date is inside the message
       if (this.isAnnouncement) {
-        return '📅 ' + this.raw?.message?.create_datetime?.split(' ')[0]
+        return this.raw?.message?.create_datetime?.split(' ')[0]
       }
-      return '📅 ' + this.raw?.date
+      return this.raw?.date
     },
     classes() {
       return [
