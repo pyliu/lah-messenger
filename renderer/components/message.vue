@@ -102,10 +102,7 @@ export default {
     announcementPayload () { return this.raw?.message },
     isAnnouncement() { return typeof this.announcementPayload === 'object' },
     myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
-    showMdate() {
-      console.warn(this.prevMdate, this.mdate)
-      return this.prevMdate !== this.mdate
-    },
+    showMdate() { return this.prevMdate !== this.mdate },
     isMyChannel() { return this.currentChannel === this.userid },
     myMessage() { return this.userid === this.senderId },
     system() { return 'system' === this.sender },
