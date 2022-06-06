@@ -121,13 +121,16 @@ export default {
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
-        let imgMdText = this.images.map((base64, idx) => {
-          return `![給${this.toName}${idx}](${base64})`
-        }).join('\n')
-        // if (!this.empty(this.message) && !this.empty(imgMdText)) {
-        //   imgMdText = `\n***\n ${imgMdText}`
-        // }
-        return `${this.message}\n***\n${imgMdText}`
+      if (this.$utils.empty(this.images)) {
+        return this.message
+      }
+      let imgMdText = this.images.map((base64, idx) => {
+        return `![給${this.toName}${idx}](${base64})`
+      }).join('\n')
+      // if (!this.empty(this.message) && !this.empty(imgMdText)) {
+      //   imgMdText = `\n***\n ${imgMdText}`
+      // }
+      return `${this.message}\n***\n${imgMdText}`
     },
     markdMergedMessage () {
       // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
