@@ -71,12 +71,15 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 
 <script>
 import ImageUpload from '~/components/image-upload.vue'
-import AnnouncementCard from '~/components/announcement-card.vue'
-import Message from '~/components/message.vue'
 
 export default {
-  name: 'MessageInputEdit',
-  components: { ImageUpload, AnnouncementCard, Message },
+  name: 'MessageInputEditAnnouncement',
+  components: {
+    ImageUpload,
+    // to fix recursive component import
+    AnnouncementCard: () => import('~/components/announcement-card.vue'),
+    Message: () => import('~/components/message.vue')
+  },
   props: {
     /**
      * channel: "HA10013859"

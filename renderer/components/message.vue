@@ -35,7 +35,7 @@
     p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
 
     //- timestamp for the message
-    .time.s-60.mx-1.text-muted.text-right(v-if="!system")
+    .time.s-60.mx-1.text-muted.text-right(v-if="!system && !isAnnouncement")
       .d-flex.align-items-center.justify-content-end(v-if="!preview")
         b-icon.clickableIcon(
           v-if="isAdmin || messageRemovable"
@@ -79,11 +79,11 @@
 import AnnouncementCard from '~/components/announcement-card.vue'
 import UserCard from '~/components/user-card.vue'
 import MessageInput from '~/components/message-input.vue'
-import MessageInputEdit from '~/components/message-input-edit.vue'
+import MessageInputEditMessage from '~/components/message-input-edit-message.vue'
 
 export default {
   name: 'Message',
-  components: { AnnouncementCard, UserCard, MessageInput, MessageInputEdit },
+  components: { AnnouncementCard, UserCard, MessageInput, MessageInputEditMessage },
   props: {
     /** example raw json data from my channel
       channel: "HA1001XXXX"
@@ -258,7 +258,7 @@ export default {
       })
     },
     edit () {
-      this.modal(this.$createElement(MessageInputEdit, {
+      this.modal(this.$createElement(MessageInputEditMessage, {
         props: {
           raw: this.raw,
         },

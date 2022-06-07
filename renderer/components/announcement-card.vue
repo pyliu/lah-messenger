@@ -16,18 +16,34 @@ b-card.announcement-card(
     )
     span.ml-1 \#{{ dataJson.id }}
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
-  template(#footer): .d-flex.justify-content-between.small.text-muted
+  template(#footer): .d-flex.justify-content-between.align-items-center.small.text-muted
     span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
+    b-button-group(v-if="mine || isAdmin", size="sm")
+      b-button(
+        variant="outline-primary"
+        @click="edit"
+      ) 編輯
+      b-button(
+        variant="outline-danger"
+        @click="remove"
+      ) 刪除
     span {{ dataJson.create_datetime }}
 </template>
 
 <script>
+import MessageInputEditAnnouncement from '~/components/message-input-edit-announcement.vue'
 export default {
+  name: 'AnnouncementCard',
+  components: {
+    MessageInputEditAnnouncement
+    // MessageInputEditAnnouncement: () => import('~/components/message-input-edit-announcement.vue')
+  },
   props: {
     dataJson: { type: Object, required: true },
     channel: { type: String, required: true }
   },
   computed: {
+    isAdmin () { return this.authority.isAdmin },
     mine () { return this.$utils.equal(this.dataJson.sender, this.userid) },
     header () { return this.dataJson.title },
     borderVariant () {
@@ -76,6 +92,25 @@ export default {
           // to tell outter board removing this message in the list
           this.$emit('remove', this.dataJson)
         }
+      })
+    },
+    edit () {
+      this.modal(this.$createElement(message-input-edit-announcement, {
+        props: {
+          raw: this.dataJson,
+        },
+        on: {
+          sent: (payload) => {
+            this.hideModalById('message-edit-modal')
+            // to tell outter board removing this message in the list
+            this.$emit('edit', payload)
+            console.warn(payload)
+          }
+        }
+      }), {
+        id: 'message-edit-modal',
+        size: 'xl',
+        title: '編輯公告'
       })
     },
     sendRemoveMessage () {
