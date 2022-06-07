@@ -2,7 +2,7 @@
 .mb-1
   //- show date if the message has previous days' message
   .d-flex.msg-item.justify-content-center.system.date(
-    v-if="showMdate && id > 0"
+    v-if="!preview && showMdate && id > 0"
   ): p(v-html="'📅 ' + mdate")
 
   .s-75.font-weight-bold.align-middle(
@@ -36,29 +36,39 @@
 
     //- timestamp for the message
     .time.s-60.mx-1.text-muted.text-right(v-if="!system")
-      b-icon.align-middle.mr-1.readIcon(
-        v-if="isRead"
-        icon="check"
-        :variant="myMessage ? 'success' : 'light'"
-        title="已讀取"
-      )
-      b-icon.mr-1.clickableIcon(
-        v-if="messageRemovable"
-        icon="x-circle"
-        variant="danger"
-        title="移除這則訊息"
-        scale="1.5"
-        @click="remove"
-      )
-      b-icon.clickableIcon(
-        v-if="!isAnnouncement && !myMessage && userMap[senderId]"
-        icon="reply-fill"
-        title="回覆此訊息"
-        font-scale="1.5"
-        flip-h
-        @click="isMyChannel ? reply() : emitReply()"
-      )
-      div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
+      .d-flex.align-items-center.justify-content-end(v-if="!preview")
+        b-icon.clickableIcon(
+          v-if="isAdmin || messageRemovable"
+          icon="x-circle"
+          variant="danger"
+          title="移除訊息"
+          scale="1.5"
+          @click="remove"
+        )
+        b-icon.align-middle.clickableIcon.mx-2(
+          v-if="isAdmin || (myMessage && messageRemovable)"
+          icon="pencil-fill"
+          variant="primary"
+          title="編輯"
+          scale="1.5"
+          @click="edit"
+        )
+        b-icon.clickableIcon(
+          v-if="!isAnnouncement && !myMessage && userMap[senderId]"
+          icon="reply-fill"
+          title="回覆此訊息"
+          font-scale="1.5"
+          flip-h
+          @click="isMyChannel ? reply() : emitReply()"
+        )
+      .d-flex.align-items-center
+        b-icon.align-middle.readIcon(
+          v-if="isRead && myMessage"
+          icon="check-all"
+          :variant="myMessage ? 'secondary' : 'light'"
+          title="已讀取"
+        )
+        div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
     //- my message
     p(ref="myMessage" v-if="myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
@@ -66,12 +76,14 @@
 </template>
 
 <script>
-import announcementCard from '~/components/announcement-card.vue'
+import AnnouncementCard from '~/components/announcement-card.vue'
 import UserCard from '~/components/user-card.vue'
 import MessageInput from '~/components/message-input.vue'
+import MessageInputEdit from '~/components/message-input-edit.vue'
 
 export default {
-  components: { announcementCard, UserCard, MessageInput },
+  name: 'Message',
+  components: { AnnouncementCard, UserCard, MessageInput, MessageInputEdit },
   props: {
     /** example raw json data from my channel
       channel: "HA1001XXXX"
@@ -86,10 +98,11 @@ export default {
       type: "remote"
      */
     raw: { type: Object, required: true },
-    prev: { type: Object, default: undefined }
+    prev: { type: Object, default: undefined },
+    preview: { type: Boolean, default: false }
   },
-  data: () => ({}),
   computed: {
+    isAdmin () { return this.authority.isAdmin },
     cascadeInfo () {
       try {
         return JSON.parse(this.raw?.remove)
@@ -242,6 +255,25 @@ export default {
         id: 'message-reply-modal',
         size: 'xl',
         title: `回覆：${this.sender} - ${this.replyTitle || ' ... '}`
+      })
+    },
+    edit () {
+      this.modal(this.$createElement(MessageInputEdit, {
+        props: {
+          raw: this.raw,
+        },
+        on: {
+          sent: (payload) => {
+            this.hideModalById('message-edit-modal')
+            // to tell outter board removing this message in the list
+            this.$emit('edit', payload)
+            console.warn(payload)
+          }
+        }
+      }), {
+        id: 'message-edit-modal',
+        size: 'xl',
+        title: '編輯訊息'
       })
     },
     emitReply () {

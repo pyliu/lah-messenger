@@ -180,6 +180,7 @@ export default ({ $axios, store }, inject) => {
       return Math.floor(Math.random() * Math.floor(range || 100))
     },
     trim (x) { return typeof x === 'string' ? x.replace(/^\s+|\s+$/gm,'') : '' },
+    trimTags (x) { return x?.replace(/(<([^>]+)>)/gi, '') },
     uuid () {
       let d = Date.now()
       if (typeof performance !== 'undefined' && typeof performance.now === 'function') {

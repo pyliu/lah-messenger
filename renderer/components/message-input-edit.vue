@@ -11,9 +11,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
       v-model="priority"
       :options="priorityOpts"
     )
-  b-input-group(v-if="pickUser" size="sm" prepend="傳給")
-    b-select(v-model="toUser" :options="toUsersOpts" :disabled="toMe")
-    b-checkbox.my-auto.ml-1(v-model="toMe") 給我自己
+  div(v-if="!empty(replyHeader)", v-html="replyHeader")
   b-textarea.my-2(
     ref="msgTextarea"
     v-model="message"
@@ -64,11 +62,10 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
   lah-transition(fade): .float-emoji(v-if="emoji" ref="floatEmoji")
     emoji-pickup(@click="addEmoji")
 
-  lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
-    span.text-white.font-weight-bold(v-if="isAnnouncementChannel") 預覽
-    span.text-white.font-weight-bold(v-else) 將傳給 {{ this.userMap[this.toUser] }}
+  lah-transition: .d-flex.justify-content-between.p-1.preview.mt-2(v-if="realtime && !empty(mergedMessage)" ref="preview")
+    span.text-white.font-weight-bold 編輯預覽
     announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2.my-message(v-else :raw="messageJson")
+    message.mr-2.my-message(v-else :raw="previewJson", :preview="true")
 
 </template>
 
@@ -78,20 +75,27 @@ import AnnouncementCard from '~/components/announcement-card.vue'
 import Message from '~/components/message.vue'
 
 export default {
-  name: 'MessageInput',
+  name: 'MessageInputEdit',
   components: { ImageUpload, AnnouncementCard, Message },
   props: {
-    to: { type: String, required: true },
-    text: { type: String, default: '' },
-    reply: { type: String, default: '' },
-    pickUser: { type: Boolean, default: false }
+    /**
+     * channel: "HA10013859"
+      date: "2022-06-06"
+      flag: 3
+      id: 425
+      message: "<p>給 <span class=\"b-avatar-img\"><img src=\"http://220.1.34.75:80/get_user_img.php?id=HA10003946_avatar&name=洪恆嶽_avatar\" alt=\"avatar\" class=\"avatar mt-n1\"></span> 洪恆嶽 </p>\n<hr>\n<h5 id=\"旭德金士頓ssd報價-👉-x100-管理-課長108-採購及預算02-採購1111110606-金士頓-ssdnow-a400-240gb固態硬碟pdf\">旭德金士頓SSD報價 👉 x:\\100-管理-課長\\108-採購及預算\\02-採購\\111\\1110606 金士頓 SSDNow A400 240GB固態硬碟.pdf</h5>\n<hr>"
+      prepend: false
+      remove: "{\"to\":\"HA10003946\",\"id\":61}"
+      sender: "HA10013859"
+      time: "14:17:37"
+      type: "remote"
+     */
+    raw: { type: Object, require: true }
   },
   data: () => ({
-    toMe: false,
-    toUser: '',
     realtime: true,
     emoji: false,
-    faces: ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😇', '😈', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓', '😔', '😕', '😖', '😗', '😘', '😙', '😚', '😛', '😜', '😝', '😞', '😟', '😡', '😢', '😣', '😤', '😥', '😦', '😧', '😨', '😩', '😪', '😫', '😬', '😭', '😮', '😯', '😰', '😱', '😲', '😳', '😴', '😵', '😶', '😷', '👍', '👌'],
+    faces: ['😀', '😁', '😂', '😃', '😅', '😆', '👍', '👌'],
     messageTitle: '',
     priority: 3,
     message: '',
@@ -101,14 +105,18 @@ export default {
       { text: '高', value: 1 },
       { text: '中', value: 2 },
       { text: '正常', value: 3 }
-    ]
+    ],
+    replyHeader: ''
   }),
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
     this.realtime = userSetting !== false
-    this.toUser = this.userMap[this.to] ? this.to : this.userid
+    // this.toUser = this.userMap[this.to] ? this.to : this.userid
   },
   computed: {
+    id () { return this.raw?.id },
+    to () { return this.raw?.channel },
+    toUser () { return this.userMap[this.to] || this.to },
     randFace () { return this.faces[this.$utils._.random(this.faces.length - 1)] },
     titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
     notValid () {
@@ -121,72 +129,55 @@ export default {
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
-      if (this.$utils.empty(this.images)) {
-        return this.message
+      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}\n***\n${this.message}`
+      if (this.empty(this.images)) {
+        return merged
       }
       let imgMdText = this.images.map((base64, idx) => {
         return `![給${this.toName}${idx}](${base64})`
       }).join('\n')
-      // if (!this.empty(this.message) && !this.empty(imgMdText)) {
-      //   imgMdText = `\n***\n ${imgMdText}`
-      // }
-      return `${this.message}\n***\n${imgMdText}`
-    },
-    markdMergedMessage () {
-      // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
-      return this.$utils.convertMarkd(this.mergedMessage)
+      return `${merged}\n***\n${imgMdText}`
     },
     announcementJson () {
       // announcement-card required json
       return {
-        id: 0,
+        id: this.id,
         create_datetime: `${this.date()} ${this.time()}`,
         expire_datetime: '',
         title: this.messageTitle,
         content: this.mergedMessage,
         flag: 0,
-        from_ip: '',
+        from_ip: this.ip,
         priority: this.priority,
         sender: this.userid
       }
     },
     messageJson () {
       return {
-        id: 0,
-        channel: this.toUser,
+        id: this.id,
+        channel: this.to,
         date: this.date(),
         time: this.time(),
-        // message: this.markdMergedMessage,
         message: this.mergedMessage,
         prepend: false,
         sender: this.userid,
         type: "remote"
       }
     },
-    toUsersOpts () {
-      const opts = [
-        ...this.$utils.orderBy(
-          this.$utils.uniqBy(this.connectedUsers.map((user) => {
-            return { value: user.userid, text: `${user.userid} ${user.username}`}
-          }), 'value'),
-          'value'
-        )
-      ]
-
-      const found = opts.find(opt => {
-        return opt.value === this.toUser
-      })
-      !found && this.userMap[this.toUser] && opts.unshift({ value: this.toUser, text: `${this.toUser} ${this.userMap[this.toUser]}` })
-      return opts
+    previewMessage () {
+      return this.$utils.convertInlineMarkd(this.$utils.convertMarkd(this.mergedMessage.replaceAll("\n***\n", '<hr/>')))
+    },
+    previewJson () {
+      return {
+        ...this.messageJson,
+        message: this.previewMessage
+      }
     }
   },
   watch: {
-    toMe (flag) {
-      flag && (this.toUser = this.userid)
-    },
     emoji (flag) {
       this.$nextTick(() => {
-        flag && (this.$refs.floatEmoji.style.top = this.empty(this.reply) ? '20px' : '-20px')
+        flag && (this.$refs.floatEmoji.style.top = '20px')
       })
     },
     realtime (flag) {
@@ -194,10 +185,31 @@ export default {
     }
   },
   created () {
-    // to refresh toUsersOpts
-    this.queryChatChannelOnlineClients()
+    this.normalize(this.raw?.message)
   },
   methods: {
+    normalize (raw) {
+      // keep "給 XXXX" html header in own channel
+      let foundArr = /^<p>給.+<\/p>/igm.exec(raw)
+      if (foundArr) {
+        this.replyHeader = foundArr[0]
+      } else if (foundArr = /^(<p>)?@.+\s\.{3}\s/igm.exec(raw)) {
+        // keep "@XXX ... " header in chat channel
+        this.replyHeader = this.$utils.trimTags(foundArr[0])
+      }
+      // trim all tags
+      this.message = this.$utils.trimTags(raw)
+      // replace '\\' with '\\\\' for windows smb path
+      this.message = this.message.replaceAll(/\\{2}/igm, '\\\\')
+      // remove reply header
+      this.message = this.message.replaceAll(/^給\s+.+\s+/igm, '')
+      // add divider for the "@XXX ... "
+      this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
+      // reduce multiple "\n"
+      this.message = this.message.replaceAll(/\n{2,}/igm, "\n")
+      // trim string
+      this.message = this.$utils.trim(this.message)
+    },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
     },
@@ -227,12 +239,15 @@ export default {
         this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
-            channel: this.toUser
+            channel: this.to
           }
         }), modalOpts)
       } else {
         this.modal(this.$createElement(Message, {
-          props: { raw: this.messageJson  }
+          props: {
+            raw: this.previewJson,
+            preview: true
+          }
         }), modalOpts)
       }
     },
@@ -256,17 +271,24 @@ export default {
       })
     },
     send () {
-      if (this.websocket && !this.notValid) {
-        // send to target
-        this.websocket.send(this.packMessage(this.mergedMessage, {
-          channel: this.currentChannel.startsWith('announcement') ? this.currentChannel : this.toUser,
-          title: this.messageTitle,
-          priority: this.priority
-        }))
+      const json = {
+        type: "command",
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: {
+          command: 'edit_message',
+          channel: this.to,
+          id: this.id,
+          sender: this.userid,
+          payload: this.isAnnouncementChannel ? this.announcementJson : this.messageJson,
+          // in private channel, it needs to edit the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
+          cascade: this.raw.remove || ''
+        },
+        channel: 'system'
       }
-      this.$emit("sent", this.message)
-      this.message = ''
-      this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
+      this.websocket?.send(JSON.stringify(json))
+      this.$emit('sent', {...this.raw, message: this.message})
     },
     remove (base64data) {
       var index = this.images.indexOf(base64data)
