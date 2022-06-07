@@ -1,6 +1,6 @@
 <template lang="pug">
 div(style="position:relative" @paste="pasteImage($event, pasted)")
-  .d-flex(v-if="isAnnouncementChannel")
+  .d-flex
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
       v-model="messageTitle"
       placeholder=" ... 必要欄位 ..."
@@ -11,10 +11,9 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
       v-model="priority"
       :options="priorityOpts"
     )
-  div(v-if="!empty(replyHeader)", v-html="replyHeader")
   b-textarea.my-2(
     ref="msgTextarea"
-    v-model="message"
+    v-model="content"
     debounce="200"
     placeholder="... 訊息內容 ...",
     size="sm"
@@ -64,8 +63,11 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 
   lah-transition: .d-flex.justify-content-between.p-1.preview.mt-2(v-if="realtime && !empty(mergedMessage)" ref="preview")
     span.text-white.font-weight-bold 編輯預覽
-    announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2.my-message(v-else :raw="previewJson", :preview="true")
+    announcement-card(
+      :data-json="announcementJson"
+      :channel="to"
+      preview
+    )
 
 </template>
 
@@ -77,23 +79,13 @@ export default {
   components: {
     ImageUpload,
     // to fix recursive component import
-    AnnouncementCard: () => import('~/components/announcement-card.vue'),
-    Message: () => import('~/components/message.vue')
+    AnnouncementCard: () => import('~/components/announcement-card.vue')
   },
   props: {
     /**
-     * channel: "HA10013859"
-      date: "2022-06-06"
-      flag: 3
-      id: 425
-      message: "<p>給 <span class=\"b-avatar-img\"><img src=\"http://220.1.34.75:80/get_user_img.php?id=HA10003946_avatar&name=洪恆嶽_avatar\" alt=\"avatar\" class=\"avatar mt-n1\"></span> 洪恆嶽 </p>\n<hr>\n<h5 id=\"旭德金士頓ssd報價-👉-x100-管理-課長108-採購及預算02-採購1111110606-金士頓-ssdnow-a400-240gb固態硬碟pdf\">旭德金士頓SSD報價 👉 x:\\100-管理-課長\\108-採購及預算\\02-採購\\111\\1110606 金士頓 SSDNow A400 240GB固態硬碟.pdf</h5>\n<hr>"
-      prepend: false
-      remove: "{\"to\":\"HA10003946\",\"id\":61}"
-      sender: "HA10013859"
-      time: "14:17:37"
-      type: "remote"
+     
      */
-    raw: { type: Object, require: true }
+    dataJson: { type: Object, require: true }
   },
   data: () => ({
     realtime: true,
@@ -101,45 +93,39 @@ export default {
     faces: ['😀', '😁', '😂', '😃', '😅', '😆', '👍', '👌'],
     messageTitle: '',
     priority: 3,
-    message: '',
+    content: '',
     images: [],
     priorityOpts: [
       { text: '最高', value: 0 },
       { text: '高', value: 1 },
       { text: '中', value: 2 },
       { text: '正常', value: 3 }
-    ],
-    replyHeader: ''
+    ]
   }),
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
     this.realtime = userSetting !== false
-    // this.toUser = this.userMap[this.to] ? this.to : this.userid
   },
   computed: {
-    id () { return this.raw?.id },
-    to () { return this.raw?.channel },
-    toUser () { return this.userMap[this.to] || this.to },
+    id () { return this.dataJson?.id },
+    to () { return this.dataJson?.channel },
     randFace () { return this.faces[this.$utils._.random(this.faces.length - 1)] },
     titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
     notValid () {
-      if (this.isAnnouncementChannel && !this.titleValid) {
+      if (!this.titleValid) {
         return true
       }
-      return this.empty(this.message) && this.empty(this.images)
+      return this.empty(this.content) && this.empty(this.images)
     },
-    toName () { return this.userMap[this.toUser] || this.toUser },
-    isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
-    modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
+    modalTitle () { return `傳送圖片到 ${this.currentChannelName}` },
     mergedMessage () {
-      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}<hr/>${this.message}`
       if (this.empty(this.images)) {
-        return merged
+        return this.content
       }
       let imgMdText = this.images.map((base64, idx) => {
-        return `![給${this.toName}${idx}](${base64})`
+        return `![公告圖${idx}](${base64})`
       }).join('\n')
-      return `${merged}<hr/>${imgMdText}`
+      return `${this.content}<hr/>${imgMdText}`
     },
     announcementJson () {
       // announcement-card required json
@@ -155,25 +141,13 @@ export default {
         sender: this.userid
       }
     },
-    messageJson () {
-      return {
-        id: this.id,
-        channel: this.to,
-        date: this.date(),
-        time: this.time(),
-        message: this.mergedMessage,
-        prepend: false,
-        sender: this.userid,
-        type: "remote"
-      }
-    },
     previewMessage () {
       return this.$utils.convertInlineMarkd(this.$utils.convertMarkd(this.mergedMessage.replaceAll("\n***\n", '<hr/>')))
     },
     previewJson () {
       return {
-        ...this.messageJson,
-        message: this.previewMessage
+        ...this.announcementJson,
+        content: this.previewMessage
       }
     }
   },
@@ -188,30 +162,19 @@ export default {
     }
   },
   created () {
-    this.normalize(this.raw?.message)
+    this.warn(this.dataJson)
+    this.normalize(this.dataJson?.content)
   },
   methods: {
-    normalize (raw) {
-      // keep "給 XXXX" html header in own channel
-      let foundArr = /^<p>給.+<\/p>/igm.exec(raw)
-      if (foundArr) {
-        this.replyHeader = foundArr[0]
-      } else if (foundArr = /^(<p>)?@.+\s\.{3}\s/igm.exec(raw)) {
-        // keep "@XXX ... " header in chat channel
-        this.replyHeader = this.$utils.trimTags(foundArr[0])
-      }
+    normalize (txt) {
       // trim all tags
-      this.message = this.$utils.trimTags(raw)
+      this.content = this.$utils.trimTags(txt)
       // replace '\\' with '\\\\' for windows smb path
-      this.message = this.message.replaceAll(/\\{2}/igm, '\\\\')
-      // remove reply header
-      this.message = this.message.replaceAll(/^給\s+.+\s+/igm, '')
-      // add divider for the "@XXX ... "
-      this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
+      this.content = this.content.replaceAll(/\\{2}/igm, '\\\\')
       // reduce multiple "\n"
-      this.message = this.message.replaceAll(/\n{2,}/igm, "\n")
+      this.content = this.content.replaceAll(/\n{2,}/igm, "\n")
       // trim string
-      this.message = this.$utils.trim(this.message)
+      this.content = this.$utils.trim(this.content)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
@@ -221,14 +184,14 @@ export default {
       if (element && element.selectionStart) {
         const st = element.selectionStart
         const ed = element.selectionEnd
-        const front = this.message.substring(0, st).trim()
+        const front = this.content.substring(0, st).trim()
         const appended = front + ' ' + emoji + ' '
-        const tail = this.message.substring(ed, this.message.length).trim()
-        this.message = appended + tail
+        const tail = this.content.substring(ed, this.content.length).trim()
+        this.content = appended + tail
         element.focus()
         this.$nextTick(() => { element.selectionEnd = appended.length })
       } else {
-        this.message = this.message + ' ' + emoji
+        this.content = this.content + ' ' + emoji
         element.focus()
       }
       this.emoji = false
@@ -238,26 +201,17 @@ export default {
         size: 'xl',
         title: '預覽'
       }
-      if (this.isAnnouncementChannel) {
-        this.modal(this.$createElement(AnnouncementCard, {
-          props: {
-            dataJson: this.announcementJson,
-            channel: this.to
-          }
-        }), modalOpts)
-      } else {
-        this.modal(this.$createElement(Message, {
-          props: {
-            raw: this.previewJson,
-            preview: true
-          }
-        }), modalOpts)
-      }
+      this.modal(this.$createElement(AnnouncementCard, {
+        props: {
+          dataJson: this.announcementJson,
+          channel: this.to
+        }
+      }), modalOpts)
     },
     pick () {
       this.modal(this.$createElement(ImageUpload, {
         props: {
-          to: this.toUser,
+          to: '公告',
           modalId: 'image-upload-modal',
           skipPreview: true
         },
@@ -284,14 +238,17 @@ export default {
           channel: this.to,
           id: this.id,
           sender: this.userid,
-          payload: this.isAnnouncementChannel ? this.announcementJson : this.messageJson,
-          // in private channel, it needs to edit the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
-          cascade: this.raw.remove || ''
+          payload: this.announcementJson
         },
         channel: 'system'
       }
       this.websocket?.send(JSON.stringify(json))
-      this.$emit('sent', {...this.raw, message: this.message})
+      this.$emit('sent', {
+        ...this.dataJson,
+        title: this.messageTitle,
+        content: this.content,
+        priority: this.priority
+      })
     },
     remove (base64data) {
       var index = this.images.indexOf(base64data)

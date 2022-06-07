@@ -8,7 +8,7 @@ b-card.announcement-card(
   template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
     span(style="width: 380px").mr-auto {{ dataJson.title }}
     b-icon.ml-1.removeIcon(
-      v-if="mine && dataJson.id > 0"
+      v-if="!preview && (mine || isAdmin) && dataJson.id > 0"
       icon="x-circle"
       title="移除這則公告"
       scale="1.25"
@@ -18,7 +18,7 @@ b-card.announcement-card(
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
   template(#footer): .d-flex.justify-content-between.align-items-center.small.text-muted
     span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
-    b-button-group(v-if="mine || isAdmin", size="sm")
+    b-button-group(v-if="!preview && (mine || isAdmin)", size="sm")
       b-button(
         variant="outline-primary"
         @click="edit"
@@ -40,7 +40,8 @@ export default {
   },
   props: {
     dataJson: { type: Object, required: true },
-    channel: { type: String, required: true }
+    channel: { type: String, required: true },
+    preview: { type: Boolean, default: false }
   },
   computed: {
     isAdmin () { return this.authority.isAdmin },
@@ -95,16 +96,15 @@ export default {
       })
     },
     edit () {
-      this.modal(this.$createElement(message-input-edit-announcement, {
+      this.modal(this.$createElement(MessageInputEditAnnouncement, {
         props: {
-          raw: this.dataJson,
+          dataJson: this.dataJson,
         },
         on: {
           sent: (payload) => {
             this.hideModalById('message-edit-modal')
             // to tell outter board removing this message in the list
             this.$emit('edit', payload)
-            console.warn(payload)
           }
         }
       }), {
