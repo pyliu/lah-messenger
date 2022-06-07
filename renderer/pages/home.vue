@@ -1097,6 +1097,47 @@ export default {
           }
           this.connectText = `${json.message}`;
           break;
+        case "edit_message":
+          if (json.success) {
+            // the real payload is in 2 levels down
+            const payload = json.payload.payload
+            const found = this.messages[payload.channel]?.find(msg => msg.id === payload.id);
+            // this.warn(found, json)
+            if (found) {
+              const isAnnouncement = payload.channel.startsWith('announcement')
+              if (isAnnouncement) {
+                this.warn(found)
+              } else {
+                found.message = payload.message
+              }
+            }
+            // this.warn(json.message);
+            // if found cacade info, also send edit message to server
+            // if (json.payload.cascade?.to && json.payload.cascade?.id) {
+            //   // cascade info: { to: 'HAXXXX', id: xxxx }
+            //   const info = json.payload.cascade;
+            //   this.websocket.send(
+            //     JSON.stringify({
+            //       type: "command",
+            //       sender: this.adAccount,
+            //       date: this.date(),
+            //       time: this.time(),
+            //       channel: "system",
+            //       message: JSON.stringify({
+            //         command: "remove_message",
+            //         channel: info.to,
+            //         id: info.id,
+            //       }),
+            //     })
+            //   );
+            // }
+            // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
+          } else {
+            this.err(json);
+            this.alert(`${json.message}`);
+          }
+          this.connectText = `${json.message}`;
+          break;
         case "previous":
           this.$store.commit("fetchingHistory", false);
           !json.success &&
