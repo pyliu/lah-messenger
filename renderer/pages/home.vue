@@ -1109,29 +1109,37 @@ export default {
                 this.warn(found)
               } else {
                 found.message = payload.message
+                // if found cacade info, also send edit message to server
+                // cascade info: { to: 'HAXXXX', id: xxxx }
+                const cascadeId = payload.cascade?.id
+                const cascadeChannel = payload.cascade?.to
+                if (cascadeId && cascadeChannel) {
+                  // remove cascade data
+                  delete payload.cascade
+                  this.websocket?.send(
+                    JSON.stringify({
+                      type: "command",
+                      sender: this.userid,
+                      date: this.date(),
+                      time: this.time(),
+                      message: {
+                        command: 'edit_message',
+                        channel: cascadeChannel,
+                        id: cascadeId,
+                        sender: this.userid,
+                        payload: {
+                          ...payload,
+                          id: cascadeId,
+                          channel: cascadeChannel,
+                          sender: this.userid
+                        }
+                      },
+                      channel: 'system'
+                    })
+                  );
+                }
               }
             }
-            // this.warn(json.message);
-            // if found cacade info, also send edit message to server
-            // if (json.payload.cascade?.to && json.payload.cascade?.id) {
-            //   // cascade info: { to: 'HAXXXX', id: xxxx }
-            //   const info = json.payload.cascade;
-            //   this.websocket.send(
-            //     JSON.stringify({
-            //       type: "command",
-            //       sender: this.adAccount,
-            //       date: this.date(),
-            //       time: this.time(),
-            //       channel: "system",
-            //       message: JSON.stringify({
-            //         command: "remove_message",
-            //         channel: info.to,
-            //         id: info.id,
-            //       }),
-            //     })
-            //   );
-            // }
-            // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
             this.err(json);
             this.alert(`${json.message}`);
