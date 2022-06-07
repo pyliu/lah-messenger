@@ -129,14 +129,14 @@ export default {
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
-      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}\n***\n${this.message}`
+      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}<hr/>${this.message}`
       if (this.empty(this.images)) {
         return merged
       }
       let imgMdText = this.images.map((base64, idx) => {
         return `![給${this.toName}${idx}](${base64})`
       }).join('\n')
-      return `${merged}\n***\n${imgMdText}`
+      return `${merged}<hr/>${imgMdText}`
     },
     announcementJson () {
       // announcement-card required json
