@@ -1352,7 +1352,6 @@ export default {
           break;
         case "user_disconnected":
           this.connectText = json.message;
-          this.notify(json.message)
           let found_idx = -1
           const tmp_users2 = [...this.connectedUsers]
           tmp_users2.find((user, idx) => {
