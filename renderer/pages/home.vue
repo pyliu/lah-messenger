@@ -1293,6 +1293,7 @@ export default {
     },
     async handleSystemMessage(json) {
       const cmd = json.command;
+      const payload = json.payload
       this.log(
         this.time(),
         `處理系統訊息 ${cmd} [home::handleSystemMessage]`,
@@ -1300,7 +1301,6 @@ export default {
       );
       switch (cmd) {
         case "update_user":
-          const payload = json.payload
           if (typeof payload === 'object' && payload.id && payload.name && payload.dept) {
             await this.$localForage.setItem("adAccount", payload.id);
             await this.$localForage.setItem("adName", payload.name);
@@ -1329,14 +1329,41 @@ export default {
           }
           break;
         case "user_connected":
-          // remove empty value from array
-          // this.$store.commit("connectedUsers", json.payload.users.filter(n => n));
-          // this.connectText = `${json.message}`;
+          // payload: { userid, username, ip, dept ... }
+          /** connectedUsers item schema
+           *  { 
+           *    command: "register"
+                dept: "inf"
+                domain: ""
+                ip: "192.168.88.51"
+                timestamp: 1654683589828
+                userid: "HA10013859"
+                username: "測試中"
+              }
+           */
+          this.connectText = json.message;
+          if (!this.connectedUsers.find(user => user.userid === payload.userid)) {
+            this.$store.commit("connectedUsers", [...this.connectedUsers, {
+              command: 'register',
+              timestamp: +new Date(),
+              ...payload
+            }]);
+          }
           break;
         case "user_disconnected":
-          // remove empty value from array
-          // this.$store.commit("connectedUsers", json.payload.users.filter(n => n));
-          // this.connectText = `${json.message}`;
+          this.connectText = json.message;
+          this.notify(json.message)
+          let found_idx = -1
+          const tmp_users2 = [...this.connectedUsers]
+          tmp_users2.find((user, idx) => {
+            if (user.userid === payload.userid) {
+              found_idx = idx
+            }
+            return user.userid === payload.userid
+          })
+          if (found_idx > -1) {
+            this.$store.commit("connectedUsers", tmp_users2.splice(found_idx, 1));
+          }
           break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);
