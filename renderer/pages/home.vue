@@ -1361,7 +1361,8 @@ export default {
             return user.userid === payload.userid
           })
           if (found_idx > -1) {
-            this.$store.commit("connectedUsers", tmp_users2.splice(found_idx, 1));
+            tmp_users2.splice(found_idx, 1)
+            this.$store.commit("connectedUsers", tmp_users2);
           }
           break;
         default:
