@@ -7,13 +7,6 @@ b-card.announcement-card(
 )
   template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
     span(style="width: 380px").mr-auto {{ dataJson.title }}
-    b-icon.ml-1.removeIcon(
-      v-if="!preview && (mine || isAdmin) && dataJson.id > 0"
-      icon="x-circle"
-      title="移除這則公告"
-      scale="1.25"
-      @click="remove"
-    )
     span.ml-1 \#{{ dataJson.id }}
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
   template(#footer): .d-flex.justify-content-between.align-items-center.small.text-muted
