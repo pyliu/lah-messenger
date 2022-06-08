@@ -67,8 +67,17 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
   lah-transition(v-if="realtime"): .d-flex.justify-content-between.p-1.preview.mt-2(v-if="!empty(mergedMessage)" ref="preview")
     span.text-white.font-weight-bold(v-if="isAnnouncementChannel") 預覽
     span.text-white.font-weight-bold(v-else) 將傳給 {{ this.userMap[this.toUser] }}
-    announcement-card(v-if="isAnnouncementChannel" :data-json="announcementJson" :channel="to")
-    message.mr-2.my-message(v-else :raw="messageJson")
+    announcement-card(
+      v-if="isAnnouncementChannel"
+      :data-json="announcementJson"
+      :channel="to"
+      :preview="true"
+    )
+    message.mr-2.my-message(
+      v-else
+      :raw="messageJson"
+      :preview="true"
+    )
 
 </template>
 
@@ -227,12 +236,16 @@ export default {
         this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
-            channel: this.toUser
+            channel: this.toUser,
+            preview: true
           }
         }), modalOpts)
       } else {
         this.modal(this.$createElement(Message, {
-          props: { raw: this.messageJson  }
+          props: {
+            raw: this.messageJson,
+            preview: true
+          }
         }), modalOpts)
       }
     },
