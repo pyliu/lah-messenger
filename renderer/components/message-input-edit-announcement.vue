@@ -66,7 +66,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
     announcement-card(
       :data-json="announcementJson"
       :channel="channel"
-      preview
+      :preview="true"
     )
 
 </template>
