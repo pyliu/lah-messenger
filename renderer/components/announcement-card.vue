@@ -15,11 +15,23 @@ b-card.announcement-card(
       b-button(
         variant="outline-primary"
         @click="edit"
-      ) 編輯
+      )
+        b-icon.align-middle(
+          icon="pencil-fill"
+          title="編輯"
+          scale="0.8"
+        )
+        span.align-middle.ml-1 編輯
       b-button(
         variant="outline-danger"
         @click="remove"
-      ) 刪除
+      )
+        b-icon.align-middle(
+          icon="x-circle"
+          title="移除公告"
+          scale="0.8"
+        )
+        span.align-middle.ml-1 刪除
     span {{ dataJson.create_datetime }}
 </template>
 
