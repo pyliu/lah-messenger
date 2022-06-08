@@ -1328,6 +1328,16 @@ export default {
             this.warn("update_user 指令帶入之json物件參數(json.message)有誤", json);
           }
           break;
+        case "user_connected":
+          // remove empty value from array
+          // this.$store.commit("connectedUsers", json.payload.users.filter(n => n));
+          // this.connectText = `${json.message}`;
+          break;
+        case "user_disconnected":
+          // remove empty value from array
+          // this.$store.commit("connectedUsers", json.payload.users.filter(n => n));
+          // this.connectText = `${json.message}`;
+          break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);
       }

@@ -183,11 +183,12 @@ export default {
   },
   async created () {
     this.queryChatChannelOnlineClients()
+    clearInterval(this.onlineTimer)
     this.onlineTimer = setInterval(() => this.queryChatChannelOnlineClients(), 5 * 60 * 1000)
     this.ascending = await this.$localForage.getItem('online-ascending') || false
   },
   beforeDestroy() {
-    clearInterval(this.onlineTimer) 
+    clearInterval(this.onlineTimer)
   },
   methods: {
     overlapRatio (count) {
