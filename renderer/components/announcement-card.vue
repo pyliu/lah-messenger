@@ -14,24 +14,24 @@ b-card.announcement-card(
     b-button-group(v-if="!preview && (mine || isAdmin)", size="sm")
       b-button(
         variant="outline-primary"
+        title="編輯公告"
         @click="edit"
       )
         b-icon.align-middle(
           icon="pencil-fill"
-          title="編輯"
           scale="0.8"
         )
         span.align-middle.ml-1 編輯
       b-button(
         variant="outline-danger"
+        title="移除公告"
         @click="remove"
       )
         b-icon.align-middle(
           icon="x-circle"
-          title="移除公告"
           scale="0.8"
         )
-        span.align-middle.ml-1 刪除
+        span.align-middle.ml-1 移除
     span {{ dataJson.create_datetime }}
 </template>
 
