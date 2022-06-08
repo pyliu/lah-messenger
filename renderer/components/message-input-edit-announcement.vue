@@ -2,9 +2,9 @@
 div(style="position:relative" @paste="pasteImage($event, pasted)")
   .d-flex
     b-input-group.mr-auto(size="sm" prepend="標題"): b-input(
-      v-model="messageTitle"
+      v-model="title"
       placeholder=" ... 必要欄位 ..."
-      v-b-tooltip.focus="`輸入 ${$utils.length(messageTitle)} / 92 個字元`"
+      v-b-tooltip.focus="`輸入 ${$utils.length(title)} / 92 個字元`"
       :state="titleValid"
     )
     b-input-group.priority.ml-1(size="sm" prepend="緊急程度"): b-select(
@@ -65,7 +65,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
     span.text-white.font-weight-bold 編輯預覽
     announcement-card(
       :data-json="announcementJson"
-      :channel="to"
+      :channel="channel"
       preview
     )
 
@@ -73,34 +73,44 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 
 <script>
 import ImageUpload from '~/components/image-upload.vue'
+import AnnouncementCard from '~/components/announcement-card.vue'
 
 export default {
   name: 'MessageInputEditAnnouncement',
   components: {
-    ImageUpload,
+    ImageUpload: () => import('~/components/image-upload.vue'),
     // to fix recursive component import
     AnnouncementCard: () => import('~/components/announcement-card.vue')
   },
   props: {
     /**
-     
+      content: "XXXXXX"
+      create_datetime: "2022-02-17 16:34:50"
+      expire_datetime: ""
+      flag: 0
+      from_ip: "192.168.XXX.XXX"
+      id: 9
+      priority: 1
+      sender: "HAXXXXXXXX"
+      title: "系統連結"
      */
-    dataJson: { type: Object, require: true }
+    dataJson: { type: Object, require: true },
+    channel: { type: String, require: true }
   },
   data: () => ({
     realtime: true,
     emoji: false,
     faces: ['😀', '😁', '😂', '😃', '😅', '😆', '👍', '👌'],
-    messageTitle: '',
-    priority: 3,
-    content: '',
     images: [],
     priorityOpts: [
       { text: '最高', value: 0 },
       { text: '高', value: 1 },
       { text: '中', value: 2 },
       { text: '正常', value: 3 }
-    ]
+    ],
+    title: '',
+    priority: 3,
+    content: ''
   }),
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
@@ -108,9 +118,8 @@ export default {
   },
   computed: {
     id () { return this.dataJson?.id },
-    to () { return this.dataJson?.channel },
     randFace () { return this.faces[this.$utils._.random(this.faces.length - 1)] },
-    titleValid () { return !this.empty(this.messageTitle) && this.$utils.length(this.messageTitle) <= 92 },
+    titleValid () { return !this.empty(this.title) && this.$utils.length(this.title) <= 92 },
     notValid () {
       if (!this.titleValid) {
         return true
@@ -132,22 +141,13 @@ export default {
       return {
         id: this.id,
         create_datetime: `${this.date()} ${this.time()}`,
-        expire_datetime: '',
-        title: this.messageTitle,
+        title: this.title,
         content: this.mergedMessage,
-        flag: 0,
-        from_ip: this.ip,
         priority: this.priority,
-        sender: this.userid
-      }
-    },
-    previewMessage () {
-      return this.$utils.convertInlineMarkd(this.$utils.convertMarkd(this.mergedMessage.replaceAll("\n***\n", '<hr/>')))
-    },
-    previewJson () {
-      return {
-        ...this.announcementJson,
-        content: this.previewMessage
+        sender: this.userid,
+        flag: this.dataJson.flag,
+        from_ip: this.dataJson.from_ip,
+        expire_datetime: this.dataJson.expire_datetime
       }
     }
   },
@@ -162,8 +162,9 @@ export default {
     }
   },
   created () {
-    this.warn(this.dataJson)
     this.normalize(this.dataJson?.content)
+    this.priority = this.dataJson?.priority
+    this.title = this.dataJson?.title
   },
   methods: {
     normalize (txt) {
@@ -172,7 +173,7 @@ export default {
       // replace '\\' with '\\\\' for windows smb path
       this.content = this.content.replaceAll(/\\{2}/igm, '\\\\')
       // reduce multiple "\n"
-      this.content = this.content.replaceAll(/\n{2,}/igm, "\n")
+      this.content = this.content.replaceAll(/\n{3,}/igm, "\n\n")
       // trim string
       this.content = this.$utils.trim(this.content)
     },
@@ -197,16 +198,16 @@ export default {
       this.emoji = false
     },
     openPreview () {
-      const modalOpts = {
-        size: 'xl',
-        title: '預覽'
-      }
       this.modal(this.$createElement(AnnouncementCard, {
         props: {
           dataJson: this.announcementJson,
-          channel: this.to
+          channel: this.channel,
+          preview: true
         }
-      }), modalOpts)
+      }), {
+        size: 'xl',
+        title: '預覽公告卡片'
+      })
     },
     pick () {
       this.modal(this.$createElement(ImageUpload, {
@@ -235,7 +236,7 @@ export default {
         time: this.time(),
         message: {
           command: 'edit_message',
-          channel: this.to,
+          channel: this.channel,
           id: this.id,
           sender: this.userid,
           payload: this.announcementJson
@@ -245,7 +246,7 @@ export default {
       this.websocket?.send(JSON.stringify(json))
       this.$emit('sent', {
         ...this.dataJson,
-        title: this.messageTitle,
+        title: this.title,
         content: this.content,
         priority: this.priority
       })

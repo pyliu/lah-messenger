@@ -99,6 +99,7 @@ export default {
       this.modal(this.$createElement(MessageInputEditAnnouncement, {
         props: {
           dataJson: this.dataJson,
+          channel: this.channel
         },
         on: {
           sent: (payload) => {

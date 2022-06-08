@@ -59,6 +59,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 
 <script>
 import ImageUpload from '~/components/image-upload.vue'
+import Message from '~/components/message.vue'
 
 export default {
   name: 'MessageInputEditMessage',
@@ -69,14 +70,14 @@ export default {
   },
   props: {
     /**
-     * channel: "HA10013859"
+     * channel: "HAXXXXXXXX"
       date: "2022-06-06"
       flag: 3
       id: 425
-      message: "<p>給 <span class=\"b-avatar-img\"><img src=\"http://220.1.34.75:80/get_user_img.php?id=HA10003946_avatar&name=洪恆嶽_avatar\" alt=\"avatar\" class=\"avatar mt-n1\"></span> 洪恆嶽 </p>\n<hr>\n<h5 id=\"旭德金士頓ssd報價-👉-x100-管理-課長108-採購及預算02-採購1111110606-金士頓-ssdnow-a400-240gb固態硬碟pdf\">旭德金士頓SSD報價 👉 x:\\100-管理-課長\\108-採購及預算\\02-採購\\111\\1110606 金士頓 SSDNow A400 240GB固態硬碟.pdf</h5>\n<hr>"
+      message: "<p>給 <span class=\"b-avatar-img\"><img src=\"http://220.1.34.75:80/get_user_img.php?id=HAXXXXXXXXX_avatar&name=XXX_avatar\" alt=\"avatar\" class=\"avatar mt-n1\"></span> 洪恆嶽 </p>\n<hr>\n👉 240GB固態硬碟.pdf</h5>\n<hr>"
       prepend: false
-      remove: "{\"to\":\"HA10003946\",\"id\":61}"
-      sender: "HA10013859"
+      remove: "{\"to\":\"HAXXXXXXXX\",\"id\":61}"
+      sender: "HAXXXXXXXX"
       time: "14:17:37"
       type: "remote"
      */
@@ -167,7 +168,7 @@ export default {
       // add divider for the "@XXX ... "
       this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
       // reduce multiple "\n"
-      this.message = this.message.replaceAll(/\n{2,}/igm, "\n")
+      this.message = this.message.replaceAll(/\n{3,}/igm, "\n\n")
       // trim string
       this.message = this.$utils.trim(this.message)
     },
@@ -192,16 +193,16 @@ export default {
       this.emoji = false
     },
     openPreview () {
-      const modalOpts = {
-        size: 'xl',
-        title: '預覽'
-      }
+      // const Message = import('~/components/message.vue')
       this.modal(this.$createElement(Message, {
         props: {
           raw: this.previewJson,
           preview: true
         }
-      }), modalOpts)
+      }), {
+        size: 'xl',
+        title: '預覽'
+      })
     },
     pick () {
       this.modal(this.$createElement(ImageUpload, {

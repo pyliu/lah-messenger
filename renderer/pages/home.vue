@@ -1099,14 +1099,16 @@ export default {
           break;
         case "edit_message":
           if (json.success) {
+            // channel data store in first level payload
+            const channel = json.payload.channel
             // the real payload is in 2 levels down
             const payload = json.payload.payload
-            const found = this.messages[payload.channel]?.find(msg => msg.id === payload.id);
-            // this.warn(found, json)
+            const found = this.messages[channel]?.find(msg => msg.id === payload.id);
+            // this.warn(channel, found, payload, json)
             if (found) {
-              const isAnnouncement = payload.channel.startsWith('announcement')
+              const isAnnouncement = channel.startsWith('announcement')
               if (isAnnouncement) {
-                this.warn(found)
+                found.message = { ...payload }
               } else {
                 found.message = payload.message
                 // if found cacade info, also send edit message to server
