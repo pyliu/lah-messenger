@@ -168,14 +168,13 @@ export default {
   },
   methods: {
     normalize (txt) {
-      // trim all tags
-      this.content = this.$utils.trimTags(txt)
-      // replace '\\' with '\\\\' for windows smb path
-      this.content = this.content.replaceAll(/\\{2}/igm, '\\\\')
+      this.content = txt
+      // restore <br/> to \n
+      this.content = this.content?.replaceAll(/<br\s*\/?>/igm, "\n")
       // reduce multiple "\n"
       this.content = this.content.replaceAll(/\n{3,}/igm, "\n\n")
-      // trim string
-      this.content = this.$utils.trim(this.content)
+      // trim all tags
+      this.content = this.$utils.trimTags(this.content)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)

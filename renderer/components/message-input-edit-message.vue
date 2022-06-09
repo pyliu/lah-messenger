@@ -150,27 +150,25 @@ export default {
     this.normalize(this.raw?.message)
   },
   methods: {
-    normalize (raw) {
+    normalize (txt) {
       // keep "給 XXXX" html header in own channel
-      let foundArr = /^<p>給.+<\/p>/igm.exec(raw)
+      let foundArr = /^<p>給.+<\/p>/igm.exec(txt)
       if (foundArr) {
         this.replyHeader = foundArr[0]
-      } else if (foundArr = /^(<p>)?@.+\s\.{3}\s/igm.exec(raw)) {
+      } else if (foundArr = /^(<p>)?@.+\s\.{3}\s/igm.exec(txt)) {
         // keep "@XXX ... " header in chat channel
         this.replyHeader = this.$utils.trimTags(foundArr[0])
       }
+      // restore <br/> to \n
+      this.message = txt?.replaceAll(/<br\s*\/?>/igm, "\n")
       // trim all tags
-      this.message = this.$utils.trimTags(raw)
-      // replace '\\' with '\\\\' for windows smb path
-      this.message = this.message.replaceAll(/\\{2}/igm, '\\\\')
+      this.message = this.$utils.trimTags(this.message)
       // remove reply header
       this.message = this.message.replaceAll(/^給\s+.+\s+/igm, '')
       // add divider for the "@XXX ... "
       this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
       // reduce multiple "\n"
       this.message = this.message.replaceAll(/\n{3,}/igm, "\n\n")
-      // trim string
-      this.message = this.$utils.trim(this.message)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)

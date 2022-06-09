@@ -110,6 +110,7 @@ export default ({ $axios, store }, inject) => {
     uniqBy: _.uniqBy,
     orderBy: _.orderBy,
     remove: _.remove,
+    trim: _.trim,
     md5: _md5,
     /**
      * marked
@@ -180,8 +181,7 @@ export default ({ $axios, store }, inject) => {
     rand (range) {
       return Math.floor(Math.random() * Math.floor(range || 100))
     },
-    trim (x) { return typeof x === 'string' ? x?.replace(/^\s+|\s+$/gm,'') : '' },
-    trimTags (x) { return x?.replace(/(<([^>]+)>)/gi, '') },
+    trimTags (x) { return _.trim(x?.replace(/(<([^>]+)>)/gi, '')) },
     uuid () {
       let d = Date.now()
       if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
