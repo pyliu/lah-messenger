@@ -1086,7 +1086,7 @@ export default {
                   command: 'remove_message',
                   channel: cascade.to,
                   id: cascade.id,
-                  // in my channel, it needs to remove the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
+                  // clean cascade info this time
                   cascade: ''
                 })
               }
