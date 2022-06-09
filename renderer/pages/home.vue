@@ -1342,8 +1342,8 @@ export default {
               }
            */
           this.connectText = json.message;
-          this.connectedUsers.push(payload);
-          this.$utils.uniqBy(this.connectedUsers, 'userid');
+          const found = this.connectedUsers.find(user => user.userid === payload.userid)
+          !found && this.connectedUsers.push(payload);
           break;
         case "user_disconnected":
           this.connectText = json.message;
