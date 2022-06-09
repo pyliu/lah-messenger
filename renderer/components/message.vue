@@ -260,8 +260,7 @@ export default {
     edit () {
       this.modal(this.$createElement(MessageInputEditMessage, {
         props: {
-          raw: this.raw,
-          cascade: this.raw.remove // also pass cascade info
+          raw: this.raw
         },
         on: {
           sent: (payload) => {
@@ -301,7 +300,7 @@ export default {
           channel: this.channel,
           id: this.id,
           // in my channel, it needs to remove the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
-          cascade: this.currentChannel === this.userid && this.raw.flag === 1 ? JSON.parse(this.raw.remove) : ''
+          cascade: this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : ''
         }),
         channel: 'system'
       }

@@ -1071,25 +1071,26 @@ export default {
             if (found_idx > -1) {
               this.messages[json.payload.channel].splice(found_idx, 1);
             }
-            this.warn(json.message);
+            // this.warn(json);
+            // cascade info: { to: 'HAXXXX', id: xxxx }
+            const cascade = json.payload.cascade
             // if found cacade info, also send remove message to server
-            if (json.payload.cascade?.to && json.payload.cascade?.id) {
-              // cascade info: { to: 'HAXXXX', id: xxxx }
-              const info = json.payload.cascade;
-              this.websocket.send(
-                JSON.stringify({
-                  type: "command",
-                  sender: this.adAccount,
-                  date: this.date(),
-                  time: this.time(),
-                  channel: "system",
-                  message: JSON.stringify({
-                    command: "remove_message",
-                    channel: info.to,
-                    id: info.id,
-                  }),
+            if (cascade?.to && cascade?.id) {
+              const json = {
+                type: "command",
+                sender: this.adAccount,
+                date: this.date(),
+                time: this.time(),
+                channel: 'system',
+                message: JSON.stringify({
+                  command: 'remove_message',
+                  channel: cascade.to,
+                  id: cascade.id,
+                  // in my channel, it needs to remove the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
+                  cascade: ''
                 })
-              );
+              }
+              this.websocket.send(JSON.stringify(json));
             }
             // this.notify(`移除訊息成功 (#${json.payload.id})`, { type: 'success' })
           } else {
@@ -1100,6 +1101,7 @@ export default {
           break;
         case "edit_message":
           if (json.success) {
+            // this.warn(json)
             // channel data store in first level payload
             const channel = json.payload.channel
             // the real payload is in 2 levels down
@@ -1111,14 +1113,19 @@ export default {
               if (isAnnouncement) {
                 found.message = { ...payload }
               } else {
+                const cascade = json.payload.cascade
                 found.message = payload.message
                 // if found cacade info, also send edit message to server
                 // cascade info: { to: 'HAXXXX', id: xxxx }
-                const cascadeId = payload.cascade?.id
-                const cascadeChannel = payload.cascade?.to
+                const cascadeId = cascade?.id
+                const cascadeChannel = cascade?.to
                 if (cascadeId && cascadeChannel) {
                   // remove cascade data
-                  delete payload.cascade
+                  delete json.payload.cascade
+                  // clean cascade data in title field
+                  payload.title = 'dontcare'
+                  // remove reply header
+                  payload.message = payload.message.replaceAll(/(<p>)?給.+<hr\/?>/igm, '')
                   this.websocket?.send(
                     JSON.stringify({
                       type: "command",

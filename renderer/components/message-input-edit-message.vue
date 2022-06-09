@@ -81,8 +81,7 @@ export default {
       time: "14:17:37"
       type: "remote"
      */
-    raw: { type: Object, require: true },
-    cascade: { type: String, default: '' }
+    raw: { type: Object, require: true }
   },
   data: () => ({
     realtime: true,
@@ -90,7 +89,8 @@ export default {
     faces: ['😀', '😁', '😂', '😃', '😅', '😆', '👍', '👌'],
     message: '',
     images: [],
-    replyHeader: ''
+    replyHeader: '',
+    cascade: null
   }),
   async fetch () {
     const userSetting = await this.$localForage.getItem('message-input-realtime')
@@ -121,7 +121,8 @@ export default {
         channel: this.to,
         date: this.date(),
         time: this.time(),
-        title: this.cascade,
+        // need to restore the cascade to title field
+        title: this.cascade ? JSON.stringify(this.cascade) : 'dontcare',
         message: this.mergedMessage,
         prepend: false,
         sender: this.userid,
@@ -149,8 +150,9 @@ export default {
     }
   },
   created () {
+    // parse cascade info if needed
+    this.cascade = this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : null
     this.normalize(this.raw?.message)
-    // this.warn(this.raw)
   },
   methods: {
     normalize (txt) {
@@ -237,7 +239,7 @@ export default {
           sender: this.userid,
           payload: this.messageJson,
           // in private channel, it needs to edit the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
-          cascade: this.raw.remove || ''
+          cascade: this.cascade || ''
         },
         channel: 'system'
       }
