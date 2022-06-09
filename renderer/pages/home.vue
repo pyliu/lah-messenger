@@ -564,7 +564,7 @@ export default {
 
       // chatting needs to query online users to show avatar
       if (!this.showUnreadChannels.includes(nVal)) {
-        this.queryChatChannelOnlineClients();
+        this.queryOnlineClients();
       }
       // clear the input UI content
       this.clear();
@@ -1025,6 +1025,7 @@ export default {
       }
       return false;
     },
+    debouncedQueryOnlineClients () { /* placeholder for debounced queryOnlineClients method */},
     async handleAckMessage(json) {
       const cmd = json?.command;
       this.log(
@@ -1329,29 +1330,10 @@ export default {
           }
           break;
         case "user_connected":
-          // payload: { userid, username, ip, dept ... }
-          /** connectedUsers item schema
-           *  { 
-           *    command: "register"
-                dept: "inf"
-                domain: ""
-                ip: "192.168.88.51"
-                timestamp: 1654683589828
-                userid: "HA10013859"
-                username: "測試中"
-              }
-           */
-          this.connectText = json.message;
-          this.connectedUsers.push({
-            command: 'register',
-            timestamp: +new Date(),
-            ...payload
-          });
-          this.$store.commit("connectedUsers", this.$utils.uniqBy(this.connectedUsers, 'userid'));
-          break;
         case "user_disconnected":
+          // payload: { userid, username, ip, dept ... }
           this.connectText = json.message;
-          this.$store.commit("connectedUsers", this.$utils.remove(this.connectedUsers, { userid: payload.userid }));
+          this.debouncedQueryOnlineClients();
           break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);
@@ -1949,6 +1931,9 @@ export default {
     this.$store.commit("windowVisible", !document.hidden);
     this.$root.$on('bv::modal::shown', this.watchModal);
     this.$root.$on('bv::modal::hidden', this.watchModal);
+    // for querying online users
+    this.debouncedQueryOnlineClients = this.$utils.debounce(this.queryOnlineClients, 1000)
+    
   },
   beforeDestroy() {
     // remove timer if user is going to leave the page

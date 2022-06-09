@@ -182,9 +182,9 @@ export default {
     ascending (flag) { this.$localForage.setItem('online-ascending', flag) }
   },
   async created () {
-    this.queryChatChannelOnlineClients()
+    this.queryOnlineClients()
     clearInterval(this.onlineTimer)
-    this.onlineTimer = setInterval(() => this.queryChatChannelOnlineClients(), 5 * 60 * 1000)
+    this.onlineTimer = setInterval(() => this.queryOnlineClients(), 5 * 60 * 1000)
     this.ascending = await this.$localForage.getItem('online-ascending') || false
   },
   beforeDestroy() {

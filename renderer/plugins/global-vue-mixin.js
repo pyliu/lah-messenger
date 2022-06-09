@@ -168,7 +168,7 @@ Vue.mixin({
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)
     },
-    queryChatChannelOnlineClients () {
+    queryOnlineClients () {
       const jsonString = JSON.stringify({
         type: "command",
         sender: this.userid,

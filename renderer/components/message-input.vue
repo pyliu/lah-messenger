@@ -204,7 +204,7 @@ export default {
   },
   created () {
     // to refresh toUsersOpts
-    this.queryChatChannelOnlineClients()
+    this.queryOnlineClients()
   },
   methods: {
     pasted (base64) {
