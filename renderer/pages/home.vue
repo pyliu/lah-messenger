@@ -1347,7 +1347,18 @@ export default {
           break;
         case "user_disconnected":
           this.connectText = json.message;
-          this.$utils.remove(this.connectedUsers, { userid: payload.userid });
+          let foundIdx = -1;
+          this.connectedUsers.find((user, idx) => {
+            const found = user.userid === payload.userid
+            if (found) {
+              foundIdx = idx
+            }
+            return found
+          })
+          if (foundIdx > -1) {
+            this.connectedUsers.splice(foundIdx, 1)
+          }
+          // this.$utils.remove(this.connectedUsers, { userid: payload.userid });
           break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);
