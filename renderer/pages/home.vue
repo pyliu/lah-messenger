@@ -1184,14 +1184,13 @@ export default {
               userName,
               ""
             );
-            const md = this.$utils.convertMarkd(`${json.payload.message}`);
             const remove = JSON.stringify({
               to: insertedChannel,
               id: insertedId,
             });
             // add sent message to my channel
             this.websocket.send(
-              this.packMessage(`${toHeader}\n${md}`, {
+              this.packMessage(`${toHeader}\n${json.payload.message}`, {
                 channel: this.adAccount,
                 title: remove, // use title field to store inserted info for now
                 priority: 4,

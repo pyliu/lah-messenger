@@ -120,6 +120,7 @@ export default {
         channel: this.to,
         date: this.date(),
         time: this.time(),
+        title: this.raw?.title,
         message: this.mergedMessage,
         prepend: false,
         sender: this.userid,
