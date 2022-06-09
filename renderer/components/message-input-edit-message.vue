@@ -81,7 +81,8 @@ export default {
       time: "14:17:37"
       type: "remote"
      */
-    raw: { type: Object, require: true }
+    raw: { type: Object, require: true },
+    cascade: { type: String, default: '' }
   },
   data: () => ({
     realtime: true,
@@ -120,7 +121,7 @@ export default {
         channel: this.to,
         date: this.date(),
         time: this.time(),
-        title: this.raw?.title,
+        title: this.cascade,
         message: this.mergedMessage,
         prepend: false,
         sender: this.userid,
@@ -149,6 +150,7 @@ export default {
   },
   created () {
     this.normalize(this.raw?.message)
+    // this.warn(this.raw)
   },
   methods: {
     normalize (txt) {

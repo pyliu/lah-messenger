@@ -261,6 +261,7 @@ export default {
       this.modal(this.$createElement(MessageInputEditMessage, {
         props: {
           raw: this.raw,
+          cascade: this.raw.remove // also pass cascade info
         },
         on: {
           sent: (payload) => {
