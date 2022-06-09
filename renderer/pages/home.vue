@@ -1330,16 +1330,16 @@ export default {
           }
           break;
         case "user_connected":
-          /** connectedUsers item schema
-              { 
-                command: "register"
-                dept: "inf"
-                domain: ""
-                ip: "192.168.88.51"
-                timestamp: 1654683589828
-                userid: "HA10013859"
-                username: "測試中"
-              }
+          /* connectedUsers item schema
+            { 
+              command: "register"
+              dept: "inf"
+              domain: ""
+              ip: "192.168.88.51"
+              timestamp: 1654683589828
+              userid: "HA10013859"
+              username: "測試中"
+            }
            */
           this.connectText = json.message;
           const found = this.connectedUsers.find(user => user.userid === payload.userid)
