@@ -1342,28 +1342,16 @@ export default {
               }
            */
           this.connectText = json.message;
-          if (!this.connectedUsers.find(user => user.userid === payload.userid)) {
-            this.$store.commit("connectedUsers", [...this.connectedUsers, {
-              command: 'register',
-              timestamp: +new Date(),
-              ...payload
-            }]);
-          }
+          this.connectedUsers.push({
+            command: 'register',
+            timestamp: +new Date(),
+            ...payload
+          });
+          this.$store.commit("connectedUsers", this.$utils.uniqBy(this.connectedUsers, 'userid'));
           break;
         case "user_disconnected":
           this.connectText = json.message;
-          let found_idx = -1
-          const tmp_users2 = [...this.connectedUsers]
-          tmp_users2.find((user, idx) => {
-            if (user.userid === payload.userid) {
-              found_idx = idx
-            }
-            return user.userid === payload.userid
-          })
-          if (found_idx > -1) {
-            tmp_users2.splice(found_idx, 1)
-            this.$store.commit("connectedUsers", tmp_users2);
-          }
+          this.$store.commit("connectedUsers", this.$utils.remove(this.connectedUsers, { userid: payload.userid }));
           break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);

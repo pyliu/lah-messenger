@@ -109,6 +109,7 @@ export default ({ $axios, store }, inject) => {
     debounce: _.debounce, // _.debounce(func, wait, options)
     uniqBy: _.uniqBy,
     orderBy: _.orderBy,
+    remove: _.remove,
     md5: _md5,
     /**
      * marked
