@@ -1330,10 +1330,24 @@ export default {
           }
           break;
         case "user_connected":
-        case "user_disconnected":
-          // payload: { userid, username, ip, dept ... }
+          /** connectedUsers item schema
+              { 
+                command: "register"
+                dept: "inf"
+                domain: ""
+                ip: "192.168.88.51"
+                timestamp: 1654683589828
+                userid: "HA10013859"
+                username: "測試中"
+              }
+           */
           this.connectText = json.message;
-          this.debouncedQueryOnlineClients();
+          this.connectedUsers.push(payload);
+          this.$utils.uniqBy(this.connectedUsers, 'userid');
+          break;
+        case "user_disconnected":
+          this.connectText = json.message;
+          this.$utils.remove(this.connectedUsers, { userid: payload.userid });
           break;
         default:
           this.log(this.time(), `未支援的命令 ${cmd}`, json);

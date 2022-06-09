@@ -78,7 +78,8 @@ export default {
         { text: '主任祕書室', users: [] },
         { text: '無歸屬', users: [] }
       ]
-      this.connectedUsers?.forEach(user => {
+      for (let i = 0; i < this.connectedUsersCount; i++) {
+        const user = this.connectedUsers[i]
         if (
           this.$utils.empty(keyword) ||
           user.userid?.includes(keyword) ||
@@ -113,61 +114,13 @@ export default {
               filter[8].users.push(user)
           }
         }
-      });
+      }
       return filter.sort((a, b) => {
         if (a.users.length > b.users.length) { return this.ascending ? 1 : -1 }
         if (a.users.length < b.users.length) { return this.ascending ? -1: 1 }
         return 0
       })
     },
-    // onlineUsersByDept () {
-    //   const filter = [
-    //     { text: '資訊課', users: [] },
-    //     { text: '登記課', users: [] },
-    //     { text: '地價課', users: [] },
-    //     { text: '測量課', users: [] },
-    //     { text: '行政課', users: [] },
-    //     { text: '人事室', users: [] },
-    //     { text: '會計室', users: [] },
-    //     { text: '主任祕書室', users: [] },
-    //     { text: '無歸屬', users: [] }
-    //   ]
-    //   this.connectedUsers?.forEach(user => {
-    //     switch (user?.dept) {
-    //       case 'inf':
-    //         filter[0].users.push(user)
-    //         break
-    //       case 'reg':
-    //         filter[1].users.push(user)
-    //         break
-    //       case 'val':
-    //         filter[2].users.push(user)
-    //         break
-    //       case 'sur':
-    //         filter[3].users.push(user)
-    //         break
-    //       case 'adm':
-    //         filter[4].users.push(user)
-    //         break
-    //       case 'hr':
-    //         filter[5].users.push(user)
-    //         break
-    //       case 'acc':
-    //         filter[6].users.push(user)
-    //         break
-    //       case 'supervisor':
-    //         filter[7].users.push(user)
-    //         break
-    //       default:
-    //         filter[8].users.push(user)
-    //     }
-    //   });
-    //   return filter.sort((a, b) => {
-    //     if (a.users.length > b.users.length) { return this.ascending ? 1 : -1 }
-    //     if (a.users.length < b.users.length) { return this.ascending ? -1: 1 }
-    //     return 0
-    //   })
-    // },
     connectedUsersBadgeVariant () {
       if (this.connectedUsersCount > 100) {
         return 'danger'
