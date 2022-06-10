@@ -15,7 +15,6 @@
       v-if="['remote'].includes(type) || isAnnouncement"
       :src="isAnnouncement ? '/tyland.jpg' : this.avatarSrc"
       size="1.25rem"
-      variant="primary"
       button
     )
     span.mr-1 {{ sender }} 💬
@@ -33,10 +32,12 @@
         v-if="['remote'].includes(type) || isAnnouncement"
         :src="this.messageToavatarSrc"
         size="1.25rem"
-        variant="primary"
         button
       )
-  .d-flex.msg-item.my-1(:class="classes")
+  .d-flex.msg-item.my-1(
+    :class="classes"
+    style="min-height: 36px"
+  )
 
     //- special card message for announcement
     announcement-card(
@@ -50,7 +51,10 @@
     p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
 
     //- timestamp for the message
-    .time.s-60.mx-1.text-muted.text-right(v-if="!system && !isAnnouncement")
+    .time.s-60.mx-1.text-muted.text-right(
+      v-if="!system && !isAnnouncement"
+      :class="myMessage ? ['mb-n1'] : []"
+    )
       .d-flex.align-items-center.justify-content-end(v-if="!preview")
         b-icon.clickableIcon(
           v-if="isAdmin || messageRemovable"
@@ -86,7 +90,12 @@
         div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
     //- my message
-    p(ref="myMessage" v-if="myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
+    p(
+      v-if="myMessage"
+      ref="myMessage"
+      v-html="message"
+      @click="$utils.handleSpecialClick($event)"
+    )
 
 </template>
 
