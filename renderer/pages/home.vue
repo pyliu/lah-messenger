@@ -1125,7 +1125,7 @@ export default {
                   // clean cascade data in title field
                   payload.title = 'dontcare'
                   // remove reply header
-                  payload.message = payload.message.replaceAll(/(<p>)?給.+<hr\/?>/igm, '')
+                  payload.message = payload.message.replaceAll(/(<p>)?給.+?(<\/p>)?<hr\/?>/igm, '')
                   this.websocket?.send(
                     JSON.stringify({
                       type: "command",
