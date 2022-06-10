@@ -175,6 +175,8 @@ export default {
       this.content = this.content.replaceAll(/\n{3,}/igm, "\n\n")
       // trim all tags
       this.content = this.$utils.trimTags(this.content)
+      // trim message
+      this.content = this.$utils.trim(this.content)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)

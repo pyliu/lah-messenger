@@ -170,10 +170,14 @@ export default {
       this.message = txt?.replaceAll(/<br\s*\/?>/igm, "\n")
       // trim all tags
       this.message = this.$utils.trimTags(this.message)
-      // add divider for the "@XXX ... "
-      this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
+      // remove "給 XXX ... "
+      this.message = this.message.replaceAll(/^給\s*.+\n+?/igm, '')
+      // remove "@XXX ... " header
+      this.message = this.message.replaceAll(/^@.+\s\.{3}\s\n+?/igm, '')
       // reduce multiple "\n"
       this.message = this.message.replaceAll(/\n{3,}/igm, "\n\n")
+      // trim message
+      this.message = this.$utils.trim(this.message)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
