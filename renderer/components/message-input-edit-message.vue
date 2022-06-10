@@ -130,7 +130,9 @@ export default {
       }
     },
     previewMessage () {
-      return this.$utils.convertInlineMarkd(this.$utils.convertMarkd(this.mergedMessage.replaceAll("\n***\n", '<hr/>')))
+      return this.$utils.convertInlineMarkd(
+        this.$utils.convertMarkd(this.mergedMessage)
+      ).replaceAll(/(<br\/?>)?<hr\/?>(<br\/?>)?/igm, '<hr/>')
     },
     previewJson () {
       return {
