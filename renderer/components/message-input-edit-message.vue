@@ -157,9 +157,11 @@ export default {
   methods: {
     normalize (txt) {
       // keep "給 XXXX" html header in own channel
-      let foundArr = /^<p>給.+<\/p>/igm.exec(txt)
+      let foundArr = /^(<p>)?給.+?(<\/p>)?<hr\/?>/igm.exec(txt)
       if (foundArr) {
         this.replyHeader = foundArr[0]
+        // remove reply header
+        txt = txt.replace(this.replyHeader, '')
       } else if (foundArr = /^(<p>)?@.+\s\.{3}\s/igm.exec(txt)) {
         // keep "@XXX ... " header in chat channel
         this.replyHeader = this.$utils.trimTags(foundArr[0])
@@ -168,8 +170,6 @@ export default {
       this.message = txt?.replaceAll(/<br\s*\/?>/igm, "\n")
       // trim all tags
       this.message = this.$utils.trimTags(this.message)
-      // remove reply header
-      this.message = this.message.replaceAll(/^給\s+.+\s+/igm, '')
       // add divider for the "@XXX ... "
       this.message = this.message.replaceAll(/^@.+\s\.{3}\s/igm, '')
       // reduce multiple "\n"
