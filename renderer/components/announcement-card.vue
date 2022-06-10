@@ -82,7 +82,7 @@ export default {
         return ''
       }
       let markd = this.$utils.convertMarkd(this.dataJson.content)
-      if (/!\[.+\]\(.+\)/gm.test(markd)) {
+      if (/!\[.+\]\(.+\)/igm.test(markd)) {
         markd = this.$utils.convertInlineMarkd(markd)
       }
       // add open-os-explorer class for the file path uri
