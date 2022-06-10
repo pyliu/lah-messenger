@@ -123,7 +123,7 @@ export default {
     type() { return this.raw?.type },
     message() {
       const markd = this.$utils.emojify(this.$utils.convertMarkd(this.raw?.message))
-      if (/!\[\.+\]\(\.+\)/gm.test(markd)) {
+      if (/!\[.+\]\(.+\)/igm.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
       // add open-os-explorer class for the file path uri
