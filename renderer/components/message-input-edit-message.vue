@@ -157,7 +157,7 @@ export default {
   methods: {
     normalize (txt) {
       // keep "給 XXXX" html header in own channel
-      let foundArr = /^(<p>)?給.+?(<\/p>)?<hr\/?>/igm.exec(txt)
+      let foundArr = /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm.exec(txt)
       if (foundArr) {
         this.replyHeader = foundArr[0]
         // remove reply header
