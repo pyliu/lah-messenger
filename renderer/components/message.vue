@@ -7,7 +7,7 @@
 
   .s-75.font-weight-bold.align-middle(
     v-if="!myMessage && !system"
-    @click="avatarClick($event)"
+    @click="remoteAvatarClick($event)"
     :style="{ cursor: 'pointer' }"
     title="顯示使用者卡片"
   )
@@ -18,9 +18,24 @@
       variant="primary"
       button
     )
-    span.mr-1 {{ sender }}
+    span.mr-1 {{ sender }} 💬
     em {{ from }}
 
+  //- show to header
+  .d-flex.justify-content-end(v-if="messageTo")
+    .s-75.font-weight-bold.align-middle(
+      :style="{ cursor: 'pointer' }"
+      :title="`訊息送給${messageTo.name}`"
+      @click="mineAvatarClick($event)"
+    )
+      span.mr-1 📧 {{ messageTo.name }}
+      b-avatar.my-auto(
+        v-if="['remote'].includes(type) || isAnnouncement"
+        :src="this.messageToavatarSrc"
+        size="1.25rem"
+        variant="primary"
+        button
+      )
   .d-flex.msg-item.my-1(:class="classes")
 
     //- special card message for announcement
@@ -113,29 +128,55 @@ export default {
     isCascadeMessage () { return (this.raw.flag & 1) === 1 && typeof this.cascadeInfo === 'object' },
     isRead () { return (this.raw.flag & 2) === 2 },
     announcementPayload () { return this.raw?.message },
-    isAnnouncement() { return typeof this.announcementPayload === 'object' },
+    isAnnouncement () { return typeof this.announcementPayload === 'object' },
     myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
-    showMdate() { return this.prevMdate !== this.mdate },
-    isMyChannel() { return this.currentChannel === this.userid },
-    myMessage() { return this.userid === this.senderId },
-    system() { return 'system' === this.sender },
-    id() { return this.raw?.id },
-    type() { return this.raw?.type },
-    message() {
-      const markd = this.$utils.emojify(this.$utils.convertMarkd(this.raw?.message))
+    showMdate () { return this.prevMdate !== this.mdate },
+    isMyChannel () { return this.currentChannel === this.userid },
+    myMessage () { return this.userid === this.senderId },
+    system () { return 'system' === this.sender },
+    id () { return this.raw?.id },
+    type () { return this.raw?.type },
+    messageToRawTxt () {
+      if (!this.isAnnouncement) {
+        const foundArr = /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm.exec(this.raw?.message)
+        if (foundArr) {
+          return foundArr[0]
+        }
+      }
+      return undefined
+    },
+    messageTo () {
+      const foundArr = /id=(\w+)_avatar&name=(.+)_avatar/igm.exec(this.messageToRawTxt)
+      if (foundArr) {
+        return {
+          id: foundArr[1],
+          name: foundArr[2]
+        }
+      }
+      return undefined
+    },
+    messageToavatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.messageTo?.id}_avatar&name=${this.messageTo?.name}_avatar` },
+    cleanRawMessage () {
+      if (this.messageToRawTxt) {
+        return this.raw?.message.replace(this.messageToRawTxt, '')
+      }
+      return this.raw?.message
+    },
+    message () {
+      const markd = this.$utils.emojify(this.$utils.convertMarkd(this.cleanRawMessage))
       if (/!\[.+\]\(.+\)/igm.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
       // add open-os-explorer class for the file path uri
       return this.$utils.replaceFilepath(markd)
     },
-    senderId() { return this.raw?.sender },
-    sender() { return this.userMap[this.senderId] || this.senderId },
-    from() { return this.raw?.ip },
-    mtime() { return this.raw?.time },
+    senderId () { return this.raw?.sender },
+    sender () { return this.userMap[this.senderId] || this.senderId },
+    from () { return this.raw?.ip },
+    mtime () { return this.raw?.time },
     timeDistance() { return this.$utils.formatDistanceToNow(+new Date(`${this.raw.date} ${this.raw.time}`)) },
-    channel() { return this.raw?.channel },
-    prevMdate() {
+    channel () { return this.raw?.channel },
+    prevMdate () {
       if (this.prev) {
         // announcement card date is inside the message
         if (this.isAnnouncement) {
@@ -145,14 +186,14 @@ export default {
       }
       return ''
     },
-    mdate() {
+    mdate () {
       // announcement card date is inside the message
       if (this.isAnnouncement) {
         return this.raw?.message?.create_datetime?.split(' ')[0]
       }
       return this.raw?.date
     },
-    classes() {
+    classes () {
       return [
         this.myMessage ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
         this.myMessage ? 'mine' : this.system ? 'system' : '',
@@ -229,7 +270,7 @@ export default {
         this.timeout(() => this.checkReadCommand(), 20000)
       }
     },
-    avatarClick (event) {
+    remoteAvatarClick (event) {
       event.stopPropagation()
       this.modal(this.$createElement(UserCard, {
         props: {
@@ -238,6 +279,18 @@ export default {
         }
       }), {
         title: `${this.sender}`,
+        size: 'xl'
+      })
+    },
+    mineAvatarClick (event) {
+      event.stopPropagation()
+      this.modal(this.$createElement(UserCard, {
+        props: {
+          id: this.messageTo?.id,
+          name: this.messageTo?.name
+        }
+      }), {
+        title: `${this.messageTo?.name}`,
         size: 'xl'
       })
     },
@@ -267,7 +320,7 @@ export default {
             this.hideModalById('message-edit-modal')
             // to tell outter board removing this message in the list
             this.$emit('edit', payload)
-            console.warn(payload)
+            this.warn(payload)
           }
         }
       }), {
