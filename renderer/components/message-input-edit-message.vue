@@ -106,7 +106,7 @@ export default {
     toName () { return this.userMap[this.toUser] || this.toUser },
     modalTitle () { return `傳送圖片給 ${this.toName}` },
     mergedMessage () {
-      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}<hr/>${this.message}`
+      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}${this.replyHeader.includes('<hr') ? "\n" : '<hr/>'}${this.message}`
       if (this.empty(this.images)) {
         return merged
       }
