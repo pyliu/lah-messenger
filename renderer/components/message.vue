@@ -147,7 +147,7 @@ export default {
     type () { return this.raw?.type },
     messageToRawTxt () {
       if (!this.isAnnouncement) {
-        const foundArr = /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm.exec(this.raw?.message)
+        const foundArr = this.regexpReplyHeader.exec(this.raw?.message)
         if (foundArr) {
           return foundArr[0]
         }
@@ -173,7 +173,7 @@ export default {
     },
     message () {
       const markd = this.$utils.emojify(this.$utils.convertMarkd(this.cleanRawMessage))
-      if (/!\[.+\]\(.+\)/igm.test(markd)) {
+      if (this.regexpMarkdImage.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
       // add open-os-explorer class for the file path uri

@@ -1122,10 +1122,6 @@ export default {
                 if (cascadeId && cascadeChannel) {
                   // remove cascade data
                   delete json.payload.cascade
-                  // clean cascade data in title field
-                  payload.title = 'dontcare'
-                  // remove reply header
-                  payload.message = payload.message.replaceAll(/(<p>)?給.+?(<\/p>)?<hr\/?>/igm, '')
                   this.websocket?.send(
                     JSON.stringify({
                       type: "command",
@@ -1141,7 +1137,11 @@ export default {
                           ...payload,
                           id: cascadeId,
                           channel: cascadeChannel,
-                          sender: this.userid
+                          sender: this.userid,
+                          // clean cascade data in title field
+                          title: 'dontcare',
+                          // remove reply header
+                          message: payload.message.replaceAll(this.regexpReplyHeader, '')
                         }
                       },
                       channel: 'system'

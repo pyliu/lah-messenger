@@ -130,9 +130,11 @@ export default {
       }
     },
     previewMessage () {
-      return this.$utils.convertInlineMarkd(
-        this.$utils.convertMarkd(this.mergedMessage)
-      ).replaceAll(/(<br\/?>)?<hr\/?>(<br\/?>)?/igm, '<hr/>')
+      const markd = this.$utils.convertMarkd(this.mergedMessage)
+      if (this.regexpMarkdImage.test(markd)) {
+        return this.$utils.convertMarkd(markd).replaceAll(/(<br\/?>)?<hr\/?>(<br\/?>)?/igm, '<hr/>')
+      }
+      return markd
     },
     previewJson () {
       return {
@@ -159,7 +161,7 @@ export default {
   methods: {
     normalize (txt) {
       // keep "給 XXXX" html header in own channel
-      let foundArr = /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm.exec(txt)
+      let foundArr = this.regexpReplyHeader.exec(txt)
       if (foundArr) {
         this.replyHeader = foundArr[0]
         // remove reply header

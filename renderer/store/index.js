@@ -221,7 +221,10 @@ const getters = {
   lastModalId: state => state.lastModalId,
 
   tySvrIp: state => state.tySvrIp,
-  userDataCacheDuration: state => 12 * 60 * 60 * 1000
+  userDataCacheDuration: state => 12 * 60 * 60 * 1000,
+
+  regexpMarkdImage: state => /!\[.+\]\(.+\)/igm,
+  regexpReplyHeader: state => /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm
 }
 
 // only sync operation
