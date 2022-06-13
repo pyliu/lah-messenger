@@ -155,6 +155,12 @@ export default {
       return undefined
     },
     messageTo () {
+      if (this.cascadeInfo) {
+        return {
+          id: this.cascadeInfo.to,
+          name: this.userMap[this.cascadeInfo.to]
+        }
+      }
       const foundArr = /id=(\w+)_avatar&name=(.+)_avatar/igm.exec(this.messageToRawTxt)
       if (foundArr) {
         return {
