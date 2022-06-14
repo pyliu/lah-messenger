@@ -216,13 +216,6 @@ Vue.mixin({
         ("0" + now.getSeconds()).slice(-2)
       return time
     },
-    packReplyHeader(to, name, preview) {
-      if (this.empty(name)) {
-        name = this.userMap[to]
-      }
-      const avatar = `<span class="b-avatar-img"><img src="${this.apiQueryUrl}/get_user_img.php?id=${to}_avatar&name=${name}_avatar" alt="avatar" class="avatar mt-n1"></span>`
-      return `給 ${avatar} ${name} ${this.empty(preview) ? '' : `- ${preview}`}\n***\n`
-    },
     packMessage(text, opts = {}) {
       return JSON.stringify({
         ...{

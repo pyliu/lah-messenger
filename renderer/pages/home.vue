@@ -1180,24 +1180,18 @@ export default {
         case "private_message":
           const insertedId = json.payload.insertedId;
           const insertedChannel = json.payload.channel;
-          const userName = this.userMap[insertedChannel] || insertedChannel;
           if (
             insertedChannel !== this.adAccount &&
             !insertedChannel?.startsWith("announcement") &&
             !this.chatRooms.includes(insertedChannel)
           ) {
-            const toHeader = this.packReplyHeader(
-              insertedChannel,
-              userName,
-              ""
-            );
             const remove = JSON.stringify({
               to: insertedChannel,
               id: insertedId,
             });
             // add sent message to my channel
             this.websocket.send(
-              this.packMessage(`${toHeader}\n${json.payload.message}`, {
+              this.packMessage(json.payload.message, {
                 channel: this.adAccount,
                 title: remove, // use title field to store inserted info for now
                 priority: 4,
