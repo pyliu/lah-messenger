@@ -114,7 +114,7 @@ export default {
       date: "2021-10-19"
       flag: 3
       id: 152
-      message: "<p>給 <span class="b-avatar-img"><img src="http://XXX.XXX.XXX.XXX:XX/get_user_img.php?id=HAXXXXXX_avatar&name=XXX_avatar" alt="avatar" class="avatar mt-n1"></span> XXX  <hr style="margin:5px"/></p>↵<h3 id="-z-1101019-">👉 ... </h3>"
+      message: "<h3 id="-z-1101019-">👉 ... </h3>"
       prepend: false
       remove: "{"to":"HA03XXXX","id":13}"
       sender: "HA1001XXXX"
