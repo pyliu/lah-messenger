@@ -142,6 +142,7 @@ div: client-only
         span.text-white.font-weight-bold 預覽
         message.my-message(
           :raw="messagePreviewJson",
+          :preview="true",
           style="opacity: 1 !important"
         )
       lah-transition(fade): .float-emoji(v-if="emoji")
