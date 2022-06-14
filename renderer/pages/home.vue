@@ -143,7 +143,7 @@ div: client-only
         message.my-message(
           :raw="messagePreviewJson",
           :preview="true",
-          style="opacity: 1 !important"
+          style="opacity: 1 !important; z-index: 1001;"
         )
       lah-transition(fade): .float-emoji(v-if="emoji")
         emoji-pickup(@click="addEmoji")
@@ -1997,7 +1997,7 @@ export default {
   top: 0.55rem;
 }
 .float-preview {
-  z-index: 1001;
+  z-index: 1002;
   position: absolute;
   top: -80px;
   opacity: 0.85;
