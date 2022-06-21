@@ -326,10 +326,16 @@ export default ({ $axios, store }, inject) => {
       ).replace(/(\^{2}o|o\^{2})/igm, '')
     },
     highlightTimestamp (str, css = 'text-bold-blue') {
-      // [^a-z0-9+\/\-\(\)]
       return this.highlight(
         str,
-        /(\s[0-2]?[0-9][:：][0-5]?[0-9]\s|\s[0-1]?[0-9][\/／][0-3]?[0-9]\s|[0-2]?[0-9][:：][0-5]?[0-9]\s?[\-~]\s?[0-2]?[0-9][:：][0-5]?[0-9]|[0-1]?[0-9][\/／][0-3]?[0-9]\s?[\-~]\s?[0-1]?[0-9][\/／][0-3]?[0-9])/i,
+        /([0-2]?[0-9]：[0-5]?[0-9]|\s[0-2]?[0-9]:[0-5]?[0-9]\s|\([0-1]?[0-9]\/[0-3]?[0-9].*?\)|[0-1]?[0-9][／月][0-3]?[0-9]日?|\s[0-1]?[0-9][\/／][0-3]?[0-9]\s|[0-2]?[0-9][:：][0-5]?[0-9]\s?[\-~]\s?[0-2]?[0-9][:：][0-5]?[0-9]|[0-1]?[0-9][\/／][0-3]?[0-9]\s?[\-~]\s?[0-1]?[0-9][\/／][0-3]?[0-9])/i,
+        css
+      )
+    },
+    highlightTitle (str, css = 'font-weight-bold') {
+      return this.highlight(
+        str,
+        /([「"'（【《『〈〉].*?[』》】）'"」])/i,
         css
       )
     },
@@ -339,6 +345,7 @@ export default ({ $axios, store }, inject) => {
         tmp = this.highlightRed(tmp)
         tmp = this.highlightOrange(tmp)
         tmp = this.highlightGreen(tmp)
+        tmp = this.highlightTitle(tmp)
         tmp = this.highlightTimestamp(tmp)
         return tmp
       }
