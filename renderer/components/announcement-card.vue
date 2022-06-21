@@ -81,7 +81,8 @@ export default {
       if (this.$utils.empty(this.dataJson.content)) {
         return ''
       }
-      let markd = this.$utils.convertMarkd(this.dataJson.content)
+      const highlighted = this.$utils.highlightPipeline(this.dataJson.content)
+      let markd = this.$utils.convertMarkd(highlighted)
       if (this.regexpMarkdImage.test(markd)) {
         markd = this.$utils.convertInlineMarkd(markd)
       }

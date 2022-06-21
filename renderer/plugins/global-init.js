@@ -14,6 +14,8 @@ marked.setOptions({
   sanitizer: DOMPurify.sanitize
 })
 
+import highlightWords from 'highlight-words'
+
 export default ({ $axios, store }, inject) => {
   // global const variables, use this.$consts.xxxx to access them in Vue
   const consts = {
@@ -279,13 +281,68 @@ export default ({ $axios, store }, inject) => {
       return chinese.replace(/[^\x00-\xFF]/g, 'xx').length
     },
     replaceFilepath (str) {
-      // str = str?.replace('<br/>', '\n')
-      // return str?.replace(/(([c-z]:\\|\\\\)[^\s\r\n\t]+(\\(.+\.[a-z]{1,4})?))/igm, token => {
-      //   return `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">${token}</span>`
-      // })
-      const regex = /(([c-z]:\\|\\\\)[^<>:"/|?*\n\r\t]+(\\(.+\.[a-z]{1,4})?))/gim
+      const regex = /(([c-z]:\\|\\\\)[^<>:"\/|?*\n\r\t]+(\\(.+\.[a-z]{1,4})?))/gim
       const subst = `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">$1</span>`
       return str?.replace(regex, subst)
+    },
+    highlight (str, regex, css, title = "") {
+      const chunks = highlightWords({
+        text: str,
+        query: regex
+      })
+      if (chunks) {
+        return chunks.map(({ text, match, key }) => {
+          return match ? (`<span class="${css}" title="${title}" key="${key}">${text}</span>`) : text
+        }).join('')
+      }
+      return str
+    },
+    highlightBlue (str) {
+      return this.highlight(
+        str,
+        /(\^{2}b.+b\^{2})/,
+        'text-bold-blue'
+      ).replace(/(\^{2}b|b\^{2})/igm, '')
+    },
+    highlightRed (str) {
+      return this.highlight(
+        str,
+        /(\^{2}r.+r\^{2})/,
+        'text-bold-red'
+      ).replace(/(\^{2}r|r\^{2})/igm, '')
+    },
+    highlightGreen (str) {
+      return this.highlight(
+        str,
+        /(\^{2}g.+g\^{2})/,
+        'text-bold-green'
+      ).replace(/(\^{2}g|g\^{2})/igm, '')
+    },
+    highlightOrange (str) {
+      return this.highlight(
+        str,
+        /(\^{2}o.+o\^{2})/,
+        'text-bold-orange'
+      ).replace(/(\^{2}o|o\^{2})/igm, '')
+    },
+    highlightTimestamp (str, css = 'text-bold-blue') {
+      // [^a-z0-9+\/\-\(\)]
+      return this.highlight(
+        str,
+        /(\s[0-2]?[0-9][:：][0-5]?[0-9]\s|\s[0-1]?[0-9][\/／][0-3]?[0-9]\s|[0-2]?[0-9][:：][0-5]?[0-9]\s?[\-~]\s?[0-2]?[0-9][:：][0-5]?[0-9]|[0-1]?[0-9][\/／][0-3]?[0-9]\s?[\-~]\s?[0-1]?[0-9][\/／][0-3]?[0-9])/i,
+        css
+      )
+    },
+    highlightPipeline(str) {
+      if (str) {
+        let tmp = this.highlightBlue(str)
+        tmp = this.highlightRed(tmp)
+        tmp = this.highlightOrange(tmp)
+        tmp = this.highlightGreen(tmp)
+        tmp = this.highlightTimestamp(tmp)
+        return tmp
+      }
+      return str
     },
     handleSpecialClick (event) {
       const element = event.target

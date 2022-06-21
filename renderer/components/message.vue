@@ -178,7 +178,8 @@ export default {
       return this.raw?.message
     },
     message () {
-      const markd = this.$utils.emojify(this.$utils.convertMarkd(this.cleanRawMessage))
+      const highlighted = this.$utils.highlightPipeline(this.cleanRawMessage)
+      const markd = this.$utils.emojify(this.$utils.convertMarkd(highlighted))
       if (this.regexpMarkdImage.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
