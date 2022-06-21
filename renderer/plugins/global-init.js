@@ -108,6 +108,7 @@ export default ({ $axios, store }, inject) => {
     _,
     empty: _.isEmpty, // '0' is not empty
     equal: _.isEqual,
+    escape: _.escape,
     debounce: _.debounce, // _.debounce(func, wait, options)
     uniqBy: _.uniqBy,
     orderBy: _.orderBy,
@@ -292,7 +293,7 @@ export default ({ $axios, store }, inject) => {
       })
       if (chunks) {
         return chunks.map(({ text, match, key }) => {
-          return match ? (`<span class="${css}" title="${title}" key="${key}">${text}</span>`) : text
+          return match ? (`<span class="${this.escape(css)}" title="${this.escape(title)}" key="${key}">${text}</span>`) : text
         }).join('')
       }
       return str
@@ -300,30 +301,30 @@ export default ({ $axios, store }, inject) => {
     highlightBlue (str) {
       return this.highlight(
         str,
-        /(\^{2}b.+b\^{2})/,
+        /(@@b.+?b@@)/igm,
         'text-bold-blue'
-      ).replace(/(\^{2}b|b\^{2})/igm, '')
+      ).replace(/(@@b|b@@)/igm, '')
     },
     highlightRed (str) {
       return this.highlight(
         str,
-        /(\^{2}r.+r\^{2})/,
+        /(@@r.+?r@@)/,
         'text-bold-red'
-      ).replace(/(\^{2}r|r\^{2})/igm, '')
+      ).replace(/(@@r|r@@)/igm, '')
     },
     highlightGreen (str) {
       return this.highlight(
         str,
-        /(\^{2}g.+g\^{2})/,
+        /(@@g.+?g@@)/,
         'text-bold-green'
-      ).replace(/(\^{2}g|g\^{2})/igm, '')
+      ).replace(/(@@g|g@@)/igm, '')
     },
     highlightOrange (str) {
       return this.highlight(
         str,
-        /(\^{2}o.+o\^{2})/,
+        /(@@o.+?o@@)/,
         'text-bold-orange'
-      ).replace(/(\^{2}o|o\^{2})/igm, '')
+      ).replace(/(@@o|o@@)/igm, '')
     },
     highlightTimestamp (str, css = 'text-bold-blue') {
       return this.highlight(
@@ -335,7 +336,7 @@ export default ({ $axios, store }, inject) => {
     highlightTitle (str, css = 'font-weight-bold') {
       return this.highlight(
         str,
-        /([「"'（【《『〈〉].*?[』》】）'"」])/i,
+        /(['「（【《『〈].+?[〉』》】）」'])/i,
         css
       )
     },
@@ -345,8 +346,8 @@ export default ({ $axios, store }, inject) => {
         tmp = this.highlightRed(tmp)
         tmp = this.highlightOrange(tmp)
         tmp = this.highlightGreen(tmp)
-        tmp = this.highlightTitle(tmp)
         tmp = this.highlightTimestamp(tmp)
+        tmp = this.highlightTitle(tmp)
         return tmp
       }
       return str
