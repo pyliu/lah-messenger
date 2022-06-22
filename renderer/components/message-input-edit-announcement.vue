@@ -39,12 +39,17 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         variant="outline-success"
         title="附加圖片"
       ): b-icon(icon="images")
-      b-button(
+      b-button.mr-1(
         @click="send"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
         title="送出"
       ): b-icon(icon="cursor" rotate="45")
+      b-button(
+        @click="help"
+        variant="success"
+        title="顯示語法說明"
+      ): b-icon(icon="question-circle-fill")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -74,13 +79,15 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 <script>
 import ImageUpload from '~/components/image-upload.vue'
 import AnnouncementCard from '~/components/announcement-card.vue'
+import Help from '~/components/help.vue'
 
 export default {
   name: 'MessageInputEditAnnouncement',
   components: {
     ImageUpload: () => import('~/components/image-upload.vue'),
     // to fix recursive component import
-    AnnouncementCard: () => import('~/components/announcement-card.vue')
+    AnnouncementCard: () => import('~/components/announcement-card.vue'),
+    Help
   },
   props: {
     /**
@@ -257,6 +264,12 @@ export default {
       if (index > -1) {
         this.images.splice(index, 1)
       }
+    },
+    help () {
+      this.modal(this.$createElement(Help), {
+        size: 'xl',
+        title: `進階編輯語法說明`
+      })
     }
   }
 }
