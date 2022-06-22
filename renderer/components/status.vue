@@ -12,6 +12,7 @@
 <script>
 import Help from '~/components/help.vue'
 export default {
+  components: { Help },
   data: () => ({
     clearTimer: null,
     displayText: '',
