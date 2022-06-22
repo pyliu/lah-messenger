@@ -336,7 +336,7 @@ export default ({ $axios, store }, inject) => {
     highlightTitle (str, css = 'font-weight-bold') {
       return this.highlight(
         str,
-        /(['「（【《『〈].+?[〉』》】）」'])/i,
+        /(['「（【《『〈〔].+?[〕〉』》】）」'])/i,
         css
       )
     },
