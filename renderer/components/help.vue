@@ -23,7 +23,7 @@ b-list-group(flush)
     h5.font-weight-bold 4. 支援文字以#[b.text-primary 全形括號]包圍自動粗體顯示
     .ml-2 「我用全形角括號包圍」 👉 #[b 「我用全形角括號包圍」]
     .ml-2 （我用全形小括號包圍） 👉 #[b （我用全形小括號包圍）]
-    .ml-2 ⭐共支援 「（【《『〈〔 這8種包圍文字自動粗體顯示
+    .ml-2 ⭐共支援 「（【《『〈〔 這些符號所包圍的文字自動粗體顯示
   
   b-list-group-item
     h5.font-weight-bold 5. 其餘詳細語法請參閱下方連結
