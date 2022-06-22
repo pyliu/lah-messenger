@@ -6,9 +6,11 @@
   .text-right.text-nowrap
     transition(name="list" mode="out-in"): span(v-if="!empty(shortDomain)") {{ shortDomain }} / 
     span {{ platform }} / {{ appVer }}
+    b-icon.ml-1.help(icon="question-circle-fill", variant="success", @click="showHelp", title="簡易說明")
 </template>
 
 <script>
+import Help from '~/components/help.vue'
 export default {
   data: () => ({
     clearTimer: null,
@@ -33,6 +35,14 @@ export default {
     ipcRenderer.invoke('version').then(ver => {
       this.appVer = `v${ver}`
     })
+  },
+  methods: {
+    showHelp () {
+      this.modal(this.$createElement(Help), {
+        size: 'xl',
+        title: `說明 - ${this.appVer}`
+      })
+    }
   }
 }
 </script>
@@ -43,5 +53,8 @@ export default {
   position: absolute;
   left: .5rem;
   bottom: .25rem;
+}
+.help {
+  cursor: pointer;
 }
 </style>
