@@ -301,30 +301,30 @@ export default ({ $axios, store }, inject) => {
     highlightBlue (str) {
       return this.highlight(
         str,
-        /(@@b.+?b@@)/igm,
+        /(\{{2}b.+?b\}{2})/igm,
         'text-bold-blue'
-      ).replace(/(@@b|b@@)/igm, '')
+      ).replace(/(\{{2}b|b\}{2})/igm, '')
     },
     highlightRed (str) {
       return this.highlight(
         str,
-        /(@@r.+?r@@)/,
+        /(\{{2}r.+?r\}{2})/,
         'text-bold-red'
-      ).replace(/(@@r|r@@)/igm, '')
+      ).replace(/(\{{2}r|r\}{2})/igm, '')
     },
     highlightGreen (str) {
       return this.highlight(
         str,
-        /(@@g.+?g@@)/,
+        /(\{{2}g.+?g\}{2})/,
         'text-bold-green'
-      ).replace(/(@@g|g@@)/igm, '')
+      ).replace(/(\{{2}g|g\}{2})/igm, '')
     },
     highlightOrange (str) {
       return this.highlight(
         str,
-        /(@@o.+?o@@)/,
+        /(\{{2}o.+?o\}{2})/,
         'text-bold-orange'
-      ).replace(/(@@o|o@@)/igm, '')
+      ).replace(/(\{{2}o|o\}{2})/igm, '')
     },
     highlightTimestamp (str, css = 'text-bold-blue') {
       return this.highlight(
