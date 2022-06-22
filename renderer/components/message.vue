@@ -77,7 +77,6 @@
           icon="reply-fill"
           title="回覆此訊息"
           font-scale="1.5"
-          flip-h
           @click="isMyChannel ? reply() : emitReply()"
         )
       .d-flex.align-items-center
