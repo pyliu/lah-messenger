@@ -305,19 +305,20 @@ ipcMain.handle('notification', async (event, payload) => {
       mainWindow.setAlwaysOnTop(true)
       mainWindow.focus()
     }
+    // marked on 1110627 ... user argues the window will disturb the operation
     // 視窗置中顯示
-    if (showMainWindow) {
-      if (!mainWindow.isVisible()) {
-        mainWindow.show()
-        mainWindow.center()
-      }
-      mainWindow.setAlwaysOnTop(true)
-      mainWindow.focus()
-      // if (channel) {
-      //   // 切換至頻道
-      //   mainWindow.webContents.send('set-current-channel', channel)
-      // }
-    }
+    // if (showMainWindow) {
+    //   if (!mainWindow.isVisible()) {
+    //     mainWindow.show()
+    //     mainWindow.center()
+    //   }
+    //   mainWindow.setAlwaysOnTop(true)
+    //   mainWindow.focus()
+    //   if (channel) {
+    //     // 切換至頻道
+    //     mainWindow.webContents.send('set-current-channel', channel)
+    //   }
+    // }
   })
 })
 
@@ -326,10 +327,12 @@ ipcMain.handle('unread', async (event, channel) => {
   const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
   // very important notification
   if (annChannels.includes(channel)) {
-    mainWindow.show()
-    mainWindow.center()
-    mainWindow.setAlwaysOnTop(true)
-    mainWindow.focus()
+    // flash the windows
+    mainWindow.flashFrame(true)
+    // mainWindow.show()
+    // mainWindow.center()
+    // mainWindow.setAlwaysOnTop(true)
+    // mainWindow.focus()
   }
 })
 
