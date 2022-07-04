@@ -247,12 +247,7 @@ export default {
           channel: this.channel,
           id: this.id,
           sender: this.userid,
-          payload: {
-            ...this.announcementJson,
-            title: this.title,
-            content: this.content,
-            priority: this.priority
-          }
+          payload: this.announcementJson
         },
         channel: 'system'
       }
