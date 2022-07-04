@@ -73,7 +73,7 @@ if (!gotTheLock) {
             type: "separator"
           }
           ,{
-            label: '關閉即時通(將無法得到任何公告訊息)',
+            label: '關閉即時通',
             click () {
               app.isQuiting = true
               app.quit()
