@@ -1816,7 +1816,7 @@ export default {
       if (!this.$utils.empty(this.apiUserinfo)) {
         const apiDeptName = this.apiUserinfo?.unit;
         if (this.deptName !== apiDeptName) {
-          this.warning(`您的部門(${this.deptName})已修正為${apiDeptName}，如欲變更請洽管理者至「智慧管控系統」「員工管理」頁面進行修改。`);
+          this.warning(`您的部門(${this.deptName})已修正為${apiDeptName}，如欲變更請洽管理者至「智慧控管系統」「員工管理」頁面進行修改。`);
           let deptval = '';
           switch (apiDeptName) {
             case '資訊課':

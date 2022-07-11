@@ -8,7 +8,7 @@
         span 進入 #[strong.mark.text-primary {{ item.name }}] 頻道
       b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 
-  h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧管控系統]
+  h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧控管系統]
   h6.d-flex.align-items-center
     .mr-auto
       b-icon(icon="people-fill")

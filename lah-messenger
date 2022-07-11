@@ -37,7 +37,7 @@
             <mxPoint x="450" y="390" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="HeY1D0G3hAJSs7xgVxNt-17" value="智慧管控系統" style="swimlane;fontSize=20;" parent="1" vertex="1">
+        <mxCell id="HeY1D0G3hAJSs7xgVxNt-17" value="智慧控管系統" style="swimlane;fontSize=20;" parent="1" vertex="1">
           <mxGeometry x="90" y="40" width="200" height="200" as="geometry" />
         </mxCell>
         <mxCell id="kpgTv6O9OQDmURqcV3Ln-1" value="智慧監控儀表板" style="swimlane;fontSize=11;" vertex="1" parent="HeY1D0G3hAJSs7xgVxNt-17">
