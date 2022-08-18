@@ -143,7 +143,11 @@ const getters = {
   totalUnread: state => {
     try {
       // Object.values(state.unread).reduce((a, b) => a + b)
-      return state.unread['lds'] + state.unread['announcement'] + state.unread[state.userdept]
+      return state.unread['lds']  // 全所聊天室
+             + state.unread['announcement'] // 公告
+             + state.unread[`announcement_${state.userdept}`] // 部門公告
+             + state.unread[state.userinfo.userid?.toUpperCase()] // 私訊
+             + state.unread[state.userdept] // 部門聊天室
     } catch {
       return 0
     }

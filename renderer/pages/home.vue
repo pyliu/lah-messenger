@@ -1481,7 +1481,10 @@ export default {
               }
               // channel got new message then pluses the counter
               if (receivedId > lastReadId) {
-                this.currentChannel !== channel && this.plusUnread(channel);
+                // only concerned channel needs to increase counter
+                if (this.currentChannel !== channel && ['lds', 'announcement', `announcement_${this.userdept}`, this.userid, this.userdept].includes(channel)) {
+                  this.plusUnread(channel);
+                }
               }
               this.triggerNotification(incoming);
             }
