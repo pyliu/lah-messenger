@@ -140,7 +140,14 @@ const getters = {
   timer: state => state.timer,
   messages: state => state.messages,
   unread: state => state.unread,
-  totalUnread: state => Object.values(state.unread).reduce((a, b) => a + b),
+  totalUnread: state => {
+    try {
+      // Object.values(state.unread).reduce((a, b) => a + b)
+      return state.unread['lds'] + state.unread['announcement'] + state.unread[state.userdept]
+    } catch {
+      return 0
+    }
+  },
   userMap: state => state.userMap,
   userinfo: state => state.userinfo,
   username: state => state.username,
