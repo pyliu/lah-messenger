@@ -1907,9 +1907,11 @@ export default {
           message: message,
           showMainWindow: false
         });
-        this.warn(message);
+        this.warn(message, this.unread);
       } else {
-
+        // only concerned messages will calculate into total counter (in $store)
+        // reset others just in case
+        this.$store.commit('resetUnreadAll');
       }
       // check every 10min
       this.timeout(this.checkUnread, this.$config.isDev ? 10 * 1000 : 10 * 60 * 1000).then(handler => {
@@ -1968,6 +1970,7 @@ export default {
     // remove timer if user is going to leave the page
     this.clearReconnectTimer();
     this.closeWebsocket();
+    clearTimeout(this.checkUnreadTimer);
     window.removeEventListener("keydown", this.keydown);
     document.removeEventListener("visibilitychange", this.visibilityChange);
     this.$root.$off('bv::modal::shown', this.watchModal);

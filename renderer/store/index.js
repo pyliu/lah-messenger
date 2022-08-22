@@ -3,7 +3,6 @@ import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
 import random from 'lodash/random'
 import emojiLib from 'node-emoji'
-import { stat } from 'original-fs'
 
 // smileys
 const faces = [
@@ -304,6 +303,11 @@ const mutations = {
       state.messages = { ...state.messages, ...{ [channel]: [] } }
       this.$config.isDev && console.log(timestamp(), `新增/重設 ${channel} message 頻道到 store。 [Vuex::addChannel]`, state.messages)
     }
+  },
+  resetUnreadAll (state) {
+    Object.keys(state.unread).map(key => {
+      state.unread[key] = 0
+    })
   },
   resetUnread (state, channel) {
     if (!empty(channel)) {

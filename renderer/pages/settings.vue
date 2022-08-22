@@ -6,12 +6,15 @@
       span(style="font-size: 1.5rem;") 返回
     
     div
+      //- b-button.mr-1(variant="success" @click="read" title="設定訊息全部已讀" :disabled="totalUnread < 1")
+      //-   b-icon.mr-1(icon="eye" font-scale="1.25")
+      //-   span.my-auto 訊息已讀
       b-button.mr-1(variant="warning" @click="logout" title="清除已登入資料")
         b-icon.mr-1(icon="box-arrow-left" font-scale="1.25")
         span.my-auto 登出
-      //- b-button(variant="danger" @click="quit")
-      //-   b-icon.mr-1(icon="x-circle" font-scale="1.25")
-      //-   span 關閉程式
+      b-button(variant="danger" @click="quit")
+        b-icon.mr-1(icon="x-circle" font-scale="1.25")
+        span 關閉程式
     
   fieldset
     legend 個人設定
@@ -283,6 +286,14 @@ export default {
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
       this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
       this.notification = { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') }
+    },
+    read() {
+      this.$store.commit('resetUnreadAll')
+      // return state.unread['lds']  // 全所聊天室
+      //        + state.unread['announcement'] // 公告
+      //        + state.unread[`announcement_${state.userdept}`] // 部門公告
+      //        + state.unread[state.userinfo.userid?.toUpperCase()] // 私訊
+      //        + state.unread[state.userdept] // 部門聊天室
     },
     logout() {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {
