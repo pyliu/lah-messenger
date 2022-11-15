@@ -198,7 +198,7 @@ const getters = {
       case 'supervisor': return '主任祕書室聊天室'
       default:
         if (channelId === state.userinfo.userid.toUpperCase()) {
-          return '我的頻道'
+          return '我的私訊'
         }
         return `無法辨識的頻道 ${channelId}`
     }

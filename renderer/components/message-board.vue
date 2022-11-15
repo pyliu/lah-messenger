@@ -1,36 +1,42 @@
 <template lang="pug">
-  .center(v-if="loading" style="height: 80vh"): b-icon(font-scale="3" icon="circle-fill" animation="throb" variant="secondary")
-  div(v-else :class="blockCss")
-    .msg(
-      ref="box"
-      @scroll="scrollTop = $event.target.scrollTop"
-      @dragover="dragover"
-      @dragleave="dragleave"
-      @drop="drop"
+.center(v-if="loading" style="height: 80vh"): b-icon(font-scale="3" icon="circle-fill" animation="throb" variant="secondary")
+div(v-else :class="blockCss")
+  .msg(
+    ref="box"
+    @scroll="scrollTop = $event.target.scrollTop"
+    @dragover="dragover"
+    @dragleave="dragleave"
+    @drop="drop"
+  )
+    b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
+    b-tooltip(
+      ref="postAnnouncementBtnTooltip",
+      :target="() => $refs['postMessageBtn']",
+      :title="`發布訊息@${currentChannelName}`",
+      placement="right"
     )
-      b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-      b-button.leave-message-btn(
-        v-if="(!chatRooms.includes(currentChannel) && isAuthorized)"
-        @click="openMessageInput"
-        size="lg"
-        variant="primary"
-        :title="`發布訊息@${currentChannelName}`"
-      ): b-icon(icon="chat-right-text" flip-h)
-      
-      h5.center.my-5(v-if="empty(list)")
-        b-icon.mr-1(icon="shield-fill-exclamation" variant="success")
-        span 目前尚無任何訊息 
-      transition-group(v-else name="list" mode="out-in")
-        message.mr-1.animate__animated(
-          enter-active-class="animate__slideInUp"
-          leave-active-class="animate__slideInDown"
-          v-for="(item, idx) in list"
-          :raw="item" :prev="list[idx - 1]"
-          :key="`msg-${idx}`"
-          :ref="`msg-${idx}`"
-          @reply="$emit('reply', $event)"
-          @remove="$emit('remove', $event)"
-        )
+    b-button.post-message-btn(
+      v-if="showPostAnnouncementBtn"
+      ref="postMessageBtn"
+      @click="openMessageInput"
+      size="lg"
+      variant="primary"
+    ): b-icon(icon="chat-right-text" flip-h)
+    
+    h5.center.my-5(v-if="empty(list)")
+      b-icon.mr-1(icon="shield-fill-exclamation" variant="success")
+      span 目前尚無任何訊息 
+    transition-group(v-else name="list" mode="out-in")
+      message.mr-1.animate__animated(
+        enter-active-class="animate__slideInUp"
+        leave-active-class="animate__slideInDown"
+        v-for="(item, idx) in list"
+        :raw="item" :prev="list[idx - 1]"
+        :key="`msg-${idx}`"
+        :ref="`msg-${idx}`"
+        @reply="$emit('reply', $event)"
+        @remove="$emit('remove', $event)"
+      )
 </template>
 
 <script>
@@ -68,9 +74,17 @@ export default {
       return 'chat-container'
     },
     messageCount () { return this.list.length },
-    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory }
+    showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory },
+    showPostAnnouncementBtn () { return !this.chatRooms.includes(this.currentChannel) && this.isAuthorized }
   },
   watch: {
+    showPostAnnouncementBtn (val) {
+      if (val) {
+        this.$refs.postAnnouncementBtnTooltip.$emit('open')
+      } else {
+        this.$refs.postAnnouncementBtnTooltip.$emit('close')
+      }
+    },
     messageCount (n, o) {
       o > n && (this.loading = true)
       // watch list count to scroll viewport to display the first/last message
@@ -237,7 +251,7 @@ export default {
     }, 250)
   },
   mounted () {
-    setTimeout(() => {
+    this.timeout(() => {
       // this.$refs.box && (this.$refs.box.scrollTop = this.$refs.box.scrollHeight)
       this.displayOldMessageArrow = true
       // in case no message coming
@@ -291,7 +305,7 @@ export default {
   }
 }
 
-.leave-message-btn {
+.post-message-btn {
   transition: all 1s;
   z-index: 1001;
   position: fixed;
