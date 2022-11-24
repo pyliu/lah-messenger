@@ -334,7 +334,8 @@ export default {
     back: false,
     keyCodes: [],
     manualLogin: false,
-    checkUnreadTimer: null
+    checkUnreadTimer: null,
+    checkUreadDuration: 3 * 60 * 60 * 1000
   }),
   async fetch() {
     // restore image memento
@@ -1914,7 +1915,7 @@ export default {
         this.$store.commit('resetUnreadAll');
       }
       // check every 10min
-      this.timeout(this.checkUnread, this.$config.isDev ? 10 * 1000 : 10 * 60 * 1000).then(handler => {
+      this.timeout(this.checkUnread, this.$config.isDev ? 30 * 1000 : this.checkUreadDuration).then(handler => {
         this.checkUnreadTimer = handler;
       });
     }
