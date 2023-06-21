@@ -36,7 +36,7 @@
     "md5": "^2.3.0",
     "node-emoji": "^1.11.0",
     "node-notifier": "^10.0.1",
-    "nuxt": "^2.15.8",
+    "nuxt": "^3.4.3",
     "qs": "^6.9.4",
     "systeminformation": "^5.8.8",
     "tcp-ping-sync": "^2.0.0"
