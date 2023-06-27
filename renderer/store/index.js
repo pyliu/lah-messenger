@@ -1,7 +1,7 @@
-import trim from 'lodash/trim'
-import uniqWith from 'lodash/uniqWith'
 import isEqual from 'lodash/isEqual'
 import random from 'lodash/random'
+import trim from 'lodash/trim'
+import uniqWith from 'lodash/uniqWith'
 import emojiLib from 'node-emoji'
 
 // smileys
@@ -144,7 +144,6 @@ const getters = {
       // Object.values(state.unread).reduce((a, b) => a + b)
       return state.unread['lds']  // 全所聊天室
              + state.unread['announcement'] // 公告
-             + state.unread[`announcement_${state.userdept}`] // 部門公告
              + state.unread[state.userinfo.userid?.toUpperCase()] // 私訊
              + state.unread[state.userdept] // 部門聊天室
     } catch {
@@ -179,14 +178,6 @@ const getters = {
     const channelId = String(state.currentChannel)
     switch (channelId) {
       case 'announcement': return '公告'
-      case 'announcement_inf': return '資訊課公告'
-      case 'announcement_reg': return '登記課公告'
-      case 'announcement_val': return '地價課公告'
-      case 'announcement_sur': return '測量課公告'
-      case 'announcement_adm': return '行政課公告'
-      case 'announcement_hr': return '人事室公告'
-      case 'announcement_acc': return '會計室公告'
-      case 'announcement_supervisor': return '主任秘書室公告'
       case 'lds': return '全所聊天室'
       case 'inf': return '資訊課聊天室'
       case 'reg': return '登記課聊天室'

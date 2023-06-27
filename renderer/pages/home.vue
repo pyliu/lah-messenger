@@ -17,22 +17,6 @@ div: client-only
           ) {{ getUnread('announcement') }}
 
         b-nav-item(
-          v-for="(deptChannel, idx) in departmentChannels",
-          v-if="deptChannel.value === `announcement_${userdept}`",
-          :key="`ann_dept_${idx}`",
-          :active="deptChannel.value === currentChannel",
-          @click="setCurrentChannel(deptChannel.value)",
-          :title="`${deptChannel.text} 部門公告訊息`"
-        ): a.mr-1
-          //- b-icon.mr-1(icon="building" variant="primary")
-          span.s-105 🏛 {{ deptChannel.text }}
-          b-badge.notify-dept(
-            variant="info",
-            pill,
-            v-if="showUnread(deptChannel.value)"
-          ) {{ getUnread(deptChannel.value) }}
-
-        b-nav-item(
           :active="isPersonal",
           :title="`${userid} 個人通知訊息`",
           @click="setCurrentChannel(userid)"
@@ -47,11 +31,11 @@ div: client-only
 
         b-nav-item(
           :active="isChat",
-          title="聊天室列表",
+          title="通知頻道列表",
           @click="setCurrentChannel('chat')"
         ): a.mr-1
           //- b-icon.mr-1(icon="chat-dots-fill" variant="muted")
-          span.s-105 💬 聊天
+          span.s-105 💬 通知
           b-badge.notify-chat(variant="secondary", pill, v-if="showChatUnread") {{ chatUnread }}
 
         b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
@@ -283,8 +267,8 @@ div: client-only
 </template>
 
 <script>
-import trim from "lodash/trim";
 import debounce from "lodash/debounce";
+import trim from "lodash/trim";
 import ImageUpload from "~/components/image-upload.vue";
 
 export default {
@@ -317,16 +301,6 @@ export default {
       { value: "hr", text: "人事室" },
       { value: "acc", text: "會計室" },
       { value: "supervisor", text: "主任秘書室" },
-    ],
-    departmentChannels: [
-      { value: "announcement_inf", text: "資訊" },
-      { value: "announcement_adm", text: "行政" },
-      { value: "announcement_reg", text: "登記" },
-      { value: "announcement_sur", text: "測量" },
-      { value: "announcement_val", text: "地價" },
-      { value: "announcement_hr", text: "人事" },
-      { value: "announcement_acc", text: "會計" },
-      { value: "announcement_supervisor", text: "主秘" },
     ],
     connecting: false,
     asking: false,
@@ -456,7 +430,7 @@ export default {
         "announcement",
         this.adAccount,
         "chat",
-        ...this.departmentChannels.map((item) => item.value),
+        // ...this.departmentChannels.map((item) => item.value),
       ];
     },
     showUnreadChannels() {
@@ -2030,19 +2004,15 @@ export default {
 }
 .notify-announcement {
   @include notify();
-  left: 80px;
-}
-.notify-dept {
-  @include notify();
-  left: 180px;
+  left: 100px;
 }
 .notify-personal {
   @include notify();
-  left: 275px;
+  left: 225px;
 }
 .notify-chat {
   @include notify();
-  left: 380px;
+  left: 350px;
 }
 .nav-link:hover .badge {
   opacity: 1;
