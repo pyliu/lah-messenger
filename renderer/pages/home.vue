@@ -17,6 +17,15 @@ div: client-only
           ) {{ getUnread('announcement') }}
 
         b-nav-item(
+          :active="isChat",
+          title="通知頻道列表",
+          @click="setCurrentChannel('chat')"
+        ): a.mr-1
+          //- b-icon.mr-1(icon="chat-dots-fill" variant="muted")
+          span.s-105 💬 通知
+          b-badge.notify-chat(variant="secondary", pill, v-if="showChatUnread") {{ chatUnread }}
+
+        b-nav-item(
           :active="isPersonal",
           :title="`${userid} 個人通知訊息`",
           @click="setCurrentChannel(userid)"
@@ -28,15 +37,6 @@ div: client-only
             pill,
             v-if="showUnread(userid)"
           ) {{ getUnread(userid) }}
-
-        b-nav-item(
-          :active="isChat",
-          title="通知頻道列表",
-          @click="setCurrentChannel('chat')"
-        ): a.mr-1
-          //- b-icon.mr-1(icon="chat-dots-fill" variant="muted")
-          span.s-105 💬 通知
-          b-badge.notify-chat(variant="secondary", pill, v-if="showChatUnread") {{ chatUnread }}
 
         b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
           b-icon.mr-1(icon="list")
