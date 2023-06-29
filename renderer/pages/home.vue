@@ -2008,11 +2008,11 @@ export default {
 }
 .notify-personal {
   @include notify();
-  left: 225px;
+  left: 350px;
 }
 .notify-chat {
   @include notify();
-  left: 350px;
+  left: 225px;
 }
 .nav-link:hover .badge {
   opacity: 1;
