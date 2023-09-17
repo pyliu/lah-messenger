@@ -10,8 +10,8 @@ const iconPath = path.join(__dirname, 'bell.png')
 const notify = function (message, title, callback) {
   notifier.notify(
     {
-      appID: '💬桃園即時通',
-      title: title || '通知',
+      appID: '💬 桃園即時通',
+      title: title || '🔔 通知',
       message: message || '[無訊息]',
       icon: iconPath, // Absolute path (doesn't work on balloons)
       sound: true, // Only Notification Center or Windows Toasters
