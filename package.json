@@ -43,11 +43,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",
-<<<<<<< HEAD
     "electron": "^26.2.1",
-=======
-    "electron": "^25.5.0",
->>>>>>> 58e136fe658095c1a93311cb9b004b6ede32033f
     "electron-builder": "^22.14.13",
     "node-sass": "5.0.0",
     "nuxtron": "^0.3.1",
