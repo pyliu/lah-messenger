@@ -14,6 +14,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 import {
   createWindow,
   exitOnChange,
+  notifier,
   notify,
   notifyDebounced
 } from './helpers'
