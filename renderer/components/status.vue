@@ -4,13 +4,13 @@
     b-icon.mr-1.my-auto(icon="info-circle-fill" :animation="empty(displayText) ? '' : 'fade'" :variant="empty(displayText) ? 'light' : 'info'" font-scale="1.25")
     transition(name="list" mode="out-in"): .my-auto.mr-2(v-if="!empty(displayText)") #[span {{ displayText }}] #[b-icon(icon="three-dots" animation="cylon")]
   .text-right.text-nowrap
-    transition(name="list" mode="out-in"): span(v-if="!empty(shortDomain)") {{ shortDomain }} / 
-    span {{ platform }} / {{ appVer }}
+    //- transition(name="list" mode="out-in"): span(v-if="!empty(shortDomain)") {{ shortDomain }} / 
+    span {{ appVer }}
     b-icon.ml-1.help(icon="question-circle-fill", variant="success", @click="showHelp", title="簡易說明")
 </template>
 
 <script>
-import Help from '~/components/help.vue'
+import Help from '~/components/help.vue';
 export default {
   components: { Help },
   data: () => ({
