@@ -94,7 +94,7 @@ div: client-only
       b-textarea(
         ref="textarea",
         v-model="inputText",
-        placeholder="... Ctrl + Enter 送出 ... Ctrl + V 剪貼簿貼圖 ... ESC鍵清除 ...",
+        placeholder="... Ctrl + V 可貼上剪貼簿的截圖 ...",
         @keyup.enter.ctrl="send",
         @keyup.enter.shift="send",
         @keyup.enter.alt="send",
