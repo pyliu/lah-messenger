@@ -8,7 +8,7 @@
       target="_blank"
       title="View project on Github!"
     ): b-icon.my-auto(icon="github" font-scale="1.25")
-    strong.my-auto 2022 #[a(href="mailto:pangyu.liu@gmail.com") LIU, PANG-YU] ALL RIGHTS RESERVED. 
+    strong.my-auto 2021-2025 #[a(href="mailto:pangyu.liu@gmail.com") LIU, PANG-YU] ALL RIGHTS RESERVED. 
 </template>
 
 <script>
