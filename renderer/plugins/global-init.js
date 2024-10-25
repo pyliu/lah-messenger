@@ -1,10 +1,10 @@
+import { format, formatDistanceToNow } from 'date-fns'
 import $ from 'jquery'
 import _ from 'lodash'
 import _md5 from 'md5'
-import { format, formatDistanceToNow } from 'date-fns'
 // Require tw locale
-import { zhTW } from 'date-fns/locale'
 import uploadAxios from 'axios'
+import { zhTW } from 'date-fns/locale'
 const emoji = require('node-emoji')
 
 import DOMPurify from 'dompurify'
@@ -369,7 +369,8 @@ export default ({ $axios, store }, inject) => {
             title: '✂️ 剪貼簿',
             message: `路徑已複製`,
             detail: path,
-            browser: true
+            browser: true,
+            statusOnly: true
           })
           ipcRenderer.invoke('open-explorer', { path })
         }

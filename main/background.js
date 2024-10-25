@@ -1,5 +1,5 @@
-import { app, Tray, Menu, nativeImage, dialog } from 'electron'
-import serve from 'electron-serve'
+import { app, dialog, Menu, nativeImage, Tray } from 'electron';
+import serve from 'electron-serve';
 import { isEmpty } from 'lodash';
 
 const fs = require('fs')
@@ -14,10 +14,9 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 import {
   createWindow,
   exitOnChange,
-  notifier,
   notify,
   notifyDebounced
-} from './helpers'
+} from './helpers';
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -246,7 +245,8 @@ ipcMain.handle('show-message-box', (event, arg) => {
       message: '請輸入訊息',
       detail: undefined,
       block: false,
-      browser: false
+      browser: false,
+      statusOnly: false
     },
     ...arg
   }
@@ -255,7 +255,8 @@ ipcMain.handle('show-message-box', (event, arg) => {
     mainWindow.webContents.send('in-browser-notify', {
       message: combined,
       type: options.type,
-      title: options.title
+      title: options.title,
+      statusOnly: options.statusOnly
     })
   } else {
     dialog.showMessageBox(options.block ? mainWindow : null, options, (response, checkboxChecked) => {

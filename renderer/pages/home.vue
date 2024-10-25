@@ -1633,10 +1633,14 @@ export default {
         this.setCurrentChannel(channel);
       });
       this.ipcRenderer.on("in-browser-notify", (event, payload) => {
-        this.notify(payload.message, {
-          type: payload.type || 'info',
-          title: payload.title || '📢 通知'
-        })
+        if (payload.statusOnly) {
+          this.$store.commit("statusText", payload.message);
+        } else {
+          this.notify(payload.message, {
+            type: payload.type || 'info',
+            title: payload.title || '📢 通知'
+          })
+        }
       });
     },
     async triggerNotification(incoming) {
