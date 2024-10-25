@@ -1,7 +1,7 @@
-import Vue from 'vue'
-import { mapActions, mapGetters } from 'vuex'
 import $ from 'jquery'
 import trim from 'lodash/trim'
+import Vue from 'vue'
+import { mapActions, mapGetters } from 'vuex'
 
 const empty = function(value) {
   return value === undefined || value === null || value === NaN || value === 0 ||
@@ -227,7 +227,7 @@ Vue.mixin({
           from: this.ip,
           message: text,
           channel: this.currentChannel,
-          priority: 3
+          priority: 2
         },
         ...opts,
       })
