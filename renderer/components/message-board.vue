@@ -40,8 +40,8 @@ div(v-else :class="blockCss")
 </template>
 
 <script>
-import debounce from 'lodash/debounce'
-import MessageInput from '~/components/message-input.vue'
+import debounce from 'lodash/debounce';
+import MessageInput from '~/components/message-input.vue';
 
 export default {
   components: { MessageInput },
@@ -280,7 +280,7 @@ export default {
 
 .chat-container {
   margin: 5px;
-  height: calc(73.25vh - 34px);
+  height: calc(73.25vh - 18px);
 }
 
 .msg {
