@@ -1,15 +1,19 @@
 <template lang="pug">
 .chat-channel-list(v-if="isChat")
   b-list-group.gray-bottom-border(flush)
-    b-list-group-item(v-for="(item, idx) in deptChannels" v-if="userdept === item.id || item.id === 'lds'" :key="`dept-key-${idx}`"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
+    b-list-group-item(
+      v-for="(item, idx) in deptChannels"
+      v-if="isAdmin || userdept === item.id || item.id === 'lds'"
+      :key="`dept-key-${idx}`"
+    ): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
       //- span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
       .d-flex.align-items-center
         b-icon.mr-2(font-scale="1.75" icon="chat-dots" variant="primary")
         span 進入 #[strong.mark.text-primary {{ item.name }}] 頻道
       b-badge(variant="primary" pill v-if="showUnread(item.id)") {{ getUnread(item.id) }}
 
-  h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧控管系統]
-  h6.d-flex.align-items-center
+  //- h6.my-2 #[b-icon(icon="info-circle" variant="primary")] 如欲發送 #[a.mark.font-weight-bold(:href="`${feQueryUrl}/message`") 群組私訊] / #[a.mark(:href="`${feQueryUrl}/notification`") 公告] 訊息也可至 #[a.mark(:href="feQueryUrl") 地政智慧控管系統]
+  h6.d-flex.align-items-center.mt-2
     .mr-auto
       b-icon(icon="people-fill")
       span.mx-1 線上使用者
@@ -29,7 +33,10 @@
       switch
     )
       b-icon(icon="filter" rotate="180" font-scale="1.25")
-  b-list-group.online-users-list.mt-n1(flush): b-list-group-item(
+  b-list-group.mt-n1(
+    flush
+    :class="isAdmin ? ['online-users-list-admin'] : ['online-users-list']"
+  ): b-list-group-item(
     v-for="(deptList, idx) in onlineUsersByDept"
     :key="`dept_${idx}`"
     v-if="deptList.users.length > 0"
@@ -43,7 +50,7 @@
 </template>
 
 <script>
-import UserAvatar from '~/components/user-avatar.vue'
+import UserAvatar from '~/components/user-avatar.vue';
 
 export default {
   components: { UserAvatar },
@@ -65,6 +72,7 @@ export default {
   }),
   computed: {
     isChat () { return this.currentChannel === 'chat'},
+    isAdmin () { return this.authority.isAdmin },
     onlineUsersByDept () {
       const keyword = this.keyword
       const filter = [
@@ -163,6 +171,11 @@ export default {
 
 .online-users-list {
   height: 62.5vh;
+  overflow: auto;
+}
+
+.online-users-list-admin {
+  height: 20vh;
   overflow: auto;
 }
 
