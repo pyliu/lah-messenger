@@ -3,7 +3,7 @@
   b-list-group.gray-bottom-border(flush)
     b-list-group-item(
       v-for="(item, idx) in deptChannels"
-      v-if="isAdmin || userdept === item.id || item.id === 'lds'"
+      v-if="isNotifyMgtStaff || userdept === item.id || item.id === 'lds'"
       :key="`dept-key-${idx}`"
     ): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
       //- span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
@@ -72,7 +72,7 @@ export default {
   }),
   computed: {
     isChat () { return this.currentChannel === 'chat'},
-    isAdmin () { return this.authority.isAdmin },
+    isNotifyMgtStaff () { return this.authority.isNotifyMgtStaff || this.authority.isAdmin },
     onlineUsersByDept () {
       const keyword = this.keyword
       const filter = [
