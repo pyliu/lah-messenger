@@ -3,7 +3,7 @@
   b-list-group.gray-bottom-border(flush)
     b-list-group-item(
       v-for="(item, idx) in deptChannels"
-      v-if="isNotifyMgtStaff || userdept === item.id || item.id === 'lds'"
+      v-if="showBizSect(item.id) || userdept === item.id || item.id === 'lds'"
       :key="`dept-key-${idx}`"
     ): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
       //- span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
@@ -158,6 +158,9 @@ export default {
       if (count < 20) { return 0.4 }
       if (count < 64) { return 0.5 }
       return 0.6
+    },
+    showBizSect (id) {
+      return this.isNotifyMgtStaff && ['inf', 'adm', 'reg', 'val', 'sur'].includes(id)
     }
   }
 };
