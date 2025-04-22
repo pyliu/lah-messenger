@@ -35,7 +35,7 @@
       b-icon(icon="filter" rotate="180" font-scale="1.25")
   b-list-group.mt-n1(
     flush
-    :class="isNotifyMgtStaff ? ['online-users-list-admin'] : ['online-users-list']"
+    :class="isNotifyMgtStaff ? ['online-users-list-biz'] : ['online-users-list']"
   ): b-list-group-item(
     v-for="(deptList, idx) in onlineUsersByDept"
     :key="`dept_${idx}`"
@@ -177,8 +177,8 @@ export default {
   overflow: auto;
 }
 
-.online-users-list-admin {
-  height: 20vh;
+.online-users-list-biz {
+  height: 41vh;
   overflow: auto;
 }
 
