@@ -1,9 +1,29 @@
 <template lang="pug">
 .chat-channel-list(v-if="isChat")
-  b-list-group.gray-bottom-border(flush)
+  b-list-group.gray-bottom-border(
+    v-if="isNotifyMgtStaff"
+    flush
+  )
+    b-list-group-item.d-flex.justify-content-between.align-items-center(key="dept-key-b-select")
+      .d-flex.align-items-center
+        b-icon(font-scale="1.75" icon="chat-dots" variant="primary")
+        b-button.mx-2.text-nowrap(@click="setCurrentChannel(selectedDeptChannel)", size="sm", variant="primary") 進入
+        b-select(v-model="selectedDeptChannel", :options="deptChannelsOpts", size="sm")
+        .text-nowrap.ml-2 頻道
+      b-badge(variant="primary" pill v-if="showUnread(selectedDeptChannel)") {{ getUnread(selectedDeptChannel) }}
+    b-list-group-item(key="dept-key-lds"): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel('lds')")
+      .d-flex.align-items-center
+        b-icon.mr-2(font-scale="1.75" icon="chat-dots" variant="primary")
+        span 進入 #[strong.mark.text-primary 全事務所] 頻道
+      b-badge(variant="primary" pill v-if="showUnread('lds')") {{ getUnread('lds') }}
+
+  b-list-group.gray-bottom-border(
+    v-else,
+    flush
+  )
     b-list-group-item(
       v-for="(item, idx) in deptChannels"
-      v-if="showBizSect(item.id) || userdept === item.id || item.id === 'lds'"
+      v-if="userdept === item.id || item.id === 'lds'"
       :key="`dept-key-${idx}`"
     ): b-link.d-flex.justify-content-between.align-items-center(@click="setCurrentChannel(item.id)")
       //- span #[b-avatar.mt-n1(size="1.25rem" icon="people-fill")] {{ item.name }}
@@ -35,7 +55,7 @@
       b-icon(icon="filter" rotate="180" font-scale="1.25")
   b-list-group.mt-n1(
     flush
-    :class="isNotifyMgtStaff ? ['online-users-list-biz'] : ['online-users-list']"
+    :class="['online-users-list']"
   ): b-list-group-item(
     v-for="(deptList, idx) in onlineUsersByDept"
     :key="`dept_${idx}`"
@@ -66,6 +86,17 @@ export default {
       { id: 'supervisor', name: '主任祕書室' },
       { id: 'lds', name: '全所' },
     ],
+    deptChannelsOpts: [
+      { text: '資訊課', value: 'inf' },
+      { text: '登記課', value: 'reg' },
+      { text: '地價課', value: 'val' },
+      { text: '測量課', value: 'sur' },
+      { text: '行政課', value: 'adm' },
+      { text: '人事室', value: 'hr' },
+      { text: '會計室', value: 'acc' },
+      { text: '主任祕書室', value: 'supervisor' }
+    ],
+    selectedDeptChannel: 'lds',
     onlineTimer: undefined,
     ascending: false,
     keyword: ''
@@ -147,6 +178,7 @@ export default {
     clearInterval(this.onlineTimer)
     this.onlineTimer = setInterval(() => this.queryOnlineClients(), 5 * 60 * 1000)
     this.ascending = await this.$localForage.getItem('online-ascending') || false
+    this.selectedDeptChannel = this.userdept
   },
   beforeDestroy() {
     clearInterval(this.onlineTimer)
@@ -158,9 +190,6 @@ export default {
       if (count < 20) { return 0.4 }
       if (count < 64) { return 0.5 }
       return 0.6
-    },
-    showBizSect (id) {
-      return this.isNotifyMgtStaff && ['inf', 'adm', 'reg', 'val', 'sur'].includes(id)
     }
   }
 };
@@ -173,12 +202,7 @@ export default {
 }
 
 .online-users-list {
-  height: 62.5vh;
-  overflow: auto;
-}
-
-.online-users-list-biz {
-  height: 41vh;
+  height: 66.5vh;
   overflow: auto;
 }
 
