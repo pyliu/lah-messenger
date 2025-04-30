@@ -61,7 +61,9 @@
     :key="`dept_${idx}`"
     v-if="deptList.users.length > 0"
   ): .d-flex.align-items-start
-    .text-nowrap.mr-auto.lah-shadow {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
+    .text-nowrap.mr-auto.lah-shadow
+      b-link(v-if="isNotifyMgtStaff", @click="setCurrentChannel(deptList.id)") {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
+      span(v-else) {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
     b-avatar-group(size="3rem" :overlap="overlapRatio(deptList.users.length)"): transition-group.d-flex.justify-content-end.flex-wrap(name="listY" mode="out-in"): user-avatar.shadow(
       v-for="(user, uidx) in deptList.users"
       :key="`avatar_${user ? user.userid : 'unknown'}_${uidx}`"
@@ -107,15 +109,15 @@ export default {
     onlineUsersByDept () {
       const keyword = this.keyword
       const filter = [
-        { text: '資訊課', users: [] },
-        { text: '登記課', users: [] },
-        { text: '地價課', users: [] },
-        { text: '測量課', users: [] },
-        { text: '行政課', users: [] },
-        { text: '人事室', users: [] },
-        { text: '會計室', users: [] },
-        { text: '主任祕書室', users: [] },
-        { text: '無歸屬', users: [] }
+        { text: '資訊課', users: [], id: 'inf' },
+        { text: '登記課', users: [], id: 'reg' },
+        { text: '地價課', users: [], id: 'val' },
+        { text: '測量課', users: [], id: 'sur' },
+        { text: '行政課', users: [], id: 'adm' },
+        { text: '人事室', users: [], id: 'hr' },
+        { text: '會計室', users: [], id: 'acc' },
+        { text: '主任祕書室', users: [], id: 'supervisor' },
+        { text: '無歸屬', users: [], id: 'none' }
       ]
       for (let i = 0; i < this.connectedUsersCount; i++) {
         const user = this.connectedUsers[i]
