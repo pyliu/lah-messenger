@@ -1,4 +1,4 @@
-<div class="text-center"><img src="snap2.jpg" class="img-thumbnail"></div>
+<div class="text-center"><img src="snap.jpg" class="img-thumbnail"></div>
 
 ## Dev Usage
 
