@@ -488,7 +488,7 @@ export default {
         })
         .join('\n');
       if (!this.empty(this.inputText) && !this.empty(imgMdText)) {
-        imgMdText = `\n***\n${imgMdText}`;
+        imgMdText = `\n\n***\n\n${imgMdText}`;
       }
       return imgMdText;
     },
@@ -818,7 +818,7 @@ export default {
       if (this.$utils.length(innerText) > 20) {
         innerText = innerText.substring(0, 20) + " ... ";
       }
-      this.inputText = `${innerText}\n***\n`;
+      this.inputText = `${innerText}\n\n***\n\n`;
       this.$nextTick(() => {
         this.$refs.textarea.$el.scrollTop = 999999;
         this.$refs.textarea?.focus();

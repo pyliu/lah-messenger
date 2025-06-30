@@ -87,10 +87,10 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 </template>
 
 <script>
-import ImageUpload from '~/components/image-upload.vue'
 import AnnouncementCard from '~/components/announcement-card.vue'
-import Message from '~/components/message.vue'
 import Help from '~/components/help.vue'
+import ImageUpload from '~/components/image-upload.vue'
+import Message from '~/components/message.vue'
 
 export default {
   name: 'MessageInput',
@@ -145,7 +145,7 @@ export default {
       // if (!this.empty(this.message) && !this.empty(imgMdText)) {
       //   imgMdText = `\n***\n ${imgMdText}`
       // }
-      return `${this.message}\n***\n${imgMdText}`
+      return `${this.message}\n\n***\n\n${imgMdText}`
     },
     markdMergedMessage () {
       // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
