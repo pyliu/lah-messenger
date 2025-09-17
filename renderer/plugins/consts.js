@@ -1,21 +1,6 @@
-// Require tw locale
+// global const variables, use this.$consts.xxxx to access them in Vue
 export default {
-  // global const variables, use this.$consts.xxxx to access them in Vue
   dayMilliseconds: 8640000,
-  animateAttentionSeekers: [
-    "bounce",
-    "flash",
-    "pulse",
-    "rubberBand",
-    "shakeX",
-    "shakeY",
-    "headShake",
-    "swing",
-    "tada",
-    "wobble",
-    "jello",
-    "heartBeat",
-  ],
   loadingAction: [
     //(https://loading.io/animation/)
     "ld-heartbeat",

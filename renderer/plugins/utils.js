@@ -1,7 +1,6 @@
-import { isEmpty, isNil, trim } from "lodash";
 import { format, formatDistanceToNow } from "date-fns";
 import $ from "jquery";
-import _ from "lodash";
+import _, { isEmpty, isNil, trim } from "lodash";
 import _md5 from "md5";
 // Require tw locale
 import { zhTW } from "date-fns/locale";
@@ -99,11 +98,27 @@ export default {
       if (_.isEmpty(selector)) {
         reject(`selector is empty.`);
       } else if (process.client) {
-        const patternLen = consts.animateAttentionSeekers.length;
+  
+        const animateAttentionSeekers = [
+          "bounce",
+          "flash",
+          "pulse",
+          "rubberBand",
+          "shakeX",
+          "shakeY",
+          "headShake",
+          "swing",
+          "tada",
+          "wobble",
+          "jello",
+          "heartBeat",
+        ];
+
+        const patternLen = animateAttentionSeekers.length;
         const seekerIdx = parseInt(Math.random() * 1000) % patternLen;
         opts = Object.assign(
           {
-            name: consts.animateAttentionSeekers[seekerIdx],
+            name: animateAttentionSeekers[seekerIdx],
             speed: "faster", // 'slower', 'slow', '', 'fast', 'faster' (3s, 2s, 1s, 800ms, 500ms)
             repeat: "", // repeat-[1-3], infinite
             delay: "", // delay, delay-[2s-5s]
