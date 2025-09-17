@@ -1,525 +1,538 @@
-import { app, dialog, Menu, nativeImage, Tray } from 'electron';
+'use strict';
+
+import ActiveDirectory from 'activedirectory2';
+import axios from 'axios';
+import { app, dialog, ipcMain, Menu, nativeImage, shell, Tray } from 'electron';
 import serve from 'electron-serve';
-import { isEmpty } from 'lodash';
+import fs from 'fs/promises'; // 使用 fs 的 promise 版本
+import { debounce, isEmpty } from 'lodash';
+import os from 'os';
+import path from 'path';
+import qs from 'qs';
+import si from 'systeminformation';
+import { createWindow, exitOnChange, notify } from './helpers';
 
-const fs = require('fs')
-const os = require('os');
-const path = require('path')
-const si = require('systeminformation')
-const qs = require('qs')
-const axios = require('axios')
-// required for PHP backend
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
+// --- 全域變數與設定 ---
+const isProd = process.env.NODE_ENV === 'production';
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
-import {
-  createWindow,
-  exitOnChange,
-  notify,
-  notifyDebounced
-} from './helpers';
+let mainWindow = null;
+let tray = null;
 
-const isProd = process.env.NODE_ENV === 'production'
+// --- 應用程式生命週期管理 ---
 
-let mainWindow = null
-let tray = null
-let rendererReady = false
+/**
+ * 處理應用程式關閉邏輯
+ */
+const closeApp = () => {
+  if (tray && !tray.isDestroyed()) {
+    tray.destroy();
+  }
+  app.isQuiting = true;
+  if (mainWindow) {
+    mainWindow.webContents.send('quit');
+  }
+  app.quit();
+};
 
-const closeApp = function () {
-  tray && tray.destroy();
-  app.isQuiting = true
-  // send to renderer process
-  mainWindow && mainWindow.webContents.send('quit')
-  app.quit()
-}
+/**
+ * 初始化系統匣 (Tray)
+ */
+const initializeTray = () => {
+  try {
+    const iconPath = path.join(__dirname, 'assets', 'message.ico');
+    const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+    tray = new Tray(trayIcon);
 
-const gotTheLock = app.requestSingleInstanceLock()  // 鎖定視窗，並記錄回傳值
-if (!gotTheLock) {
-  // 開啟第二個視窗時無法成功鎖定，關閉視窗
-  app.quit()
-} else {
-  // 開啟第二個視窗時觸發，將第一個視窗還原並關注
-  // 此事件為第一個視窗發出
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
-    // Someone tried to run a second instance, we should focus our window.
-    if (mainWindow) {
-      mainWindow.isMinimized() && mainWindow.restore()
-      mainWindow.setAlwaysOnTop(true)
-      mainWindow.show()
-      mainWindow.focus()
-    }
-  })
-
-  // Create mainWindow, load the rest of the app, etc...
-  app.on('ready', () => {
-    (async () => {
-      await app.whenReady()
-      try {
-        app.setLoginItemSettings({ openAtLogin: true })
-
-        // tray icon
-        let iconPath = path.join(__dirname, 'message.ico')
-        !isProd && console.log(`tray icon path`, iconPath)
-        const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-        tray = new Tray(trayIcon)
-        tray.setContextMenu(Menu.buildFromTemplate([{
-            label: '顯示視窗', click () {
-              mainWindow.show()
-          }, icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
-          }, {
-            label: '隱藏視窗', click () {
-              mainWindow.hide()
-          }, icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
-          }, {
-            type: "separator"
-          }
-          ,{
-            label: '關閉即時通',
-            click () {
-              app.isQuiting = true
-              app.quit()
-            },
-            icon: nativeImage.createFromPath(path.join(__dirname, 'close.ico')).resize({ width: 16, height: 16 })
-          }
-        ]))
-        tray.setIgnoreDoubleClickEvents(true)
-        tray.on('click', (event) => {
-          mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
-        })
-        tray.setToolTip('桃園即時通 v' + app.getVersion())
-
-        mainWindow = createWindow('main', {
-          width: isProd ? 490 : 960,
-          height: 740,
-          show: false,  // use 'ready-to-show' event to show the window
-          useContentSize: true, // include window frame/menubar size
-          center: true,
-          resizable: false,
-          maximizable: false,
-          minimizable: true,
-          alwaysOnTop: false,
-          kiosk: false,
-          icon: path.join(__dirname, 'message.ico'),
-          menuBarVisible: false  // not working
-        })
-        // disable the menu bar since menuBarVisible flag does not work properly
-        mainWindow.setMenuBarVisibility(false)
-        
-        mainWindow.once('ready-to-show', function(e) {
-          // setTimeout(() => this.show(), 5000)
-          // start as tray ... not showing up
-          // mainWindow.show()
-        })
-
-        mainWindow.on('focus', () => {
-          // when browser window focused, set always on top attr to false
-          mainWindow.setAlwaysOnTop(false)
-          // stop flashing frame
-          mainWindow.flashFrame(false)
-        })
-
-        if (isProd) {
-          await mainWindow.loadURL('app://./home')
-        } else {
-          const port = process.argv[2]
-          await mainWindow.loadURL(`http://localhost:${port}/home`)
-          mainWindow.webContents.openDevTools()
-        }
-
-        // open all a link with external browser
-        // https://github.com/electron/electron/issues/1344#issuecomment-359312676
-        const shell = require('electron').shell
-        mainWindow.webContents.on('will-navigate', (event, url) => {
-          if (!url.startsWith('http://localhost:8888')) {
-            event.preventDefault()
-            if (url.startsWith('http:') || url.startsWith('https:')) {
-              shell.openExternal(url)
-            }
-          }
-        })
-
-        // normal minimize action
-        mainWindow.on('minimize', function(event) {
-          event.preventDefault()
-          // set channel to default
-          mainWindow.webContents.send('set-current-channel', 'chat')
-        })
-        
-        // close to tray
-        mainWindow.on('close', function (event) {
-          if (!app.isQuiting){
-              event.preventDefault()
-              mainWindow.hide()
-              mainWindow.webContents.send('set-current-channel', 'chat')
-          }
-          return false
-        })
-      } catch (err) {
-        closeApp()
-        notify(err.message, '程式已關閉。')
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: '顯示視窗',
+        click: () => mainWindow?.show(),
+        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'maximize_window.ico')).resize({ width: 16, height: 16 })
+      },
+      {
+        label: '隱藏視窗',
+        click: () => mainWindow?.hide(),
+        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'minimize_window.ico')).resize({ width: 16, height: 16 })
+      },
+      { type: "separator" },
+      {
+        label: '關閉即時通',
+        click: closeApp,
+        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'close.ico')).resize({ width: 16, height: 16 })
       }
-    })()
-  })
+    ]);
+
+    tray.setContextMenu(contextMenu);
+    tray.setToolTip(`桃園即時通 v${app.getVersion()}`);
+    tray.on('click', () => {
+      if (mainWindow) {
+        mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+      }
+    });
+  } catch (error) {
+    handleError(error, 'Tray Initialization Failed');
+  }
+};
+
+/**
+ * 初始化主視窗
+ * @returns {Promise<void>}
+ */
+const initializeMainWindow = async () => {
+  mainWindow = createWindow('main', {
+    width: isProd ? 490 : 960,
+    height: 740,
+    show: false,
+    useContentSize: true,
+    center: true,
+    resizable: false,
+    maximizable: false,
+    icon: path.join(__dirname, 'assets', 'message.ico'),
+  });
+
+  mainWindow.setMenuBarVisibility(false);
+
+  mainWindow.once('ready-to-show', () => {
+    // 初始不顯示，保持在系統匣
+    // mainWindow.show();
+  });
+
+  // --- 主視窗事件綁定 ---
+  mainWindow.on('focus', () => {
+    mainWindow.setAlwaysOnTop(false);
+    mainWindow.flashFrame(false);
+  });
+
+  mainWindow.on('minimize', (event) => {
+    event.preventDefault();
+    mainWindow.hide(); // 改為隱藏到系統匣
+    mainWindow.webContents.send('set-current-channel', 'chat');
+  });
+
+  mainWindow.on('close', (event) => {
+    if (!app.isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+      mainWindow.webContents.send('set-current-channel', 'chat');
+    }
+  });
+  
+  // 開啟外部連結
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    // 確保只攔截非本地開發的 URL
+    if (!url.startsWith('app://') && !url.startsWith('http://localhost')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+  
+  if (isProd) {
+    await mainWindow.loadURL('app://./home');
+  } else {
+    const port = process.argv[2];
+    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    mainWindow.webContents.openDevTools();
+  }
+};
+
+/**
+ * 應用程式啟動準備
+ */
+const onAppReady = async () => {
+  try {
+    await app.whenReady();
+    app.setLoginItemSettings({ openAtLogin: true });
+
+    initializeTray();
+    await initializeMainWindow();
+
+  } catch (error) {
+    handleError(error, 'App Ready Failed', true); // 啟動失敗，直接關閉
+  }
+};
+
+// --- 單例應用程式邏輯 ---
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  // --- 綁定應用程式生命週期事件 ---
+  app.on('ready', onAppReady);
 }
+
+app.on('window-all-closed', closeApp);
 
 if (isProd) {
-  serve({ directory: 'app' })
+  serve({ directory: 'app' });
 } else {
-  exitOnChange()
-  app.setPath('userData', `${app.getPath('userData')} (development)`)
+  exitOnChange();
+  app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
-app.on('window-all-closed', closeApp)
+// --- 共用輔助函式 ---
 
-/*
- * ipc main process to handle renderer request 
+/**
+ * 統一的錯誤處理函式
+ * @param {Error} error - 錯誤物件
+ * @param {string} context - 錯誤發生的情境
+ * @param {boolean} [forceQuit=false] - 是否強制關閉應用程式
  */
-const { ipcMain } = require('electron')
-
-ipcMain.handle('reload', async (event, payload) => {
+const handleError = (error, context, forceQuit = false) => {
+  console.error(`[${context}]`, error);
   if (isProd) {
-    await mainWindow.loadURL('app://./home')
-  } else {
-    const port = process.argv[2]
-    await mainWindow.loadURL(`http://localhost:${port}/home`)
+    notify('發生錯誤', `情境: ${context}\n${error.message}`);
   }
-})
+  if (forceQuit) {
+    closeApp();
+  }
+};
 
-ipcMain.handle('add-ip-entry', async (event, payload) => {
-  // get all possible ipv4 address
-  const nets = require('os').networkInterfaces()
+/**
+ * 封裝 API POST 請求
+ * @param {object} payload - 要傳送的資料
+ * @returns {Promise<object|null>}
+ */
+const postApiData = async (payload) => {
+  try {
+    const { data } = await axios.post(payload.api, qs.stringify(payload));
+    if (data.status < 1 && !isProd) {
+      console.warn(data.message, payload);
+    }
+    return data;
+  } catch (error) {
+    handleError(error, `API Post to ${payload.api}`);
+    return null;
+  }
+};
+
+/**
+ * 防抖動的通知函式
+ */
+const notifyDebounced = debounce((message, payload) => {
+  notify('[桃園即時通 💬]', message, (err, response) => {
+    if (err) {
+      handleError(err, 'Notification Display');
+      return;
+    }
+    
+    // 使用者點擊通知
+    if (response !== 'timeout') {
+      if (mainWindow) {
+        if (!mainWindow.isVisible()) mainWindow.show();
+        mainWindow.setAlwaysOnTop(true);
+        mainWindow.focus();
+      }
+    }
+  });
+  
+  if (mainWindow) {
+    mainWindow.flashFrame(true);
+  }
+}, 300, { 'leading': true, 'trailing': false }); // 立即觸發，300ms 內不再觸發
+
+
+// --- IPC 事件處理器 ---
+
+/**
+ * 重新載入主視窗
+ */
+ipcMain.handle('reload', async () => {
+  try {
+    if (isProd) {
+      await mainWindow.loadURL('app://./home');
+    } else {
+      const port = process.argv[2];
+      await mainWindow.loadURL(`http://localhost:${port}/home`);
+    }
+  } catch(e) {
+    handleError(e, 'Reload Window');
+  }
+});
+
+/**
+ * 新增 IP 登錄
+ */
+ipcMain.handle('add-ip-entry', (event, payload) => {
+  const nets = os.networkInterfaces();
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
-      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
       if (net.family === 'IPv4' && !net.internal) {
-        // update ip user mapping to API server
-        payload.ip = net.address
-        axios.post(
-          payload.api,
-          qs.stringify(payload)
-        ).then(({ data }) => {
-          data.status < 1 && !isProd && console.warn(data.message, payload.ip)
-        }).catch(error => {
-          console.error(error)
-          notify(error.message, payload.ip)
-        })
+        postApiData({ ...payload, ip: net.address });
       }
     }
   }
-})
+});
 
-ipcMain.handle('change-user-dept', async (event, payload) => {
-  axios.post(
-    payload.api,
-    qs.stringify(payload)
-  ).then(({ data }) => {
-    data.status < 1 && !isProd && console.warn(data.message, payload.ip)
-  }).catch(error => {
-    console.error(error)
-    notify(error.message, payload.ip)
-  })
-})
+/**
+ * 變更使用者部門
+ */
+ipcMain.handle('change-user-dept', (event, payload) => postApiData(payload));
 
-ipcMain.handle('wss-probe', async (event, payload) => {
-  // https://www.npmjs.com/package/tcp-ping-sync
-  const { probe } = require('tcp-ping-sync')
-  return probe(
-    payload.ip,   // (default: 'localhost')
-    payload.port  // (default: 80)
-  )
-})
-
-ipcMain.handle('show-window', async (event, payload) => {
+/**
+ * 顯示主視窗
+ */
+ipcMain.handle('show-window', (event, payload) => {
   if (mainWindow) {
-    mainWindow.isMinimized() && mainWindow.restore()
-    mainWindow.show()
-    payload.top && mainWindow.setAlwaysOnTop(true)
-    payload.top && mainWindow.focus()
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    if (payload.top) {
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.focus();
+    }
   }
-})
+});
 
+/**
+ * 顯示訊息框
+ */
 ipcMain.handle('show-message-box', (event, arg) => {
   const options = {
-    ...{
-      type: 'info',
-      title: '📢 訊息',
-      message: '請輸入訊息',
-      detail: undefined,
-      block: false,
-      browser: false,
-      statusOnly: false
-    },
+    type: 'info',
+    title: '📢 訊息',
+    message: '請輸入訊息',
     ...arg
-  }
+  };
+
   if (options.browser) {
-    const combined = isEmpty(options.detail) ? options.message : `${options.message} - ${options.detail}`
+    const combined = isEmpty(options.detail) ? options.message : `${options.message} - ${options.detail}`;
     mainWindow.webContents.send('in-browser-notify', {
       message: combined,
       type: options.type,
       title: options.title,
       statusOnly: options.statusOnly
-    })
+    });
   } else {
-    dialog.showMessageBox(options.block ? mainWindow : null, options, (response, checkboxChecked) => {
-      // event.sender.send('show-message-box-response', [response, checkboxChecked])
-    })
+    dialog.showMessageBox(options.block ? mainWindow : null, options);
   }
 });
 
-ipcMain.handle('quit', async (event, str) => {
-  app.isQuiting = true
-  // send to renderer process
-  mainWindow.webContents.send('quit')
-  app.quit()
-})
+/**
+ * 關閉應用程式
+ */
+ipcMain.handle('quit', closeApp);
 
-ipcMain.handle('home-ready', async (event, payload) => {
-  !isProd && console.log(`home.vue ready`)
-  rendererReady = true
-})
-
-ipcMain.handle('title', async (event, str) => {
-  !isProd && console.log(`Set Title`, str)
-  mainWindow.setTitle(str)
-})
-
-ipcMain.handle('notification', async (event, payload) => {
-  const message = typeof payload === 'string' ? payload : payload.message
-  const showMainWindow = payload.showMainWindow
-  !isProd && console.log(`trigger notification`, payload)
-  // to prevent multiple messages coming in at once
-  notifyDebounced('[桃園即時通 💬]', message, (err, response, metadata) => {
-    // Response is response from notification
-    // Metadata contains activationType, activationAt, deliveredAt
-    !isProd && console.warn(err, typeof response, metadata)
-    // pull app from the tray
-    if (!mainWindow.isVisible()) {
-      mainWindow.minimize()
-      // mainWindow.restore()
-    }
-    // flash the windows when got notification
-    mainWindow.flashFrame(true)
-    // click the balloon shows the window
-    if (!err && response !== 'timeout') {
-      if (!mainWindow.isVisible()) {
-        mainWindow.show()
-        mainWindow.center()
-      }
-      mainWindow.setAlwaysOnTop(true)
-      mainWindow.focus()
-    }
-    // marked on 1110627 ... user argues the window will disturb the operation
-    // 視窗置中顯示
-    // if (showMainWindow) {
-    //   if (!mainWindow.isVisible()) {
-    //     mainWindow.show()
-    //     mainWindow.center()
-    //   }
-    //   mainWindow.setAlwaysOnTop(true)
-    //   mainWindow.focus()
-    //   if (channel) {
-    //     // 切換至頻道
-    //     mainWindow.webContents.send('set-current-channel', channel)
-    //   }
-    // }
-  })
-})
-
-ipcMain.handle('unread', async (event, channel) => {
-  !isProd && console.log(`Set channel Unread`, channel)
-  const annChannels = [`announcement_${mainWindow.userinfo?.userdept}`, 'announcement']
-  // very important notification
-  if (annChannels.includes(channel)) {
-    // flash the windows
-    mainWindow.flashFrame(true)
-    // mainWindow.show()
-    // mainWindow.center()
-    // mainWindow.setAlwaysOnTop(true)
-    // mainWindow.focus()
-  }
-})
-
-ipcMain.handle('toggleUnreadTrayIcon', async (event, payload) => {
-  !isProd && console.log(`change tray icon`, payload)
-  let iconPath = path.join(__dirname, 'message.ico')
-  if (payload.unread > 0) {
-    // change ico to notice one
-    iconPath = path.join(__dirname, 'message_notice.ico')
-    tray.setToolTip('👉 您有' + payload.unread + '則未讀訊息！')
-    // pull app from the tray
-    if (!mainWindow.isVisible()) {
-      mainWindow.minimize()
-      // mainWindow.restore()
-    }
-    // flash the window to catch attention
-    mainWindow.flashFrame(true)
-  } else {
-    tray.setToolTip('桃園即時通 v' + app.getVersion())
-    mainWindow.flashFrame(false)
-  }
-  const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
-  tray.setImage(trayIcon)
-  // also update icon for the main window
-  mainWindow.setIcon(iconPath)
-})
-
-ipcMain.handle('injectUserinfo', async (event, arg) => {  
-  // inject userinfo to main window
-  mainWindow.userinfo = arg
-})
-
-ipcMain.handle('userinfo', async (event, arg) => {
-  // To find user id starts with 'HX'
-  const found = [ ...await si.users() ].find(thisuser => /^H[A-H]/i.test(thisuser.user))
-  /*
-    expect found format => {
-      user: 'HA0000',
-      tty: 'console',
-      date: '',
-      time: '',
-      ip: '',
-      command: ''
-    }
-   */
+/**
+ * 處理渲染程序已就緒的事件
+ */
+ipcMain.handle('home-ready', () => {
   if (!isProd) {
-    if (found) {
-      console.log(`Found User`, found)
+    console.log('Renderer process is ready.');
+  }
+  // 這個處理器目前僅用於確認事件，未來可擴充
+});
+
+/**
+ * 設定視窗標題
+ */
+ipcMain.handle('title', (event, str) => {
+  if (mainWindow) {
+    mainWindow.setTitle(str);
+  }
+});
+
+/**
+ * 處理來自渲染程序地通知請求
+ */
+ipcMain.handle('notification', (event, payload) => {
+  const message = typeof payload === 'string' ? payload : payload.message;
+  notifyDebounced(message, payload);
+});
+
+/**
+ * 處理未讀頻道事件
+ */
+ipcMain.handle('unread', (event, channel) => {
+  if (!isProd) {
+    console.log(`Set channel Unread`, channel);
+  }
+  // 檢查主視窗和使用者資訊是否存在
+  if (!mainWindow || !mainWindow.userinfo) {
+    return;
+  }
+  const annChannels = [`announcement_${mainWindow.userinfo.userdept}`, 'announcement'];
+  // 如果是重要的公告頻道，閃爍視窗以提醒使用者
+  if (annChannels.includes(channel)) {
+    mainWindow.flashFrame(true);
+  }
+});
+
+/**
+ * 根據未讀訊息更新系統匣圖示
+ */
+ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
+  try {
+    let iconName = 'message.ico';
+    let toolTip = `桃園即時通 v${app.getVersion()}`;
+
+    if (payload.unread > 0) {
+      iconName = 'message_notice.ico';
+      toolTip = `👉 您有 ${payload.unread} 則未讀訊息！`;
+      if (mainWindow) {
+        mainWindow.flashFrame(true);
+      }
     } else {
-      console.log(`Can not find user id that starts with H[A-H]`)
-    }
-  }
-  const os = await si.osInfo()
-  /*
-    expect os format => {
-      arch: "x64"
-      build: "19042"
-      codename: ""
-      codepage: "950"
-      distro: "Microsoft Windows 10"
-      fqdn: "LAPTOP-LE2FFKSC"
-      hostname: "LAPTOP-LE2FFKSC"
-      hypervisor: false
-      kernel: "10.0.19042"
-      logofile: "windows"
-      platform: "win32"
-      release: "10.0.19042"
-      remoteSession: false
-      serial: "00000-00000-00000-xxxx"
-      servicepack: "0.0"
-      uefi: false
-    }
-   */
-  !isProd && console.log('collected OS info', os)
-  const userinfo = {
-    address: [],
-    ipv4: '',
-    ipv6: '',
-    userid: found ? found.user : '',
-    hostname: os.hostname,
-    domain: os.fqdn,
-    os: os,
-    user: found,
-    dns: require('dns').getServers()
-  }
-  // get all ip addresses by node.js os module 
-  const nets = require('os').networkInterfaces()
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name]) {
-      userinfo.address.push(net.address)
-      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-      if (net.family === 'IPv4' && !net.internal) {
-        if (net.address.startsWith('192.168.') || net.address.startsWith('220.1.')) {
-          userinfo.ipv4 = net.address
-        }
-      } else if (net.family === 'IPv6' && !net.internal) {
-        userinfo.ipv6 = net.address
+      if (mainWindow) {
+        mainWindow.flashFrame(false);
       }
     }
+
+    const iconPath = path.join(__dirname, 'assets', iconName);
+    const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+    
+    if (tray && !tray.isDestroyed()) {
+      tray.setImage(trayIcon);
+      tray.setToolTip(toolTip);
+    }
+    if (mainWindow) {
+      mainWindow.setIcon(iconPath);
+    }
+  } catch (error) {
+    handleError(error, 'ToggleUnreadTrayIcon');
   }
+});
 
-  return userinfo
-})
+/**
+ * 注入使用者資訊到主視窗物件
+ */
+ipcMain.handle('injectUserinfo', (event, arg) => {  
+  if (mainWindow) {
+    mainWindow.userinfo = arg;
+  }
+});
 
+/**
+ * 收集並回傳本機使用者與系統資訊
+ */
+ipcMain.handle('userinfo', async () => {
+  try {
+    const [siUsers, osInfo, nets] = await Promise.all([
+      si.users(),
+      si.osInfo(),
+      os.networkInterfaces()
+    ]);
+    
+    // 尋找符合格式的登入者ID (H 開頭)
+    const foundUser = siUsers.find(u => /^H[A-H]/i.test(u.user));
+    
+    const userinfo = {
+      ipv4: '',
+      userid: foundUser ? foundUser.user : '',
+      hostname: osInfo.hostname,
+      os: `${osInfo.distro} ${osInfo.release}`,
+      dns: require('dns').getServers()
+    };
+    
+    // 遍歷網卡資訊找尋 IPv4
+    for (const name of Object.keys(nets)) {
+      for (const net of nets[name]) {
+        if (net.family === 'IPv4' && !net.internal) {
+          userinfo.ipv4 = net.address;
+          // 找到主要IP後即可跳出
+          break;
+        }
+      }
+      if (userinfo.ipv4) break;
+    }
+    
+    return userinfo;
+  } catch(e) {
+    handleError(e, 'userinfo collection');
+    return null;
+  }
+});
+
+/**
+ * 查詢 Active Directory 使用者資訊
+ */
 ipcMain.handle('ad-user-query', async (event, config) => {
   if (!isProd) {
-    return {
-      description: '測試中',
-      group: 'inf'
-    }
+    return { description: '測試使用者', group: 'inf' };
   }
-  const ActiveDirectory = require('activedirectory2').promiseWrapper
-  // expect config: {
-  //     url: `ldap://${this.adHost}`,
-  //     baseDN: `DC=${this.domain.split('.').join(',DC=')}`, // 'DC=HB,DC=CENWEB,DC=LAND,DC=MOI'
-  //     username: sAMAccountName,
-  //     password: 'XXXXXXXXXXX'
-  // }
-  const ad = new ActiveDirectory(config)
-  !isProd && console.log(`查詢AD設定檔`, config)
-  const user = await ad.findUser(config.username.split('@')[0])
-  if (user) {
-    !isProd && console.log(`找到AD使用者`, user)
-    // find user group
-    let group = 'adm'
-    let checked = false
-    await ad.isUserMemberOf(config.username, '資訊課') && (group = 'inf') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '登記課') && (group = 'reg') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '地價課') && (group = 'val') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '行政課') && (group = 'adm') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '測量課') && (group = 'sur') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '人事室') && (group = 'hr') && (checked = true)
-    !checked && await ad.isUserMemberOf(config.username, '會計室') && (group = 'acc') && (checked = true)
-    // await ad.isUserMemberOf(config.username, '秘書室') && (group = 'supervisor') && (checked = true)
-    // await ad.isUserMemberOf(config.username, '主任室') && (group = 'supervisor') && (checked = true)
-    return {
-      description: user.description,
-      group: group
-    }
-  } else {
-    !isProd && console.error('AD查詢失敗', user)
-  }
-  return undefined
-})
+  try {
+    const ad = new ActiveDirectory.promiseWrapper(config);
+    const sAMAccountName = config.username.split('@')[0];
+    const user = await ad.findUser(sAMAccountName);
 
-ipcMain.handle('open-explorer', async (event, payload) => {
-  // open the path
-  require('child_process').exec(`start "" "${payload.path || payload}"`)
-})
-
-ipcMain.handle('open-image', async (event, payload) => {
-  const parts = payload.src?.split(',')
-  let buf, tmpFilename
-  if (Array.isArray(parts)) {
-    //check extension
-    switch (parts[0]) {
-      case "data:image/jpeg;base64":
-        tmpFilename = "tmp.jpeg"
-        break
-      case "data:image/png;base64":
-        tmpFilename = "tmp.png"
-        break
-      default:
-        // for most cases
-        tmpFilename = 'tmp.jpg'
+    if (!user) {
+      throw new Error(`User ${sAMAccountName} not found in AD.`);
     }
-    buf = Buffer.from(parts[1], 'base64')
-  } else {
-    buf = Buffer.from(payload.src, 'base64')
-  }
-  const filepath = path.join(os.homedir(), tmpFilename)
-  fs.writeFile(filepath, buf, (error) => {
-    if (error) { throw new Error(error) }
-    // open the image
-    require('child_process').exec(filepath, function(err, stdout, stderr) {
-      if (err !== null) {
-        console.error(err)
-        throw err
+
+    // 使用 Map 讓部門對應更清晰且易於擴充
+    const groupMap = new Map([
+      ['資訊課', 'inf'],
+      ['登記課', 'reg'],
+      ['地價課', 'val'],
+      ['行政課', 'adm'],
+      ['測量課', 'sur'],
+      ['人事室', 'hr'],
+      ['會計室', 'acc'],
+    ]);
+
+    let group = 'adm'; // 預設群組
+    for (const [groupName, groupCode] of groupMap.entries()) {
+      if (await ad.isUserMemberOf(config.username, groupName)) {
+        group = groupCode;
+        break;
       }
-    })
-  })
-})
+    }
 
-ipcMain.handle('version', async (event, payload) => {
-  const version = app.getVersion()
-  !isProd && console.log(`APP version is`, version)
-  return version
-})
+    return { description: user.description, group };
+  } catch (error) {
+    handleError(error, 'AD User Query');
+    return null;
+  }
+});
+
+/**
+ * 使用系統預設程式開啟檔案總管路徑
+ */
+ipcMain.handle('open-explorer', (event, payload) => {
+  const targetPath = payload.path || payload;
+  shell.openPath(targetPath).catch(err => handleError(err, `Open Explorer: ${targetPath}`));
+});
+
+/**
+ * 開啟 Base64 編碼的圖片
+ */
+ipcMain.handle('open-image', async (event, payload) => {
+  try {
+    const parts = payload.src?.split(',');
+    if (!Array.isArray(parts) || parts.length !== 2) {
+      throw new Error('Invalid Base64 image source.');
+    }
+
+    const mimeType = parts[0];
+    const base64Data = parts[1];
+    let extension = '.jpg';
+    if (mimeType.includes('png')) extension = '.png';
+    if (mimeType.includes('jpeg')) extension = '.jpeg';
+
+    const buffer = Buffer.from(base64Data, 'base64');
+    // 使用應用程式暫存目錄與唯一檔名，避免衝突
+    const tempDir = app.getPath('temp');
+    const filepath = path.join(tempDir, `image_preview_${Date.now()}${extension}`);
+    
+    await fs.writeFile(filepath, buffer);
+    // 使用 shell.openPath 更安全
+    await shell.openPath(filepath);
+    
+    // 注意：暫存檔不會自動刪除，但因為在 temp 目錄，通常系統會定期清理
+  } catch (error) {
+    handleError(error, 'Open Image');
+  }
+});
+
+/**
+ * 取得應用程式版本號
+ */
+ipcMain.handle('version', () => app.getVersion());
+
