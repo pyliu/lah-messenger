@@ -1,18 +1,19 @@
 import { isEmpty } from 'lodash'
+import consts from './consts'
 
 export default ($axios, store) => ({
   /**
-   * 取得線上使用者
+   * example API request
    */
   getOnlineUsers () {
-    return $axios.post(store.state.api.user_online)
+    return $axios.post(consts.API.JSON.XXXXXX)
   },
 
   /**
    * 取得部門IP對應表
    */
   getDeptIp () {
-    return $axios.post(store.state.api.get_dept_ip)
+    return $axios.post(consts.API.JSON.XXXXXX)
   },
 
   /**
@@ -20,7 +21,7 @@ export default ($axios, store) => ({
    * @param {Object} payload 
    */
   queryAdAccount (payload) {
-    return $axios.post(store.state.api.ad, payload)
+    return $axios.post(consts.API.JSON.XXXXXX, payload)
   },
 
   /**
@@ -32,7 +33,7 @@ export default ($axios, store) => ({
       // 公告 API 需要的參數
       dept: isEmpty(dept) ? store.state.userinfo.dept : dept
     }
-    return $axios.post(store.state.api.announcement, payload)
+    return $axios.post(consts.API.JSON.XXXXXX, payload)
   }
   // ... 其他所有與 API 相關的請求都可以集中到這裡
 })
