@@ -64,7 +64,7 @@ const initializeTray = () => {
     ]);
 
     tray.setContextMenu(contextMenu);
-    tray.setToolTip(`${process.env.APP || 'lah-messenger'} v${app.getVersion()}`);
+    tray.setToolTip(`${process.env.APP|| '桃園即時通'} v${app.getVersion()}`);
     tray.on('click', () => {
       if (mainWindow) {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
@@ -218,7 +218,7 @@ const postApiData = async (payload) => {
  * 防抖動的通知函式
  */
 const notifyDebounced = debounce((message, payload) => {
-  notify(`[${$process.env.APP || 'lah-messenger' } 💬]`, message, (err, response) => {
+  notify(`[${$process.env.APP|| '桃園即時通' } 💬]`, message, (err, response) => {
     if (err) {
       handleError(err, 'Notification Display');
       return;
@@ -371,7 +371,7 @@ ipcMain.handle('unread', (event, channel) => {
 ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
   try {
     let iconName = 'message.ico';
-    let toolTip = `${process.env.APP || 'lah-messenger'} v${app.getVersion()}`;
+    let toolTip = `${process.env.APP|| '桃園即時通'} v${app.getVersion()}`;
 
     if (payload.unread > 0) {
       iconName = 'message_notice.ico';
