@@ -40,7 +40,7 @@ const closeApp = () => {
  */
 const initializeTray = () => {
   try {
-    const iconPath = path.join(__dirname, 'assets', 'message.ico');
+    const iconPath = path.join(__dirname, 'message.ico');
     const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
     tray = new Tray(trayIcon);
 
@@ -48,18 +48,18 @@ const initializeTray = () => {
       {
         label: '顯示視窗',
         click: () => mainWindow?.show(),
-        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'maximize_window.ico')).resize({ width: 16, height: 16 })
+        icon: nativeImage.createFromPath(path.join(__dirname, 'maximize_window.ico')).resize({ width: 16, height: 16 })
       },
       {
         label: '隱藏視窗',
         click: () => mainWindow?.hide(),
-        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'minimize_window.ico')).resize({ width: 16, height: 16 })
+        icon: nativeImage.createFromPath(path.join(__dirname, 'minimize_window.ico')).resize({ width: 16, height: 16 })
       },
       { type: "separator" },
       {
         label: '關閉即時通',
         click: closeApp,
-        icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'close.ico')).resize({ width: 16, height: 16 })
+        icon: nativeImage.createFromPath(path.join(__dirname, 'close.ico')).resize({ width: 16, height: 16 })
       }
     ]);
 
@@ -88,7 +88,7 @@ const initializeMainWindow = async () => {
     center: true,
     resizable: false,
     maximizable: false,
-    icon: path.join(__dirname, 'assets', 'message.ico'),
+    icon: path.join(__dirname, 'message.ico'),
   });
 
   mainWindow.setMenuBarVisibility(false);
@@ -385,7 +385,7 @@ ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
       }
     }
 
-    const iconPath = path.join(__dirname, 'assets', iconName);
+    const iconPath = path.join(__dirname, iconName);
     const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
     
     if (tray && !tray.isDestroyed()) {
