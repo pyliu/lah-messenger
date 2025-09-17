@@ -55,10 +55,9 @@ export default {
   },
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
-    { src: '~/plugins/global-consts.js'},
-    { src: '~/plugins/global-vue-mixin.js'},
     { src: '~/plugins/app-inject.js' },
-    { src: '~/plugins/axios.js'},
+    { src: '~/plugins/global-vue-mixin.js'},
+    // { src: '~/plugins/axios.js'},
     { src: '~/plugins/test.js'},
   ],
   // Auto import components (https://go.nuxtjs.dev/config-components)
