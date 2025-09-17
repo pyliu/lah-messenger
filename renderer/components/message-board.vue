@@ -145,7 +145,7 @@ export default {
         formData.append('width', 1920)
         formData.append('height', 1080)
         formData.append('quality', 80)
-        this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
+        this.$utils.getUploadAxios().post(this.uploadUrl, formData).then(({ data }) => {
           if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
             this.pickedEncodingData = `${data.uri}${data.encoded}`
             this.$store.commit('addImageMemento', this.pickedEncodingData)

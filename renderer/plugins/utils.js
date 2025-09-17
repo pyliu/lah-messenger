@@ -16,21 +16,23 @@ marked.setOptions({
 import highlightWords from "highlight-words";
 
 export default {
+  getUploadAxios() {
+    const axios = require("axios");
+    axios.defaults.headers.post["Content-Type"] = "multipart/form-data";
+    return axios;
+  },
   /**
    * 檢查物件是否為空
    */
   isEmpty,
-
   /**
    * 檢查是否為 Nil (null 或 undefined)
    */
   isNil,
-
   /**
    * 去除字串前後空白
    */
   trim,
-
   /**
    * 格式化時間 (範例)
    * @param {Date|String|Number} time
@@ -42,7 +44,6 @@ export default {
       .toString()
       .padStart(2, "0")}`;
   },
-
   /**
    * 格式化日期 (範例)
    * @param {Date|String|Number} date

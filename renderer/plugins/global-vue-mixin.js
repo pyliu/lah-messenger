@@ -278,7 +278,7 @@ Vue.mixin({
       formData.append('width', 1920)
       formData.append('height', 1080)
       formData.append('quality', 80)
-      this.$upload.post(this.uploadUrl, formData).then(({ data }) => {
+      this.$utils.getUploadAxios().post(this.uploadUrl, formData).then(({ data }) => {
         if (!this.empty(data.encoded) && !this.empty(data.uri)) {
           const encoded = `${data.uri}${data.encoded}`
           this.$store.commit('addImageMemento', encoded)
