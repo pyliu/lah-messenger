@@ -138,7 +138,7 @@ div: client-only
       //- .center.logo: b-img#main_logo(src="taoyuan_logo.png", v-cloak, fluid)
       .center.mb-5.logo
         b-img(src="tyland.jpg", fluid, style="max-width: 96px")
-        H1 桃園即時通
+        H1 {{ $config.appName }}
       .center: b-iconstack#main_logo_icon.iconstack(
         font-scale="6",
         v-cloak
@@ -273,7 +273,7 @@ import ImageUpload from "~/components/image-upload.vue";
 
 export default {
   transition: "list",
-  head: { title: `桃園即時通` },
+  head: { title: `${process.env.APP}` },
   components: { ImageUpload },
   data: () => ({
     emoji: false,
@@ -1943,6 +1943,7 @@ export default {
     this.$root.$on('bv::modal::hidden', this.watchModal);
     // for querying online users
     this.debouncedQueryOnlineClients = this.$utils.debounce(this.queryOnlineClients, 1000)
+    this.warn("CONFIG", this.$config);
     
   },
   beforeDestroy() {

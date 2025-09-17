@@ -99,12 +99,12 @@
 </template>
 
 <script>
-import trim from 'lodash/trim'
+import trim from 'lodash/trim';
 
 export default {
   transition: 'list',
   head: {
-    title: `桃園即時通-設定`
+    title: `APP設定`
   },
   fetch () {
     this.restore()

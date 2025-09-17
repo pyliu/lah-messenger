@@ -1,7 +1,8 @@
+
 export default {
   ssr: false,
   head: {
-    title: '桃園即時通',
+    title: process.env.APP,
     meta: [{
       charset: 'utf-8'
     },
@@ -12,7 +13,7 @@ export default {
     {
       hid: 'description',
       name: 'description',
-      content: '桃園即時通-桃園市地政局'
+      content: `${process.env.APP} - 桃園市政府地政局`
     }
     ],
     link: [{
@@ -109,7 +110,8 @@ export default {
     axios: {
       // Default: baseURL; when the proxy option is true, it will become PREFIX instead of baseURL
       browserBaseURL: process.env.BROWSER_BASE_URL
-    }
+    },
+    appName: process.env.APP || '桃園即時通'
   },
   // should hold all env variables that are private and that should not be exposed on the frontend.
   // only available on server using same $config
