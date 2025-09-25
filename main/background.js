@@ -218,7 +218,7 @@ const postApiData = async (payload) => {
  * 防抖動的通知函式
  */
 const notifyDebounced = debounce((message, payload) => {
-  notify(`[${$process.env.APP|| '桃園即時通' } 💬]`, message, (err, response) => {
+  notify(`[${$process?.env.APP || '桃園即時通' } 💬]`, message, (err, response) => {
     if (err) {
       handleError(err, 'Notification Display');
       return;

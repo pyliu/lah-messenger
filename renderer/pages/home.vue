@@ -524,6 +524,8 @@ export default {
     },
     currentChannel(nVal, oVal) {
       this.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`);
+      // Send channel update to websocket server
+      this.sendChannelUpdate(nVal);
       // comment out to prevent mess in/out system message in chat room
       // this.delaySendChannelActivity(oVal, nVal)
 
@@ -861,6 +863,16 @@ export default {
           { sender: "system", channel: this.currentChannel }
         );
     },
+    sendChannelUpdate(channel) {
+      if (this.connected) {
+        this.log(`發送頻道更新至伺服器: ${this.adAccount} ${channel}`);
+        this.websocket.send(this.packCommand({
+          command: "update_current_channel",
+          channel: channel,
+          userid: this.adAccount
+        }));
+      }
+    },
     send() {
       // detect local commands
       const text = trim(this.inputText);
@@ -923,7 +935,8 @@ export default {
             userid: this.adAccount,
             username: this.adName,
             dept: this.department,
-            timestamp: +new Date()
+            timestamp: +new Date(),
+            channel: this.currentChannel
           }));
           // also update IP entry to API server
           this.reportToAPIServer();
@@ -1247,6 +1260,26 @@ export default {
               found.flag += 2;
             }
           }
+          break;
+        case "update_current_channel":
+          /**
+           * json: {
+           *   "command": "update_current_channel",
+           *     "payload": {
+           *     "command": "update_current_channel",
+           *     "ip": "192.168.XXX.XXX",
+           *     "domain": "",
+           *     "userid": "HAXXXXXXXX",
+           *     "username": "測試使用者",
+           *     "dept": "inf",
+           *     "timestamp": 1758781366276,
+           *     "channel": "inf"
+           *   },
+           *   "success": true,
+           *   "message": "已更新 HAXXXXXXXX 目前 channel 到 inf"
+}
+           */
+          this.warn(json)
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
@@ -1659,37 +1692,37 @@ export default {
       /**
        * expect announcement incoming message format:
        * {
-       *    channel: "announcement_inf"
-       *    date: "2021-09-02"
-       *    from: "220.1.34.75"
-       *    id: 1
-       *    message: {
-       *      content: "目標：穩定(確保機房及系統正常運作) ..."
-       *      create_datetime: "2021-08-25 15:52:19"
-       *      expire_datetime: ""
-       *      flag: 0
-       *      from_ip: "192.168.xx.xx"
-       *      id: 1
-       *      priority: 2
-       *      sender: "HA10000000"
-       *      title: "xxxxxxx"
-       *    }
-       *    prepend: false
-       *    sender: "系統推播"
-       *    time: "17:26:01"
-       *    type: "remote"
+       * channel: "announcement_inf"
+       * date: "2021-09-02"
+       * from: "220.1.34.75"
+       * id: 1
+       * message: {
+       * content: "目標：穩定(確保機房及系統正常運作) ..."
+       * create_datetime: "2021-08-25 15:52:19"
+       * expire_datetime: ""
+       * flag: 0
+       * from_ip: "192.168.xx.xx"
+       * id: 1
+       * priority: 2
+       * sender: "HA10000000"
+       * title: "xxxxxxx"
+       * }
+       * prepend: false
+       * sender: "系統推播"
+       * time: "17:26:01"
+       * type: "remote"
        * }
        *
        * expect personal incoming message format:
        * {
-       *   channel: "HA10013859"
-       *   date: "2021-09-02"
-       *   id: 16
-       *   message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
-       *   prepend: false
-       *   sender: "HA10013859"
-       *   time: "17:17:13"
-       *   type: "remote"
+       * channel: "HA10013859"
+       * date: "2021-09-02"
+       * id: 16
+       * message: "<p>眾所矚目由鴻海、台積電、慈濟共同採購的首批93.2萬劑BNT疫苗今...</p>"
+       * prepend: false
+       * sender: "HA10013859"
+       * time: "17:17:13"
+       * type: "remote"
        * }
        */
       // remove all html tags (will generate by Markd)
@@ -2023,3 +2056,4 @@ export default {
   opacity: 1;
 }
 </style>
+
