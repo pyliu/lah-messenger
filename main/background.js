@@ -101,6 +101,7 @@ const initializeMainWindow = async () => {
   // --- 主視窗事件綁定 ---
   mainWindow.on('focus', () => {
     mainWindow.setAlwaysOnTop(false);
+    // 當使用者點擊視窗時，停止閃爍
     mainWindow.flashFrame(false);
   });
 
@@ -218,7 +219,7 @@ const postApiData = async (payload) => {
  * 防抖動的通知函式
  */
 const notifyDebounced = debounce((message, payload) => {
-  notify(`[${$process?.env.APP || '桃園即時通' } 💬]`, message, (err, response) => {
+  notify(`[${process?.env.APP || '桃園即時通' } 💬]`, message, (err, response) => {
     if (err) {
       handleError(err, 'Notification Display');
       return;
@@ -234,7 +235,7 @@ const notifyDebounced = debounce((message, payload) => {
     }
   });
   
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isFocused()) {
     mainWindow.flashFrame(true);
   }
 }, 300, { 'leading': true, 'trailing': false }); // 立即觸發，300ms 內不再觸發
@@ -348,39 +349,37 @@ ipcMain.handle('notification', (event, payload) => {
 });
 
 /**
- * 處理未讀頻道事件
+ * 處理未讀頻道事件 (僅用於日誌記錄)
+ * @description 此處的邏輯已被簡化。原有的 flashFrame(true) 已被移除，
+ * 以統一由 toggleUnreadTrayIcon 根據未讀總數來控制視窗閃爍，避免邏輯衝突。
  */
 ipcMain.handle('unread', (event, channel) => {
   if (!isProd) {
-    console.log(`Set channel Unread`, channel);
+    console.log(`Channel marked as unread:`, channel);
   }
-  // 檢查主視窗和使用者資訊是否存在
-  if (!mainWindow || !mainWindow.userinfo) {
-    return;
-  }
-  const annChannels = [`announcement_${mainWindow.userinfo.userdept}`, 'announcement'];
-  // 如果是重要的公告頻道，閃爍視窗以提醒使用者
-  if (annChannels.includes(channel)) {
-    mainWindow.flashFrame(true);
-  }
+  // 此處不再處理視窗閃爍，交由 toggleUnreadTrayIcon 統一管理
 });
 
 /**
- * 根據未讀訊息更新系統匣圖示
+ * 根據未讀訊息總數更新系統匣圖示和視窗閃爍狀態
+ * @description 這是控制視窗閃爍的主要邏輯點。
  */
 ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
   try {
     let iconName = 'message.ico';
     let toolTip = `${process.env.APP|| '桃園即時通'} v${app.getVersion()}`;
 
+    // 當有未讀訊息時
     if (payload.unread > 0) {
       iconName = 'message_notice.ico';
       toolTip = `👉 您有 ${payload.unread} 則未讀訊息！`;
-      if (mainWindow) {
+      // 僅在視窗本身非焦點狀態時才閃爍，避免干擾使用者
+      if (mainWindow && !mainWindow.isFocused()) {
         mainWindow.flashFrame(true);
       }
-    } else {
+    } else { // 當沒有未讀訊息時
       if (mainWindow) {
+        // 停止閃爍
         mainWindow.flashFrame(false);
       }
     }
@@ -535,4 +534,3 @@ ipcMain.handle('open-image', async (event, payload) => {
  * 取得應用程式版本號
  */
 ipcMain.handle('version', () => app.getVersion());
-
