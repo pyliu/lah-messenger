@@ -1731,7 +1731,7 @@ export default {
       const title = temp.innerText.substring(0, 18) + " ... ";
 
       this.warn(
-        `呼叫主程序發出通知 SENDER: ${incoming.sender} MY ID: ${this.adAccount}`,
+        `呼叫主程序發出通知 SENDER: ${incoming.sender} MY ID: ${this.adAccount} CHANNEL: ${channel}`,
         title
       );
       // store the last read id
@@ -1739,10 +1739,16 @@ export default {
       // const showMainWindow = this.notifyChannels.includes(channel);
       // sender not self and settings allowed then triggers notification
       if (incoming.sender !== this.adAccount) {
-        this.ipcRenderer.invoke('notification', {
-          message: title,
-          showMainWindow: false
-        });
+        if (this.notifyChannels.includes(channel)) {
+          this.ipcRenderer.invoke('notification', {
+            message: title,
+            showMainWindow: true
+          });
+        }
+        // this.ipcRenderer.invoke('notification', {
+        //   message: title,
+        //   showMainWindow: false
+        // });
       }
     },
     keydown(event) {
