@@ -373,15 +373,14 @@ ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
     if (payload.unread > 0) {
       iconName = 'message_notice.ico';
       toolTip = `👉 您有 ${payload.unread} 則未讀訊息！`;
+      mainWindow && mainWindow.show();
       // 僅在視窗本身非焦點狀態時才閃爍，避免干擾使用者
-      if (mainWindow && !mainWindow.isFocused()) {
-        mainWindow.flashFrame(true);
-      }
+      // if (mainWindow && !mainWindow.isFocused()) {
+        mainWindow && mainWindow.flashFrame(true);
+      // }
     } else { // 當沒有未讀訊息時
-      if (mainWindow) {
         // 停止閃爍
-        mainWindow.flashFrame(false);
-      }
+        mainWindow && mainWindow.flashFrame(false);
     }
 
     const iconPath = path.join(__dirname, iconName);
