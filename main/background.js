@@ -231,11 +231,13 @@ const notifyDebounced = debounce((message, payload) => {
         if (!mainWindow.isVisible()) mainWindow.show();
         mainWindow.setAlwaysOnTop(true);
         mainWindow.focus();
+        mainWindow.setAlwaysOnTop(false);
       }
     }
   });
-  
-  if (mainWindow && !mainWindow.isFocused()) {
+  // 顯示通知時也確保主視窗可見並閃爍
+  if (mainWindow) {
+    mainWindow.show();
     mainWindow.flashFrame(true);
   }
 }, 300, { 'leading': true, 'trailing': false }); // 立即觸發，300ms 內不再觸發
