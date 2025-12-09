@@ -78,7 +78,9 @@ div: client-only
       transition(name="list", mode="out-in"): chat-board(v-if="showChatBoard")
 
       //- main message display board
+      //- ref="msgBoard" 用於程式控制捲動
       transition(name="list", mode="out-in"): message-board(
+        ref="msgBoard",
         v-if="showMessageBoard",
         :list="list",
         @reply="reply"
@@ -546,6 +548,8 @@ export default {
       }
       // clear the input UI content
       this.clear();
+      // 修正：切換頻道後，強制捲動到底部
+      this.scrollToBottom();
     },
     wsHost(val) {
       this.resetReconnectTimer();
@@ -691,6 +695,33 @@ export default {
     }
   },
   methods: {
+    // 修正：使用 requestAnimationFrame 強制在渲染期間持續捲動到底部
+    // 這比 setTimeout 更可靠，因為它會跟隨瀏覽器的繪製頻率
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const el = this.$refs.msgBoard?.$el;
+        if (!el) return;
+
+        // 在接下來的 300ms 內 (Vue transition 預設約 300ms)
+        // 每一次畫面重繪都強制捲動到底部，確保動畫或圖片載入過程中的高度變化都能被捕捉
+        let start = null;
+        const duration = 300; // ms
+
+        const step = (timestamp) => {
+          if (!start) start = timestamp;
+          const progress = timestamp - start;
+
+          // 強制設定 scrollTop
+          if (el) el.scrollTop = el.scrollHeight;
+
+          if (progress < duration) {
+            window.requestAnimationFrame(step);
+          }
+        };
+
+        window.requestAnimationFrame(step);
+      });
+    },
     delaySendChannelActivity: function noop() {},
     delayConnect() {
       /* placeholder */
@@ -1264,19 +1295,19 @@ export default {
         case "update_current_channel":
           /**
            * json: {
-           *   "command": "update_current_channel",
-           *     "payload": {
-           *     "command": "update_current_channel",
-           *     "ip": "192.168.XXX.XXX",
-           *     "domain": "",
-           *     "userid": "HAXXXXXXXX",
-           *     "username": "測試使用者",
-           *     "dept": "inf",
-           *     "timestamp": 1758781366276,
-           *     "channel": "inf"
-           *   },
-           *   "success": true,
-           *   "message": "已更新 HAXXXXXXXX 目前 channel 到 inf"
+           * "command": "update_current_channel",
+           * "payload": {
+           * "command": "update_current_channel",
+           * "ip": "192.168.XXX.XXX",
+           * "domain": "",
+           * "userid": "HAXXXXXXXX",
+           * "username": "測試使用者",
+           * "dept": "inf",
+           * "timestamp": 1758781366276,
+           * "channel": "inf"
+           * },
+           * "success": true,
+           * "message": "已更新 HAXXXXXXXX 目前 channel 到 inf"
 }
            */
           this.warn(json)
@@ -1478,6 +1509,10 @@ export default {
                         this.setChannelUnread(channel, receivedId);
                       }
                       this.triggerNotification(incoming);
+                      // 依照需求：收到新訊息時，觸發重新讀取列表 (類似切換頻道時的動作)
+                      this.delayLatestMessage();
+                      // 修正：收到訊息後，捲動到底部
+                      this.scrollToBottom();
                     }
                   }
                 }
@@ -2062,4 +2097,3 @@ export default {
   opacity: 1;
 }
 </style>
-
