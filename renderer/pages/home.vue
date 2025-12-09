@@ -1560,6 +1560,7 @@ export default {
     latestMessage() {
       const channel = this.currentChannel;
       if (this.connected) {
+        const loadCount = this.messages[channel]?.length > 15 ? this.messages[channel]?.length : 15;
         const jsonString = JSON.stringify({
           type: "command",
           sender: this.adAccount,
@@ -1568,7 +1569,7 @@ export default {
           message: JSON.stringify({
             command: "latest",
             channel: channel,
-            count: 10,
+            count: loadCount,
           }),
           channel: "system",
         });
