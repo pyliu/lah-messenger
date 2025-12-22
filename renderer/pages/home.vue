@@ -1919,7 +1919,7 @@ export default {
       // restore history count to store
       this.$store.commit(
         "history",
-        (await this.$localForage.getItem("history")) || 10
+        (await this.$localForage.getItem("history")) || 15
       );
       this.$store.commit("fetchingHistory", false);
       this.$store.commit("apiHost", this.wsHost);
