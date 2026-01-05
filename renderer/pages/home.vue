@@ -286,7 +286,12 @@ export default {
     image: null,            // 圖片暫存
     inputText: "",          // 輸入框內容
     inputImages: [],        // 貼上的圖片陣列
+    
+    // [FIX] Connect Text Queue System
     connectText: "",        // 狀態列文字 (右下角)
+    msgQueue: [],           // 訊息佇列
+    processingQueue: false, // 佇列處理中旗標
+
     back: false,            // (未使用) 預留返回標記
     keyCodes: [],           // 記錄按鍵序列 (用於 Konami Code)
     
@@ -461,7 +466,7 @@ export default {
   watch: {
     connectText(val) { this.$store.commit("statusText", val); },
     
-    // [FIX] totalUnread 偵聽器 (解決 IPC 錯誤)
+    // totalUnread 偵聽器
     totalUnread(val) {
       this.ipcRenderer.invoke("toggleUnreadTrayIcon", {
         unread: val
@@ -549,6 +554,30 @@ export default {
     // ------------------------------------------------------------------------
     // [UI Interaction] 介面交互與輔助
     // ------------------------------------------------------------------------
+    /**
+     * 設定狀態列文字 (使用 Queue 機制，確保至少顯示 0.5 秒)
+     * @param {string} text 要顯示的文字
+     */
+    setConnectText(text) {
+      this.msgQueue.push(text);
+      this.processQueue();
+    },
+
+    processQueue() {
+      if (this.processingQueue) return; // 正在處理中，等待遞迴
+      if (this.msgQueue.length === 0) return; // 佇列為空
+
+      this.processingQueue = true;
+      const text = this.msgQueue.shift();
+      this.connectText = text;
+
+      // 0.5 秒後處理下一個訊息
+      setTimeout(() => {
+        this.processingQueue = false;
+        this.processQueue();
+      }, 500);
+    },
+
     /**
      * 強制捲動訊息列表到底部
      * 使用 requestAnimationFrame 確保在 Vue Transition 與瀏覽器繪製期間持續捲動
@@ -651,9 +680,9 @@ export default {
      * 觸發 AD 查詢 (呼叫 Main Process)
      */
     invokeADQuery() {
-      if (this.asking === true) { this.connectText = `AD查詢中`; return; }
+      if (this.asking === true) { this.setConnectText(`AD查詢中`); return; }
       if (this.empty(this.adPassword) || this.validAdAccount === false || this.validAdHost === false) {
-        this.connectText = `缺漏必要欄位無法查詢`;
+        this.setConnectText(`缺漏必要欄位無法查詢`);
         return;
       }
       this.$refs.adQueryModal.hide();
@@ -676,7 +705,7 @@ export default {
           this.$store.commit("username", name);
           this.adName = name;
           this.department = group;
-          this.connectText = `AD: ${this.adAccount} ${name} ${group}`;
+          this.setConnectText(`AD: ${this.adAccount} ${name} ${group}`);
           this.connect();
         })
         .catch((err) => {
@@ -736,14 +765,14 @@ export default {
       this.syncApiDepartment();
       if (this.connected) {
         this.log(this.time(), "已連線，略過檢查");
-        this.connectText = "";
+        this.setConnectText("");
         this.reconnectMs = 20 * 1000;
         this.resetReconnectTimer();
       } else if (this.validInformation) {
         this.connecting = true;
         try {
           this.websocket && this.websocket.close();
-          this.connectText = "連線中";
+          this.setConnectText("連線中");
           const ws = new WebSocket(this.wsConnStr);
           
           ws.onopen = (e) => {
@@ -752,26 +781,26 @@ export default {
             this.register(); // 向伺服器註冊客戶端資訊
             this.list.length = 0;
             this.delayLatestMessage(); // 獲取當前頻道訊息
-            this.connectText = "已上線";
+            this.setConnectText("已上線");
             this.connecting = false;
           };
           
           ws.onclose = (e) => {
             this.$store.commit("websocket", undefined);
-            this.connectText = `等待重新連線中(${this.wsConnStr})`;
+            this.setConnectText(`等待重新連線中(${this.wsConnStr})`);
             this.connecting = false;
           };
           
           ws.onerror = (e) => {
             this.$store.commit("websocket", undefined);
-            this.connectText = `'WS伺服器連線出錯'`;
+            this.setConnectText(`'WS伺服器連線出錯'`);
             this.connecting = false;
           };
           
           ws.onmessage = async (e) => this.handleWebSocketMessage(e);
 
         } catch (e) {
-          this.connectText = "連線錯誤";
+          this.setConnectText("連線錯誤");
           console.error(e);
           this.closeWebsocket();
         } finally {
@@ -779,7 +808,7 @@ export default {
         }
       } else {
         // 未登入處理
-        this.connectText = '請先登入系統';
+        this.setConnectText('請先登入系統');
         if (this.reconnectMs < 640 * 1000) {
           this.reconnectMs *= 2; // 指數退避策略
           this.resetReconnectTimer();
@@ -797,7 +826,7 @@ export default {
       const receivedId = incoming.message.id || incoming.id;
       const lastReadId = (await this.getChannelLastReadId(channel)) || 0;
 
-      this.connectText = `收到 ${this.getChannelName(channel)} 訊息`;
+      this.setConnectText(`收到 ${this.getChannelName(channel)} 訊息`);
 
       if (incoming.type === "ack") {
         this.handleAckMessage(incoming.message);
@@ -869,7 +898,7 @@ export default {
           break;
         case "previous":
           this.$store.commit("fetchingHistory", false);
-          this.connectText = `${json.message}(${json.payload.count}筆)`;
+          this.setConnectText(`${json.message}(${json.payload.count}筆)`);
           break;
         case "unread":
           this.$store.commit("setUnread", { channel: json.payload.channel, count: json.payload.unread });
@@ -884,9 +913,9 @@ export default {
         case "check_read":
           this.handleReadStatusAck(json, cmd);
           break;
-        // [FIX] 新增指令處理，消除控制台警告並更新狀態列
+        // 新增指令處理，消除控制台警告並更新狀態列
         case "update_current_channel":
-          this.connectText = json.message;
+          this.setConnectText(json.message);
           this.log(this.time(), "頻道更新確認", json.message);
           break;
         default:
@@ -911,7 +940,7 @@ export default {
       } else {
         this.err(json); this.alert(`${json.message}`);
       }
-      this.connectText = `${json.message}`;
+      this.setConnectText(`${json.message}`);
     },
 
     handleEditMessageAck(json) {
@@ -952,7 +981,7 @@ export default {
           channel: this.adAccount, title: remove, priority: 4, flag: 1, // flag 1 = 自發私訊
         }));
       }
-      this.connectText = `${json.message}`;
+      this.setConnectText(`${json.message}`);
     },
 
     handleReadStatusAck(json, cmd) {
@@ -997,18 +1026,18 @@ export default {
             await this.$localForage.setItem("adName", payload.name);
             await this.$localForage.setItem("department", payload.dept);
             this.refreshApiDepartment(payload.dept);
-            this.connectText = "♻ 登入資訊更新，重新整理頁面";
+            this.setConnectText("♻ 登入資訊更新，重新整理頁面");
             this.ipcRenderer.invoke("reload");
           }
           break;
         case "user_connected":
-          this.connectText = json.message;
+          this.setConnectText(json.message);
           if (!this.connectedUsers.find(u => u.userid === payload.userid)) {
             this.connectedUsers.push(payload);
           }
           break;
         case "user_disconnected":
-          this.connectText = json.message;
+          this.setConnectText(json.message);
           const idx = this.connectedUsers.findIndex(u => u.userid === payload.userid);
           if (idx > -1) this.connectedUsers.splice(idx, 1);
           break;
@@ -1092,7 +1121,8 @@ export default {
       this.ipcRenderer.on("set-current-channel", (e, channel) => this.setCurrentChannel(channel));
       this.ipcRenderer.on("in-browser-notify", (e, payload) => {
         if (payload.statusOnly) {
-          this.$store.commit("statusText", payload.message);
+          // 修改：使用 setConnectText 以進入佇列系統
+          this.setConnectText(payload.message);
         } else {
           this.notify(payload.message, { type: payload.type || 'info', title: payload.title || '📢 通知' });
         }
@@ -1139,7 +1169,7 @@ export default {
       this.clearReconnectTimer();
       if (this.timer === null && this.$route.name === "home") {
         this.$store.commit("timer", setInterval(() => {
-            this.connectText = "檢查連線狀態";
+            this.setConnectText("檢查連線狀態");
             this.connect();
           }, this.reconnectMs)
         );
@@ -1148,7 +1178,31 @@ export default {
     // Konami Code / 鍵盤事件
     keydown(event) {
       if (event.defaultPrevented) return;
-      this.keyCodes.push(event.keyCode);
+      const key = event.keyCode;
+      switch (key) {
+        case 37:
+          this.setConnectText("←");
+          break;
+        case 38:
+          this.setConnectText("↑");
+          break;
+        case 39:
+          this.setConnectText("→");
+          break;
+        case 40:
+          this.setConnectText("↓");
+          break;
+        case 65:
+          this.setConnectText("a");
+          break;
+        case 66:
+          this.setConnectText("b");
+          break;
+        default:
+          this.setConnectText("🔑");
+          this.keyCodes.length = 0;
+      }
+      this.keyCodes.push(key);
       this.keyCodes.length > 10 && this.keyCodes.shift();
     },
     handleKonamiCode() {
