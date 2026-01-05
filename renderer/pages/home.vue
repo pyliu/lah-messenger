@@ -325,7 +325,6 @@ export default {
     reconnectMs: 20 * 1000, // 重連間隔 (毫秒)
     
     // --- 定時器與其他 ---
-    syncDepartmentTimer: null,
     checkUnreadTimer: null,
     checkUreadDuration: 3 * 60 * 60 * 1000 // 未讀檢查間隔
   }),
@@ -473,14 +472,16 @@ export default {
       });
     },
 
-    // adAccount 偵聽器，有值時觸發 AD 使用者資訊查詢
+    // [FIX] adAccount 偵聽器，有值時觸發 AD 使用者資訊查詢
     adAccount(val) {
       this.$localForage.setItem("adAccount", val);
       this.$store.commit("userid", val);
-      if (!this.empty(val)) {
-        this.log(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
-        this.loadApiADUserData();
-      }
+      this.$nextTick(() => {
+        if (this.validAdAccount) {
+          this.warn(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
+          this.loadApiADUserData();
+        }
+      });
     },
 
     // 頻道切換邏輯 (核心)
@@ -749,7 +750,7 @@ export default {
     },
 
     loadApiADUserData() {
-      if (this.validHost) {
+      if (this.validHost && this.validAdAccount) {
         this.$axios
           .post(this.userQueryStr, {
             type: "ad_user_info",
@@ -757,7 +758,7 @@ export default {
           })
           .then(({ data }) => {
             // [LOG] 輸出 API 回傳結果
-            this.log(this.time(), "loadApiADUserData 回傳:", data);
+            this.warn(this.time(), "loadApiADUserData 回傳:", data);
             
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
@@ -771,9 +772,29 @@ export default {
               const deptArr = raw.department;
               if (Array.isArray(deptArr) && deptArr.length > 0) {
                 const deptName = deptArr[0];
-                this.handleApiUserInfoUpdate({ unit: deptName });
-                // Also update apiUserinfo cache to persist the department name
-                this.$store.commit('apiUserinfo', { unit: deptName });
+                // 邏輯修正：
+                // 1. 如果該員只有一個部門 (deptArr.length === 1)，則強制更新/同步為該部門。
+                // 2. 如果該員有多個部門，則僅在本地尚未設定部門 (this.department 為空) 時，才使用第一個部門作為預設值，
+                //    避免覆蓋使用者先前手動切換的部門設定。
+                if (deptArr.length === 1 || this.empty(this.department)) {
+                  // [ADD] 紀錄更新前的部門名稱，用於比對是否需要同步到後端
+                  const previousDeptName = this.deptName;
+
+                  this.handleApiUserInfoUpdate({ unit: deptName });
+                  // Also update apiUserinfo cache to persist the department name
+                  this.$store.commit('apiUserinfo', { unit: deptName });
+
+                  // [FIX] 更新完部門若跟之前的值不同則用下面程式碼去更新後端的使用者資料
+                  if (previousDeptName !== deptName) {
+                    this.log(this.time(), `偵測到部門變動 (${previousDeptName} -> ${deptName})，同步至後端...`);
+                    this.ipcRenderer.invoke("change-user-dept", {
+                      api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`, 
+                      type: "upd_dept", 
+                      id: this.userid, 
+                      dept: deptName
+                    });
+                  }
+                }
               }
               // Store Roles
               if (raw.roles) {
