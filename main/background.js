@@ -532,6 +532,16 @@ ipcMain.handle('open-image', async (event, payload) => {
 });
 
 /**
+ * [新增] 開啟開發者工具 (DevTools)
+ * 供 Prod 環境下除錯使用
+ */
+ipcMain.handle('open-devtools', () => {
+  if (mainWindow) {
+    mainWindow.webContents.openDevTools();
+  }
+});
+
+/**
  * 取得應用程式版本號
  */
 ipcMain.handle('version', () => app.getVersion());

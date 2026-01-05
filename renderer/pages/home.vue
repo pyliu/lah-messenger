@@ -473,16 +473,14 @@ export default {
       });
     },
 
-    // [FIX] adAccount 偵聽器，有值時觸發 AD 使用者資訊查詢
+    // adAccount 偵聽器，有值時觸發 AD 使用者資訊查詢
     adAccount(val) {
       this.$localForage.setItem("adAccount", val);
       this.$store.commit("userid", val);
-      this.$nextTick(() => {
-        if (this.validAdAccount) {
-          this.warn(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
-          this.loadApiADUserData();
-        }
-      });
+      if (!this.empty(val)) {
+        this.log(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
+        this.loadApiADUserData();
+      }
     },
 
     // 頻道切換邏輯 (核心)
@@ -751,7 +749,7 @@ export default {
     },
 
     loadApiADUserData() {
-      if (this.validHost && this.validAdAccount) {
+      if (this.validHost) {
         this.$axios
           .post(this.userQueryStr, {
             type: "ad_user_info",
@@ -759,7 +757,7 @@ export default {
           })
           .then(({ data }) => {
             // [LOG] 輸出 API 回傳結果
-            this.warn(this.time(), "loadApiADUserData 回傳:", data);
+            this.log(this.time(), "loadApiADUserData 回傳:", data);
             
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
@@ -1236,6 +1234,13 @@ export default {
     keydown(event) {
       if (event.defaultPrevented) return;
       const key = event.keyCode;
+      
+      // F12 (開啟 DevTools)
+      if (key === 123) {
+        this.ipcRenderer.invoke('open-devtools');
+        return;
+      }
+
       switch (key) {
         case 37:
           this.setConnectText("←");
