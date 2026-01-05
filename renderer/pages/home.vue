@@ -473,6 +473,18 @@ export default {
       });
     },
 
+    // [FIX] adAccount 偵聽器，有值時觸發 AD 使用者資訊查詢
+    adAccount(val) {
+      this.$localForage.setItem("adAccount", val);
+      this.$store.commit("userid", val);
+      this.$nextTick(() => {
+        if (this.validAdAccount) {
+          this.warn(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
+          this.loadApiADUserData();
+        }
+      });
+    },
+
     // 頻道切換邏輯 (核心)
     currentChannel(nVal, oVal) {
       this.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`);
@@ -531,7 +543,8 @@ export default {
     // 使用者資訊變動監聽 -> 持久化存儲
     userid(val) { !this.empty(val) && val !== this.adAccount && (this.adAccount = val); },
     adHost(val) { this.$store.commit("ad", val); this.$localForage.setItem("adHost", val); },
-    adAccount(val) { this.$localForage.setItem("adAccount", val); this.$store.commit("userid", val); },
+    // adAccount has handled in watch block above
+    // adAccount(val) { this.$localForage.setItem("adAccount", val); this.$store.commit("userid", val); },
     adName(val) { this.$localForage.setItem("adName", val); this.$store.commit("username", val); },
     adPassword(val) { this.$store.commit("password", val); this.$localForage.setItem("adPassword", val); },
     
@@ -738,16 +751,18 @@ export default {
     },
 
     loadApiADUserData() {
-      if (this.validHost) {
+      if (this.validHost && this.validAdAccount) {
         this.$axios
           .post(this.userQueryStr, {
             type: "ad_user_info",
             id: this.adAccount,
           })
           .then(({ data }) => {
+            // [LOG] 輸出 API 回傳結果
+            this.warn(this.time(), "loadApiADUserData 回傳:", data);
+            
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
-              this.log("AD User Info", raw);
               // Update Name
               if (!this.empty(raw.name)) {
                 this.adName = raw.name;
@@ -1468,9 +1483,8 @@ export default {
       // 檢查使用者權限
       const authority = await this.getCache("userAuthority");
       const apiUserinfo = await this.getCache("apiUserinfo");
-      if (authority === false || apiUserinfo === false) {
-        this.loadApiUserData();
-      } else {
+      if (authority === false || apiUserinfo === false) this.loadApiUserData();
+      else {
         this.$store.commit("authority", authority);
         this.$store.commit("apiUserinfo", apiUserinfo);
       }
