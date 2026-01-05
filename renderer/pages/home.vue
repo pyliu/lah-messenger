@@ -453,7 +453,6 @@ export default {
         type: "mine",
       };
     },
-    // [FIX] 移除了這裡的 totalUnread 函數，因為它屬於副作用，不應在 computed 中。
   },
 
   // ==========================================================================
@@ -462,7 +461,7 @@ export default {
   watch: {
     connectText(val) { this.$store.commit("statusText", val); },
     
-    // [FIX] 新增 totalUnread 偵聽器，解決 IPC 複製錯誤並恢復正確邏輯
+    // [FIX] totalUnread 偵聽器 (解決 IPC 錯誤)
     totalUnread(val) {
       this.ipcRenderer.invoke("toggleUnreadTrayIcon", {
         unread: val
@@ -884,6 +883,11 @@ export default {
         case "set_read":
         case "check_read":
           this.handleReadStatusAck(json, cmd);
+          break;
+        // [FIX] 新增指令處理，消除控制台警告並更新狀態列
+        case "update_current_channel":
+          this.connectText = json.message;
+          this.log(this.time(), "頻道更新確認", json.message);
           break;
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json);
