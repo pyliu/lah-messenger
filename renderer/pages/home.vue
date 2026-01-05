@@ -453,9 +453,7 @@ export default {
         type: "mine",
       };
     },
-    totalUnread (val) {
-      this.ipcRenderer.invoke("toggleUnreadTrayIcon", { unread: val });
-    }
+    // [FIX] 移除了這裡的 totalUnread 函數，因為它屬於副作用，不應在 computed 中。
   },
 
   // ==========================================================================
@@ -464,6 +462,13 @@ export default {
   watch: {
     connectText(val) { this.$store.commit("statusText", val); },
     
+    // [FIX] 新增 totalUnread 偵聽器，解決 IPC 複製錯誤並恢復正確邏輯
+    totalUnread(val) {
+      this.ipcRenderer.invoke("toggleUnreadTrayIcon", {
+        unread: val
+      });
+    },
+
     // 頻道切換邏輯 (核心)
     currentChannel(nVal, oVal) {
       this.log(`離開 ${oVal} 頻道，進入 ${nVal} 頻道`);
