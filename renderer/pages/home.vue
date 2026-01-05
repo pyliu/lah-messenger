@@ -736,6 +736,48 @@ export default {
         this.timeout(this.loadApiUserData, 400);
       }
     },
+
+    loadApiADUserData() {
+      if (this.validHost) {
+        this.$axios
+          .post(this.userQueryStr, {
+            type: "ad_user_info",
+            id: this.adAccount,
+          })
+          .then(({ data }) => {
+            if (this.$utils.statusCheck(data.status)) {
+              const raw = data.data || {};
+              this.log("AD User Info", raw);
+              // Update Name
+              if (!this.empty(raw.name)) {
+                this.adName = raw.name;
+                this.$store.commit("username", raw.name);
+                this.$localForage.setItem("adName", raw.name);
+              }
+              // Update Department
+              const deptArr = raw.department;
+              if (Array.isArray(deptArr) && deptArr.length > 0) {
+                const deptName = deptArr[0];
+                this.handleApiUserInfoUpdate({ unit: deptName });
+                // Also update apiUserinfo cache to persist the department name
+                this.$store.commit('apiUserinfo', { unit: deptName });
+              }
+              // Store Roles
+              if (raw.roles) {
+                this.setCache("adRoles", raw.roles, this.userDataCacheDuration);
+                this.log("AD Roles", raw.roles);
+              }
+            } else {
+              this.warning(data.message);
+            }
+          })
+          .catch((err) => {
+            this.alert(err.toString());
+          });
+      } else {
+        this.timeout(this.loadApiADUserData, 400);
+      }
+    },
     
     loadUserMapData() {
       if (this.validHost) {
@@ -1426,8 +1468,9 @@ export default {
       // 檢查使用者權限
       const authority = await this.getCache("userAuthority");
       const apiUserinfo = await this.getCache("apiUserinfo");
-      if (authority === false || apiUserinfo === false) this.loadApiUserData();
-      else {
+      if (authority === false || apiUserinfo === false) {
+        this.loadApiUserData();
+      } else {
         this.$store.commit("authority", authority);
         this.$store.commit("apiUserinfo", apiUserinfo);
       }
