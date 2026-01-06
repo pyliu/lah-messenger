@@ -195,12 +195,11 @@ div: client-only
             style="max-width: 100px",
             v-b-tooltip="'通訊埠號'"
           )
-        .center(v-if="validHost && validPort")
+        .d-flex-column.align-items-center: b-input-group.center(v-if="validHost && validPort")
           //- 連線按鈕 (資料完整時)
           b-button(
-            v-if="validInformation",
             :variant="queryADVariant",
-            :disabled="connecting",
+            :disabled="connecting || !validInformation",
             @click="connect",
             title="連線",
             pill
@@ -208,56 +207,9 @@ div: client-only
             b-icon(icon="box-arrow-right" font-scale="1.25")
             span.mx-1 {{ adName }}
             b-badge(variant="light") {{ adAccount }} / {{ deptName }}
-          //- 登入/查詢按鈕 (資料不完整時)
-          b-button.ld.ld-jump(
-            v-else,
-            :variant="queryADVariant",
-            @click="$refs.adQueryModal.show()",
-            pill
-          )
-            b-icon.mr-1(icon="box-arrow-right" font-scale="1.25")
-            span 登入 #[b-badge(v-if="!$utils.empty(adAccount)", variant="light") {{ adAccount }}]
-
-        //- AD 驗證彈出視窗
-        b-modal(
-          ref="adQueryModal",
-          hide-footer,
-          centered,
-          scrollable,
-          no-close-on-backdrop
-        )
-          template(#modal-title): div(v-html="`AD驗證登入 ${userid}`")
-          b-input-group.ml-1(title="AD伺服器IP")
-            template(#prepend): .mr-1.my-auto ＡＤ主機
-            b-input(v-model="adHost", placeholder="... AD伺服器IP ...", :state="validAdHost", trim)
-          b-input-group.ml-1.my-1(:title="`網域帳號`")
-            template(#prepend): .mr-1.my-auto 網域帳號
-            b-input(v-model="adAccount", :state="validAdAccount", :placeholder="'👨‍💻 網域帳號'", trim)
-          b-input-group.ml-1(:title="`${userid}的網域密碼`")
-            template(#prepend): .mr-1.my-auto 網域密碼
-            b-input(
-              :type="adPasswordType",
-              v-model="adPassword",
-              :state="validAdPassword",
-              :placeholder="'🔐 網域密碼'",
-              trim,
-              @keydown.enter="invokeADQuery"
-            )
-            b-icon.my-auto.ml-2.eye(
-              ref="eye",
-              :icon="adPasswordIcon",
-              :style="'margin-right: 60px'",
-              font-scale="1.25",
-              variant="secondary",
-              title="切換顯示",
-              @click="switchAdPasswordIcon"
-            )
-            b-button.ml-1(
-              :title="`點擊重新查詢 ${userid}`",
-              @click="invokeADQuery",
-              :variant="disabledAdLoginBtn ? 'outline-primary' : 'primary'",
-              :disabled="disabledAdLoginBtn"
-            ) 驗證
+          //- 訊息提示區 (資料不完整時)
+          h6.text-warning.mt-1(v-if="!validHost || !validPort") ⚠ 請完整填寫伺服器連線資訊
+          h6.text-danger.mt-1(v-if="!validAdAccount || !validAdName") ⚠ 等待使用者AD資料更新中 ... 
 
   //- 全域狀態列 (右下角)
   status(:status-text="connectText")
@@ -268,6 +220,9 @@ div: client-only
  * @file home.vue
  * @description 應用程式主入口 (渲染進程)。負責 WebSocket 連線管理、訊息分發、狀態維護及核心 UI 佈局。
  * @author Senior Electron Engineer
+ * * [Change Log]
+ * - Removed: AD query modal (deprecated in favor of auto-sync).
+ * - Updated: invokeADQuery logic simplified.
  */
 import trim from "lodash/trim";
 import ImageUpload from "~/components/image-upload.vue";
@@ -287,7 +242,7 @@ export default {
     inputText: "",          // 輸入框內容
     inputImages: [],        // 貼上的圖片陣列
     
-    // [FIX] Connect Text Queue System
+    // --- 狀態列訊息佇列系統 (防止閃爍) ---
     connectText: "",        // 狀態列文字 (右下角)
     msgQueue: [],           // 訊息佇列
     processingQueue: false, // 佇列處理中旗標
@@ -325,6 +280,7 @@ export default {
     reconnectMs: 20 * 1000, // 重連間隔 (毫秒)
     
     // --- 定時器與其他 ---
+    syncDepartmentTimer: null,
     checkUnreadTimer: null,
     checkUreadDuration: 3 * 60 * 60 * 1000 // 未讀檢查間隔
   }),
@@ -465,7 +421,7 @@ export default {
   watch: {
     connectText(val) { this.$store.commit("statusText", val); },
     
-    // totalUnread 偵聽器
+    // totalUnread 偵聽器: 解決 IPC clone 錯誤，改用 watch 觸發
     totalUnread(val) {
       this.ipcRenderer.invoke("toggleUnreadTrayIcon", {
         unread: val
@@ -476,6 +432,7 @@ export default {
     adAccount(val) {
       this.$localForage.setItem("adAccount", val);
       this.$store.commit("userid", val);
+      // 使用 $nextTick 確保相關狀態 (validAdAccount) 已更新
       this.$nextTick(() => {
         if (this.validAdAccount) {
           this.warn(this.time(), `偵測到帳號 ${val}，準備查詢 AD 資訊...`);
@@ -575,6 +532,9 @@ export default {
       this.processQueue();
     },
 
+    /**
+     * 處理狀態訊息佇列
+     */
     processQueue() {
       if (this.processingQueue) return; // 正在處理中，等待遞迴
       if (this.msgQueue.length === 0) return; // 佇列為空
@@ -693,11 +653,10 @@ export default {
      */
     invokeADQuery() {
       if (this.asking === true) { this.setConnectText(`AD查詢中`); return; }
-      if (this.empty(this.adPassword) || this.validAdAccount === false || this.validAdHost === false) {
-        this.setConnectText(`缺漏必要欄位無法查詢`);
-        return;
-      }
-      this.$refs.adQueryModal.hide();
+      // 這裡原本有檢查 adPassword，但既然彈窗移除了，手動輸入密碼的情境可能僅限於 manualLogin
+      // 若是自動登入流程，可能不會進入這裡，或是透過 loadApiADUserData
+      // 為了相容性，這裡保留方法，但移除了對 $refs.adQueryModal 的操作
+      
       this.adName = this.userMap[this.adAccount] || this.adAccount;
       this.asking = true;
       this.log(this.time(), `透過AD查詢使用者資訊`);
@@ -749,6 +708,10 @@ export default {
       }
     },
 
+    /**
+     * 從 API Server 載入 AD 詳細資訊 (姓名、部門、角色)
+     * 並執行部門同步邏輯
+     */
     loadApiADUserData() {
       if (this.validHost && this.validAdAccount) {
         this.$axios
