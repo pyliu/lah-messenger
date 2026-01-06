@@ -529,6 +529,9 @@ export default {
      */
     setConnectText(text) {
       this.msgQueue.push(text);
+      if (this.msgQueue.length > 10) {
+        this.msgQueue.shift();
+      }
       this.processQueue();
     },
 
@@ -543,11 +546,11 @@ export default {
       const text = this.msgQueue.shift();
       this.connectText = text;
 
-      // 0.5 秒後處理下一個訊息
+      // 1 秒後處理下一個訊息
       setTimeout(() => {
         this.processingQueue = false;
         this.processQueue();
-      }, 500);
+      }, 1000);
     },
 
     /**
