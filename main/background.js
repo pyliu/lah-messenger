@@ -477,7 +477,7 @@ ipcMain.handle('ad-user-query', async (event, config) => {
       ['會計室', 'acc'],
     ]);
 
-    let group = 'adm'; // 預設群組
+    let group = 'hr'; // 預設群組
     for (const [groupName, groupCode] of groupMap.entries()) {
       if (await ad.isUserMemberOf(config.username, groupName)) {
         group = groupCode;
