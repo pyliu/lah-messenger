@@ -1323,7 +1323,7 @@ export default {
       }
     },
     handleApiUserInfoUpdate(val) {
-      this.department = this.$consts.DEPT_CODE_MAP[val?.unit] || 'supervisor';
+      this.department = this.$consts.DEPT_CODE_MAP[val?.unit] || this.$consts.DEPARTMENTS.SUPERVISOR;
     },
     getDepartmentName(val) {
       return this.$consts.DEPT_NAME_MAP[val] || '未知課室';
