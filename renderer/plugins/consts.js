@@ -1,5 +1,38 @@
 // global const variables, use this.$consts.xxxx to access them in Vue
+// constants.js
+const DEPARTMENTS = {
+  INF: 'inf',
+  ADM: 'adm',
+  REG: 'reg',
+  SUR: 'sur',
+  VAL: 'val',
+  HR: 'hr',
+  ACC: 'acc',
+  SUPERVISOR: 'supervisor',
+  LDS: 'lds'
+};
+
+const DEPT_NAME_MAP = {
+  [DEPARTMENTS.INF]: '資訊課',
+  [DEPARTMENTS.ADM]: '行政課',
+  [DEPARTMENTS.REG]: '登記課',
+  [DEPARTMENTS.SUR]: '測量課',
+  [DEPARTMENTS.VAL]: '地價課',
+  [DEPARTMENTS.HR]: '人事室',
+  [DEPARTMENTS.ACC]: '會計室',
+  [DEPARTMENTS.SUPERVISOR]: '主任祕書室',
+};
+
+// 反向映射 (用於 API 回傳中文轉代碼)
+const DEPT_CODE_MAP = Object.entries(DEPT_NAME_MAP).reduce((acc, [key, value]) => {
+  acc[value] = key;
+  return acc;
+}, {});
+
 export default {
+  DEPARTMENTS,
+  DEPT_NAME_MAP,
+  DEPT_CODE_MAP,
   dayMilliseconds: 8640000,
   loadingAction: [
     //(https://loading.io/animation/)

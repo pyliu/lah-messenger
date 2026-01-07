@@ -306,15 +306,15 @@ export default {
     isPersonal() { return this.adAccount === this.currentChannel; },
     isAnnouncement() { return this.currentChannel === "announcement"; },
     // 部門判斷 helper (可考慮重構為函數或 map)
-    isInf() { return this.currentChannel === "inf"; },
-    isAdm() { return this.currentChannel === "adm"; },
-    isVal() { return this.currentChannel === "val"; },
-    isReg() { return this.currentChannel === "reg"; },
-    isSur() { return this.currentChannel === "sur"; },
-    isAcc() { return this.currentChannel === "acc"; },
-    isHr() { return this.currentChannel === "hr"; },
-    isSupervisor() { return this.currentChannel === "supervisor"; },
-    isLds() { return this.currentChannel === "lds"; },
+    isInf() { return this.currentChannel === this.$consts.DEPARTMENTS.INF; },
+    isAdm() { return this.currentChannel === this.$consts.DEPARTMENTS.ADM; },
+    isVal() { return this.currentChannel === this.$consts.DEPARTMENTS.VAL; },
+    isReg() { return this.currentChannel === this.$consts.DEPARTMENTS.REG; },
+    isSur() { return this.currentChannel === this.$consts.DEPARTMENTS.SUR; },
+    isAcc() { return this.currentChannel === this.$consts.DEPARTMENTS.ACC; },
+    isHr() { return this.currentChannel === this.$consts.DEPARTMENTS.HR; },
+    isSupervisor() { return this.currentChannel === this.$consts.DEPARTMENTS.SUPERVISOR; },
+    isLds() { return this.currentChannel === this.$consts.DEPARTMENTS.LDS; },
 
     // --- UI 顯示邏輯 ---
     connectedUsersOverlapRatio() { return this.connectedUsers.length < 10 ? 0.0 : 0.4; },
@@ -804,7 +804,6 @@ export default {
      * 包含事件綁定 (onopen, onmessage, onerror, onclose)
      */
     connect() {
-      this.syncApiDepartment();
       if (this.connected) {
         this.log(this.time(), "已連線，略過檢查");
         this.setConnectText("");
@@ -1323,22 +1322,11 @@ export default {
         });
       }
     },
-    async syncApiDepartment() {
-       if (!this.$utils.empty(this.apiUserinfo)) {
-         const apiDeptName = this.apiUserinfo?.unit;
-         if (this.deptName !== apiDeptName) {
-           this.warning(`您的部門(${this.deptName})已修正為${apiDeptName}，如欲變更請洽管理者。`);
-           this.handleApiUserInfoUpdate(this.apiUserinfo);
-         }
-       }
-    },
     handleApiUserInfoUpdate(val) {
-      const map = { '資訊課': 'inf', '行政課': 'adm', '登記課': 'reg', '測量課': 'sur', '地價課': 'val', '人事室': 'hr', '會計室': 'acc' };
-      this.department = map[val?.unit] || 'supervisor';
+      this.department = this.$consts.DEPT_CODE_MAP[val?.unit] || 'supervisor';
     },
     getDepartmentName(val) {
-      const map = { 'inf': '資訊課', 'adm': '行政課', 'reg': '登記課', 'sur': '測量課', 'val': '地價課', 'hr': '人事室', 'acc': '會計室', 'supervisor': '主任祕書室' };
-      return map[val] || '未知部門';
+      return this.$consts.DEPT_NAME_MAP[val] || '未知課室';
     },
     checkUnread() {
       clearTimeout(this.checkUnreadTimer);
