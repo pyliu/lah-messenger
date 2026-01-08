@@ -1,10 +1,11 @@
 <template lang="pug">
 .mb-1
-  //- show date if the message has previous days' message
+  //- 如果訊息日期與前一則不同，顯示日期分隔列
   .d-flex.msg-item.justify-content-center.system.date(
     v-if="!preview && showMdate && id > 0"
   ): p(v-html="'📅 ' + mdate")
 
+  //- 顯示發送者資訊
   .s-75.font-weight-bold.align-middle(
     v-if="!myMessage && !system"
     @click="remoteAvatarClick($event)"
@@ -20,7 +21,7 @@
     span.mr-1 {{ sender }} 💬
     em {{ from }}
 
-  //- show to header
+  //- 私訊對象提示
   .d-flex.justify-content-end(v-if="messageTo")
     .s-75.font-weight-bold.align-middle(
       :style="{ cursor: 'pointer' }"
@@ -34,23 +35,25 @@
         size="1.25rem"
         button
       )
+  
+  //- 訊息主體
   .d-flex.msg-item.my-1(
     :class="classes"
     style="min-height: 36px"
   )
-
-    //- special card message for announcement
+    //- 公告卡片
     announcement-card(
       v-if="isAnnouncement"
       :data-json="announcementPayload"
       :channel="channel"
       :message-id="id"
+      :class="isToday ? 'today-card' : ''"
     )
 
-    //- remote or system message
+    //- 遠端或系統文字訊息
     p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
 
-    //- timestamp for the message
+    //- 狀態、時間與操作按鈕
     .time.s-60.mx-1.text-muted.text-right(
       v-if="!system && !isAnnouncement"
       :class="myMessage ? ['mb-n1'] : []"
@@ -79,16 +82,20 @@
           font-scale="1.5"
           @click="isMyChannel ? reply() : emitReply()"
         )
-      .d-flex.align-items-center
+      //- 使用 flex-nowrap 確保 [今日] 與時間不換行
+      .d-flex.align-items-center.justify-content-end.flex-nowrap
         b-icon.align-middle.readIcon(
           v-if="isRead && myMessage"
           icon="check-all"
           :variant="myMessage ? 'secondary' : 'light'"
           title="已讀取"
         )
-        div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
+        //- 今日標記與時間容器
+        .d-flex.align-items-center.flex-nowrap
+          span.mr-1.text-primary.font-weight-bold(v-if="isToday && !preview", style="white-space: nowrap") [今日]
+          div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
-    //- my message
+    //- 自己的文字訊息
     p(
       v-if="myMessage"
       ref="myMessage"
@@ -99,27 +106,15 @@
 </template>
 
 <script>
-import AnnouncementCard from '~/components/announcement-card.vue'
-import UserCard from '~/components/user-card.vue'
-import MessageInput from '~/components/message-input.vue'
-import MessageInputEditMessage from '~/components/message-input-edit-message.vue'
+import AnnouncementCard from '~/components/announcement-card.vue';
+import MessageInputEditMessage from '~/components/message-input-edit-message.vue';
+import MessageInput from '~/components/message-input.vue';
+import UserCard from '~/components/user-card.vue';
 
 export default {
   name: 'Message',
   components: { AnnouncementCard, UserCard, MessageInput, MessageInputEditMessage },
   props: {
-    /** example raw json data from my channel
-      channel: "HA1001XXXX"
-      date: "2021-10-19"
-      flag: 3
-      id: 152
-      message: "<h3 id="-z-1101019-">👉 ... </h3>"
-      prepend: false
-      remove: "{"to":"HA03XXXX","id":13}"
-      sender: "HA1001XXXX"
-      time: "09:26:40"
-      type: "remote"
-     */
     raw: { type: Object, required: true },
     prev: { type: Object, default: undefined },
     preview: { type: Boolean, default: false }
@@ -144,6 +139,16 @@ export default {
     system () { return 'system' === this.sender },
     id () { return this.raw?.id },
     type () { return this.raw?.type },
+    
+    // 判斷是否為今天發送的訊息
+    isToday () {
+      const d = new Date()
+      const todayStr = d.getFullYear() + '-' + 
+                       String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(d.getDate()).padStart(2, '0')
+      return this.mdate === todayStr
+    },
+
     messageToRawTxt () {
       if (!this.isAnnouncement) {
         const foundArr = this.regexpReplyHeader.exec(this.raw?.message)
@@ -182,7 +187,6 @@ export default {
       if (this.regexpMarkdImage.test(markd)) {
         return this.$utils.convertInlineMarkd(markd)
       }
-      // add open-os-explorer class for the file path uri
       return this.$utils.replaceFilepath(markd)
     },
     senderId () { return this.raw?.sender },
@@ -193,7 +197,6 @@ export default {
     channel () { return this.raw?.channel },
     prevMdate () {
       if (this.prev) {
-        // announcement card date is inside the message
         if (this.isAnnouncement) {
           return this.prev?.message?.create_datetime?.split(' ')[0]
         }
@@ -202,7 +205,6 @@ export default {
       return ''
     },
     mdate () {
-      // announcement card date is inside the message
       if (this.isAnnouncement) {
         return this.raw?.message?.create_datetime?.split(' ')[0]
       }
@@ -212,6 +214,7 @@ export default {
       return [
         this.myMessage ? 'justify-content-end' : this.system ? 'justify-content-center' : 'justify-content-start',
         this.myMessage ? 'mine' : this.system ? 'system' : '',
+        this.isToday ? 'is-today' : ''
       ]
     },
     avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.raw["sender"]}_avatar&name=${this.sender}_avatar` },
@@ -226,14 +229,12 @@ export default {
       const nowTs = +new Date()
       const msgTs = +new Date(`${this.raw.date} ${this.raw.time}`)
       const offset = nowTs - msgTs
-      // my message and wthin a day
       return this.myMessage && offset <= 86400000
     }
   },
   created () {
     this.sendReadCommand = this.$utils.debounce(() => {
       if (this.windowVisible && this.connected && this.channel) {
-        // not read and can find sender user
         if (!this.isRead && this.sender !== this.serderId) {
           const json = {
             type: "command",
@@ -248,7 +249,7 @@ export default {
             id: this.id,
             flag: this.raw.flag,
             sender: this.userid,
-            cascade: this.isMyChannel // need to send set read message to the sender to set the message in his channel
+            cascade: this.isMyChannel
           }
           this.websocket.send(JSON.stringify(json))
         }
@@ -262,7 +263,7 @@ export default {
     this.$refs.myMessage && this.checkReadCommand()
   },
   methods: {
-    sendReadCommand () {/* placeholder for debouncing */},
+    sendReadCommand () {/* placeholder */},
     checkReadCommand () {
       if (this.isCascadeMessage && !this.isRead) {
         const json = {
@@ -281,44 +282,25 @@ export default {
           senderChannelMessageFlag: this.raw?.flag || 0
         }
         this.connected && this.websocket.send(JSON.stringify(json))
-        // in case remote not read the message, checks again after 20s
         this.timeout(() => this.checkReadCommand(), 20000)
       }
     },
     remoteAvatarClick (event) {
       event.stopPropagation()
       this.modal(this.$createElement(UserCard, {
-        props: {
-          id: this.raw.sender,
-          name: this.sender
-        }
-      }), {
-        title: `${this.sender}`,
-        size: 'xl'
-      })
+        props: { id: this.raw.sender, name: this.sender }
+      }), { title: `${this.sender}`, size: 'xl' })
     },
     mineAvatarClick (event) {
       event.stopPropagation()
       this.modal(this.$createElement(UserCard, {
-        props: {
-          id: this.messageTo?.id,
-          name: this.messageTo?.name
-        }
-      }), {
-        title: `${this.messageTo?.name}`,
-        size: 'xl'
-      })
+        props: { id: this.messageTo?.id, name: this.messageTo?.name }
+      }), { title: `${this.messageTo?.name}`, size: 'xl' })
     },
     reply () {
       this.modal(this.$createElement(MessageInput, {
-        props: {
-          text: this.message,
-          to: this.senderId,
-          reply: this.replyTitle || ' ... '
-        },
-        on: {
-          sent: () => { this.hideModalById('message-reply-modal') }
-        }
+        props: { text: this.message, to: this.senderId, reply: this.replyTitle || ' ... ' },
+        on: { sent: () => { this.hideModalById('message-reply-modal') } }
       }), {
         id: 'message-reply-modal',
         size: 'xl',
@@ -327,34 +309,14 @@ export default {
     },
     edit () {
       this.modal(this.$createElement(MessageInputEditMessage, {
-        props: {
-          raw: this.raw
-        },
-        on: {
-          sent: (payload) => {
-            this.hideModalById('message-edit-modal')
-            // to tell outter board removing this message in the list
-            this.$emit('edit', payload)
-            this.warn(payload)
-          }
-        }
-      }), {
-        id: 'message-edit-modal',
-        size: 'xl',
-        title: '編輯訊息'
-      })
+        props: { raw: this.raw },
+        on: { sent: (payload) => { this.hideModalById('message-edit-modal'); this.$emit('edit', payload); this.warn(payload); } }
+      }), { id: 'message-edit-modal', size: 'xl', title: '編輯訊息' })
     },
-    emitReply () {
-      this.$emit('reply', this.raw)
-    },
+    emitReply () { this.$emit('reply', this.raw) },
     remove () {
       this.confirm('刪除本則訊息?').then((YN) => {
-        if (YN) {
-          // TODO: send request to ws to remvoe the message from channel
-          this.sendRemoveMessage()
-          // to tell outter board removing this message in the list
-          this.$emit('remove', this.raw)
-        }
+        if (YN) { this.sendRemoveMessage(); this.$emit('remove', this.raw); }
       })
     },
     sendRemoveMessage () {
@@ -367,7 +329,6 @@ export default {
           command: 'remove_message',
           channel: this.channel,
           id: this.id,
-          // in my channel, it needs to remove the pm as well; parsed json expect: { to: 'HAXXXX', id: xxxx }
           cascade: this.raw.remove?.startsWith('{') ? JSON.parse(this.raw.remove) : ''
         }),
         channel: 'system'
@@ -381,64 +342,99 @@ export default {
 <style lang="scss" scoped>
 .msg-item {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 
   p {
     display: inline-block;
-    border-radius: 5px;
-    background: #e6e9e9;
-    color: rgb(10, 10, 10);
-    padding: 5px;
+    border-radius: 8px;
+    background: #e9ecef;
+    color: #212529;
+    padding: 8px 12px;
     max-width: 85%;
     text-align: left;
     box-sizing: border-box;
     margin-bottom: 0rem !important;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+  }
+
+  // 設計優化：加強今天日期訊息的視覺深度
+  &.is-today {
+    zoom: 1.175; 
+    // 加深陰影，並增加模糊半徑
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+
+    p {
+      background: #fdfdfd;
+      border-left: 4px solid #17a2b8;
+    }
+
+    &.mine p {
+      background: #e6f9eb;
+      border-left: 0;
+      border-right: 4px solid #28a745;
+    }
+
+    .today-card {
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.25);
+      border: 1px solid rgba(0, 123, 255, 0.3);
+    }
   }
 
   &.mine {
     p {
-      background: rgb(214, 247, 220);
-      color: rgb(0, 0, 0);
+      background: #dcf8c6;
+      color: #000;
       margin-bottom: 0rem !important;
     }
   }
+
   &.system {
     p {
       text-align: center;
       font-weight: bold;
-      padding: 5px 10px 5px 10px;
-      border-radius: 10px;
-      background: #bdc1bd;
-      color: #2e2e2e;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: #adb5bd;
+      color: #fff;
       font-size: .75rem;
       max-width: 95%;
+      border: none;
     }
-    margin-top: .25rem;
-    margin-bottom: 0.5rem;
+    margin-top: .5rem;
+    margin-bottom: .75rem;
   }
+
   &.date {
     p {
       width: 100%;
-      font-size: 1rem;
-      background-color: #cad8f6;
+      font-size: 0.9rem;
+      background-color: #f1f3f5;
+      color: #495057;
+      text-align: center;
+      border: none;
     }
   }
+
   .time {
     display: inline-block;
     align-self: flex-end;
+    // 防止標記與時間換行
+    white-space: nowrap;
+    
     .clickableIcon {
       cursor: pointer;
-      transition: all .5s;
+      transition: all .2s;
       z-index: 1002;
       &:hover {
-        font-size: .75rem;
-        font-weight: bold;
-        color: rgb(0, 81, 255);
+        transform: scale(1.2);
+        color: #007bff !important;
       }
     }
     .readIcon {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: bold;
+      margin-right: 2px;
     }
   }
 }
