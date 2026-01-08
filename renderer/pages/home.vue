@@ -50,7 +50,7 @@ div: client-only
         b-nav-item(title="進入設定頁面"): nuxt-link(to="/settings")
           b-icon.mr-1(icon="list")
 
-      //- 2. 聊天室控制列 (僅在聊天模式顯示)
+      //- 2. 聊天室控制列 (僅在聊天室模式顯示)
       transition(name="list", mode="out-in"): b-list-group.my-1(
         v-if="inChatting",
         flush
@@ -597,7 +597,6 @@ export default {
     // ------------------------------------------------------------------------
     /**
      * 統一更新視窗標題的方法
-     * 格式：IP / 姓名 / 部門，且嚴格過濾 undefined 字串
      */
     updateWindowTitle() {
       const parts = [];
@@ -833,26 +832,52 @@ export default {
     // ------------------------------------------------------------------------
     // [Connection & WS] WebSocket 通訊
     // ------------------------------------------------------------------------
+    /**
+     * [FIXED] 還原正確的連線清理邏輯，解決 state 衝突問題
+     */
     connect() {
-      if (this.connected) {
+      if (this.connected && this.websocket?.readyState === 1) {
         this.resetReconnectTimer();
       } else if (this.validInformation) {
         this.connecting = true;
         try {
+          // [還原] 如果已有連線實例，先關閉它以釋放資源
+          if (this.websocket) {
+            this.websocket.onopen = null;
+            this.websocket.onmessage = null;
+            this.websocket.onerror = null;
+            this.websocket.onclose = null;
+            this.websocket.close();
+          }
+
+          this.setConnectText("連線中");
           const ws = new WebSocket(this.wsConnStr);
+          
           ws.onopen = () => {
             this.$store.commit("websocket", ws);
+            this.log(this.time(), "已連線");
             this.register();
             this.list.length = 0;
             this.delayLatestMessage();
+            this.setConnectText("已上線");
             this.connecting = false;
           };
+          
           ws.onclose = () => {
             this.$store.commit("websocket", undefined);
+            this.setConnectText("連線已斷開");
             this.connecting = false;
           };
+
+          ws.onerror = (e) => {
+            this.$store.commit("websocket", undefined);
+            this.setConnectText("WS伺服器連線出錯");
+            this.connecting = false;
+          };
+
           ws.onmessage = async (e) => this.handleWebSocketMessage(e);
         } catch (e) {
+          this.setConnectText("連線初始化失敗");
           this.closeWebsocket();
         }
       }
@@ -863,10 +888,12 @@ export default {
       const channel = incoming.channel;
       const receivedId = incoming.message?.id || incoming.id;
       const lastReadId = (await this.getChannelLastReadId(channel)) || 0;
-      if (incoming.type === "ack") this.handleAckMessage(incoming.message);
-      else if (channel === "system")
+      
+      if (incoming.type === "ack") {
+        this.handleAckMessage(incoming.message);
+      } else if (channel === "system") {
         this.handleSystemMessage(incoming.message);
-      else if (this.currentChannel === channel) {
+      } else if (this.currentChannel === channel) {
         if (!Array.isArray(this.messages[channel]))
           this.$store.commit("addChannel", channel);
         this.$nextTick(() => {
@@ -899,10 +926,64 @@ export default {
       this.connecting = false;
     },
 
+    /**
+     * 處理系統確認訊息 (ACK)
+     */
     async handleAckMessage(json) {
-      switch (json?.command) {
+      const cmd = json?.command;
+      this.log(this.time(), `處理系統 ACK: ${cmd}`, json);
+      
+      switch (cmd) {
         case "register":
           json.success && this.queryUnreadCount();
+          break;
+        case "mychannel":
+          if (json.success) {
+            if (json.payload.action === "add") this.addChatChannel(json.payload);
+            else if (json.payload.action === "remove") this.removeChatChannel(json.payload);
+          }
+          break;
+        case "remove_channel":
+          json.success && this.$store.commit("removeParticipatedChannel", json.payload);
+          this.notify(`${json.message}`, { type: json.success ? "success" : "warning" });
+          break;
+        case "remove_message":
+          if (json.success) {
+            const idx = this.messages[json.payload.channel]?.findIndex(msg => msg.id === json.payload.id);
+            if (idx > -1) this.messages[json.payload.channel].splice(idx, 1);
+            const cascade = json.payload.cascade;
+            if (cascade?.to && cascade?.id) {
+              this.websocket.send(JSON.stringify({
+                type: "command", sender: this.adAccount, date: this.date(), time: this.time(), channel: 'system',
+                message: JSON.stringify({ command: 'remove_message', channel: cascade.to, id: cascade.id, cascade: '' })
+              }));
+            }
+          }
+          this.setConnectText(`${json.message}`);
+          break;
+        case "edit_message":
+          if (json.success) {
+            const channel = json.payload.channel;
+            const payload = json.payload.payload;
+            const found = this.messages[channel]?.find(msg => msg.id === payload.id);
+            if (found) {
+              found.message = payload.message;
+              const cascade = json.payload.cascade;
+              if (cascade?.id && cascade?.to) {
+                this.websocket?.send(JSON.stringify({
+                  type: "command", sender: this.userid, date: this.date(), time: this.time(), channel: 'system',
+                  message: {
+                    command: 'edit_message', channel: cascade.to, id: cascade.id, sender: this.userid,
+                    payload: { ...payload, id: cascade.id, channel: cascade.to, sender: this.userid, title: 'dontcare', message: payload.message.replaceAll(this.regexpReplyHeader, '') }
+                  }
+                }));
+              }
+            }
+          }
+          break;
+        case "previous":
+          this.$store.commit("fetchingHistory", false);
+          this.setConnectText(`${json.message}(${json.payload.count}筆)`);
           break;
         case "unread":
           this.$store.commit("setUnread", {
@@ -916,9 +997,31 @@ export default {
             json.payload.users.filter((n) => n)
           );
           break;
+        case "private_message":
+          const insertedId = json.payload.insertedId;
+          const insertedChannel = json.payload.channel;
+          if (insertedChannel !== this.adAccount && !insertedChannel?.startsWith("announcement") && !this.chatRooms.includes(insertedChannel)) {
+            const remove = JSON.stringify({ to: insertedChannel, id: insertedId });
+            this.websocket.send(this.packMessage(json.payload.message, {
+              channel: this.adAccount, title: remove, priority: 4, flag: 1,
+            }));
+          }
+          this.setConnectText(`${json.message}`);
+          break;
+        case "set_read":
+        case "check_read":
+          const targetList = cmd === 'set_read' ? this.messages[json.payload.channel] : this.messages[json.payload.sender];
+          if (Array.isArray(targetList)) {
+            const msgId = cmd === 'set_read' ? json.payload.id : json.payload.senderChannelMessageId;
+            const found = targetList.find(m => m?.id === msgId);
+            if (found && (found.flag & 2) !== 2) found.flag += 2;
+          }
+          break;
         case "update_current_channel":
           this.setConnectText(json.message);
           break;
+        default:
+          console.warn(`收到未支援指令 ${cmd} ACK`, json);
       }
     },
 
@@ -940,18 +1043,32 @@ export default {
       this.$refs.textarea?.focus();
     },
 
+    /**
+     * [FIXED] 加入強大的狀態檢查機制，解決 CLOSING/CLOSED 狀態下的發送錯誤
+     */
     sendTo(msg, opts = {}) {
-      if (!this.$utils.empty(msg) && this.connected) {
+      if (this.$utils.empty(msg)) return false;
+
+      // [核心修正] 檢查連線狀態是否為 1 (OPEN)
+      if (!this.websocket || this.websocket.readyState !== 1) {
+        this.setConnectText("連線不穩定，正在自動修復...");
+        this.connect(); // 嘗試背景重連
+        return false;
+      }
+
+      try {
         this.websocket.send(
           this.packMessage(msg, { channel: this.currentChannel, ...opts })
         );
         return true;
+      } catch (e) {
+        this.err("WS 發送失敗", e);
+        return false;
       }
-      return false;
     },
 
     register() {
-      if (this.connected && this.validAdAccount && this.validAdName) {
+      if (this.websocket?.readyState === 1 && this.validAdAccount && this.validAdName) {
         this.websocket.send(
           this.packCommand({
             command: "register",
@@ -970,7 +1087,7 @@ export default {
     },
 
     latestMessage() {
-      if (this.connected)
+      if (this.websocket?.readyState === 1)
         this.websocket.send(
           JSON.stringify({
             type: "command",
@@ -1097,20 +1214,21 @@ export default {
     },
 
     async queryChannelUnreadCount(c) {
-      this.websocket.send(
-        JSON.stringify({
-          type: "command",
-          sender: this.adAccount,
-          date: this.date(),
-          time: this.time(),
-          channel: "system",
-          message: JSON.stringify({
-            command: "unread",
-            channel: c,
-            last: await this.getChannelLastReadId(c)
+      if (this.websocket?.readyState === 1)
+        this.websocket.send(
+          JSON.stringify({
+            type: "command",
+            sender: this.adAccount,
+            date: this.date(),
+            time: this.time(),
+            channel: "system",
+            message: JSON.stringify({
+              command: "unread",
+              channel: c,
+              last: await this.getChannelLastReadId(c)
+            })
           })
-        })
-      );
+        );
     },
 
     async checkDefaultSvrIp() {
@@ -1192,12 +1310,12 @@ export default {
       this.connect();
     },
 
-    sendChannelUpdate(c) {
-      if (this.connected)
+    sendChannelUpdate(channel) {
+      if (this.websocket?.readyState === 1)
         this.websocket.send(
           this.packCommand({
             command: "update_current_channel",
-            channel: c,
+            channel: channel,
             userid: this.adAccount
           })
         );
@@ -1229,6 +1347,14 @@ export default {
       this.adHost = await this.$localForage.getItem("adHost");
       this.wsHost = await this.$localForage.getItem("wsHost");
       this.wsPort = (await this.$localForage.getItem("wsPort")) || 8081;
+    },
+
+    addChatChannel(payload) {
+      this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
+    },
+
+    removeChatChannel(payload) {
+      this.$store.commit("removeParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
     }
   },
 
