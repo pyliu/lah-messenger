@@ -182,7 +182,10 @@ Vue.mixin({
         }),
         channel: 'system'
       })
-      this.websocket && this.websocket.send(jsonString)
+      // [FIX] 增加狀態檢查
+      if (this.websocket && this.websocket.readyState === 1) {
+        this.websocket.send(jsonString)
+      }
     },
     clearReconnectTimer() {
       if (this.timer !== null) {
@@ -233,14 +236,6 @@ Vue.mixin({
       })
     },
     packCommand(commandPayload) {
-      /**
-       * payload e.g.
-        {
-          command: 'update_user',
-          id: 'HAXXXXXXXX',
-          payload: {...}
-        }
-       */
       const obj = {
         type: "command",
         sender: this.userid,
@@ -255,12 +250,12 @@ Vue.mixin({
       return this.packMessage(`![${alt}](${base64})`, { channel: channel || this.currentChannel })
     },
     sendImage (base64, alt, channel) {
-      this.websocket && this.websocket.send(this.packImage(base64, alt, channel))
+      // [FIX] 增加狀態檢查
+      if (this.websocket && this.websocket.readyState === 1) {
+        this.websocket.send(this.packImage(base64, alt, channel))
+      }
     },
     pasteImage (pasteEvent, callback) {
-      // can not execute below 2 lines or it will block normal paste action
-      // pasteEvent.stopPropagation()
-      // pasteEvent.preventDefault()
       const items = (pasteEvent.clipboardData || pasteEvent.originalEvent.clipboardData).items
       for (var i = 0 ; i < items.length ; i++) {
         const item = items[i]
@@ -309,7 +304,6 @@ Vue.mixin({
         case 'supervisor': return '主任祕書室'
         case 'system': return '系統'
         default:
-          // TODO: find channel name by query
           const found = this.participatedChannels.find(item => item.id === channelId)
           if (found) {
             return found.participants.find(val => val !== this.userid)
@@ -319,8 +313,6 @@ Vue.mixin({
     },
     parseHTML (string) {
       const context = document.implementation.createHTMLDocument()
-      // Set the base href for the created document so any parsed elements with URLs
-      // are based on the document's URL
       const base = context.createElement('base')
       base.href = document.location.href
       context.head.appendChild(base)
@@ -330,7 +322,7 @@ Vue.mixin({
     toggleBusy (opts = {}) {
       const def = {
         selector: 'body',
-        style: 'ld-over', // ld-over, ld-over-inverse, ld-over-full, ld-over-full-inverse
+        style: 'ld-over',
         forceOff: false,
         forceOn: false,
         size: 'lg'
@@ -346,30 +338,16 @@ Vue.mixin({
         const addSpinner = (element, style) => {
           element.addClass(style)
           element.addClass('running')
-
-          // randomize loading.io css for fun
           const coverEl = this.$(this.parseHTML('<div class="ld auto-add-spinner"></div>'))
           coverEl
-            .addClass(this.$consts.loadingShapeSet[this.$utils.rand(this.$consts.loadingShapeSet.length)]) // shape
-            .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)]) // color
+            .addClass(this.$consts.loadingShapeSet[this.$utils.rand(this.$consts.loadingShapeSet.length)])
+            .addClass(this.$consts.loadingShapeColor[this.$utils.rand(this.$consts.loadingShapeColor.length)])
           switch (opts.size) {
-            case 'xs':
-              coverEl.addClass('s-xs')
-              break
-            case 'sm':
-              coverEl.addClass('s-sm')
-              break
-            case 'md':
-              coverEl.addClass('s-md')
-              break
-            case 'lg':
-              coverEl.addClass('s-lg')
-              break
-            case 'xl':
-              coverEl.addClass('s-xl')
-              break
-            default:
-              break
+            case 'xs': coverEl.addClass('s-xs'); break
+            case 'sm': coverEl.addClass('s-sm'); break
+            case 'md': coverEl.addClass('s-md'); break
+            case 'lg': coverEl.addClass('s-lg'); break
+            case 'xl': coverEl.addClass('s-xl'); break
           }
           container.append(coverEl)
         }
@@ -407,48 +385,22 @@ Vue.mixin({
         if (this.$isServer) {
           reject('Server side doesn\'t use toast')
         } else if (this.$bvToast) {
-          // position adapter
           switch (opts.pos) {
-            case 'tr':
-              opts.toaster = 'b-toaster-top-right'
-              break
-            case 'tl':
-              opts.toaster = 'b-toaster-top-left'
-              break
-            case 'br':
-              opts.toaster = 'b-toaster-bottom-right'
-              break
-            case 'bl':
-              opts.toaster = 'b-toaster-bottom-left'
-              break
-            case 'tc':
-              opts.toaster = 'b-toaster-top-center'
-              break
-            case 'tf':
-              opts.toaster = 'b-toaster-top-full'
-              break
-            case 'bc':
-              opts.toaster = 'b-toaster-bottom-center'
-              break
-            case 'bf':
-              opts.toaster = 'b-toaster-bottom-full'
-              break
+            case 'tr': opts.toaster = 'b-toaster-top-right'; break
+            case 'tl': opts.toaster = 'b-toaster-top-left'; break
+            case 'br': opts.toaster = 'b-toaster-bottom-right'; break
+            case 'bl': opts.toaster = 'b-toaster-bottom-left'; break
+            case 'tc': opts.toaster = 'b-toaster-top-center'; break
+            case 'tf': opts.toaster = 'b-toaster-top-full'; break
+            case 'bc': opts.toaster = 'b-toaster-bottom-center'; break
+            case 'bf': opts.toaster = 'b-toaster-bottom-full'; break
             default:
-              // override the position by type/variant
               switch(opts.variant) {
-                case 'danger':
-                case 'red':
-                  opts.toaster = 'b-toaster-top-full'
-                  break
-                case 'warning':
-                case 'yellow':
-                  opts.toaster = 'b-toaster-top-left'
-                  break
-                default:
-                  opts.toaster = 'b-toaster-top-right'
+                case 'danger': case 'red': opts.toaster = 'b-toaster-top-full'; break
+                case 'warning': case 'yellow': opts.toaster = 'b-toaster-top-left'; break
+                default: opts.toaster = 'b-toaster-top-right'
               }
           }
-          // merge default setting
           const merged = Object.assign({
             title: '📣 通知',
             subtitle: this.$utils.now().split(' ')[1],
@@ -460,34 +412,17 @@ Vue.mixin({
             appendToast: true,
             variant: 'info'
           }, opts)
-          // Use a shorter name for this.$createElement
           const h = this.$createElement
-          // Create the title
           const vNodesTitle = h(
-            'div', {
-              class: ['d-flex', 'flex-grow-1', 'align-items-baseline', 'mr-2']
-            },
+            'div', { class: ['d-flex', 'flex-grow-1', 'align-items-baseline', 'mr-2'] },
             [
-              h('strong', {
-                class: 'mr-2'
-              }, merged.title),
-              h('small', {
-                class: 'ml-auto text-italics'
-              }, merged.subtitle)
+              h('strong', { class: 'mr-2' }, merged.title),
+              h('small', { class: 'ml-auto text-italics' }, merged.subtitle)
             ]
           )
-          // Pass the VNodes as an array for title
           merged.title = [vNodesTitle]
-          // use vNode for HTML content
-          const msgVNode = h('div', {
-            domProps: {
-              innerHTML: message
-            }
-          })
-
+          const msgVNode = h('div', { domProps: { innerHTML: message } })
           this.$bvToast.toast([msgVNode], merged)
-
-          // resolve the final opts back
           merged.message = message
           resolve(merged)
         } else {
@@ -508,7 +443,6 @@ Vue.mixin({
               opts.autoHideDelay = opts.duration || opts.delay || defDelay
             } else if (typeof msg === 'object') {
               opts = msg
-              // previous API only use one object param
               msg = opts.body || opts.message
               opts.variant = opts.type || opts.variant || 'default'
               opts.autoHideDelay = opts.duration || opts.delay || defDelay
@@ -568,41 +502,22 @@ Vue.mixin({
           reject('Server side doesn\'t use modal')
         } else if (this.$bvModal) {
           const merged = Object.assign({
-            title: '訊息',
-            size: 'md',
-            buttonSize: 'sm',
-            okVariant: 'outline-secondary',
-            okTitle: '關閉',
-            hideHeaderClose: false,
-            centered: true,
-            scrollable: true,
-            hideFooter: true,
-            noCloseOnBackdrop: false,
-            noFade: false,
-            contentClass: 'shadow',
-            html: false,
-            root: false
+            title: '訊息', size: 'md', buttonSize: 'sm', okVariant: 'outline-secondary',
+            okTitle: '關閉', hideHeaderClose: false, centered: true, scrollable: true,
+            hideFooter: true, noCloseOnBackdrop: false, noFade: false, contentClass: 'shadow',
+            html: false, root: false
           }, opts)
-          // use d-none to hide footer
           merged.footerClass = merged.hideFooter ? 'd-none' : 'p-2'
           if (typeof message === 'object') {
-            // assume the message is VNode
             message = [message]
           } else if (merged.html) {
-            // HTML message content
             merged.titleHtml = merged.title
             merged.title = undefined
             const msgVNode = this.$createElement('div', { domProps: { innerHTML: message } })
             message = [msgVNode]
           }
-          // https://bootstrap-vue.org/docs/components/modal#modal-message-boxes
           const modal = merged.root ? this.$root.$bvModal : this.$bvModal
-          modal.msgBoxOk(message, merged).then((val) => {
-            // val will be always true from $bvModal.msgBoxOk window closed
-          }).catch(err => {
-            reject(err)
-          })
-          // resolve the final opts back
+          modal.msgBoxOk(message, merged).then((val) => {}).catch(err => { reject(err) })
           merged.message = message
           resolve(merged)
         } else {
@@ -616,24 +531,14 @@ Vue.mixin({
           reject('Server side doesn\'t use confirm')
         } else if (this.$bvModal) {
           const merged = Object.assign({
-            title: '請確認',
-            size: 'sm',
-            buttonSize: 'sm',
-            okVariant: 'outline-success',
-            okTitle: '確定',
-            cancelVariant: 'secondary',
-            cancelTitle: '取消',
-            footerClass: 'p-2',
-            hideHeaderClose: false,
-            noCloseOnBackdrop: false,
-            centered: true,
-            contentClass: 'shadow'
+            title: '請確認', size: 'sm', buttonSize: 'sm', okVariant: 'outline-success', okTitle: '確定',
+            cancelVariant: 'secondary', cancelTitle: '取消', footerClass: 'p-2', hideHeaderClose: false,
+            noCloseOnBackdrop: false, centered: true, contentClass: 'shadow'
           }, opts)
-          // use HTML content
           const h = this.$createElement
           const msgVNode = h('div', { domProps: { innerHTML: message } })
           this.$bvModal.msgBoxConfirm([msgVNode], merged).then((value) => {
-            resolve(value)  // true, false or null
+            resolve(value)
           }).catch((err) => {
             reject(err)
           })
@@ -644,10 +549,7 @@ Vue.mixin({
     },
     trigger (evtName, payload) {
       if (CustomEvent) {
-        let evt = new CustomEvent(evtName, {
-          detail: payload,
-          bubbles: true
-        })
+        let evt = new CustomEvent(evtName, { detail: payload, bubbles: true })
         Object.defineProperty(evt, 'target', {writable: false, value: this.$el})
         this.$emit(evtName, evt)
         return evt
@@ -658,18 +560,8 @@ Vue.mixin({
     async setCache (key, val, expire_timeout = 0) {
       if (empty(key) || this.$localForage === undefined) { return false }
       try {
-        const item = {
-          key,
-          value: val,
-          timestamp: +new Date(), // == new Date().getTime()
-          expire_ms: expire_timeout // milliseconds
-        }
-        this.$localForage.setItem(key, item).then((value) => {
-          // Do other things once the value has been saved.
-        }).catch((err) => {
-          // This code runs if there were any errors
-          this.err(err)
-        })
+        const item = { key, value: val, timestamp: +new Date(), expire_ms: expire_timeout }
+        this.$localForage.setItem(key, item).then((value) => {}).catch((err) => { this.err(err) })
       } catch (err) {
         this.err(err)
         return false
@@ -684,10 +576,8 @@ Vue.mixin({
         const ts = item.timestamp
         const expireTime = item.expire_ms || 0
         const now = +new Date()
-        // console.log(`get ${key} value. (expireTime: ${expireTime}), now - ts == ${now - ts}`, item.value)
         if (expireTime !== 0 && now - ts > expireTime) {
           await this.$localForage.removeItem(key)
-          // console.log(`${key} is removed. (expireTime: ${expireTime}), now - ts == ${now - ts}`)
           return false
         } else {
           return item.value
@@ -705,11 +595,10 @@ Vue.mixin({
         const ts = item.timestamp
         const expireTime = item.expire_ms || 0
         const now = +new Date()
-        // console.log(`get ${key} value. (expireTime: ${expireTime}), now - ts == ${now - ts}`, item.value)
         if (expireTime === 0) {
           return false
         } else {
-          return expireTime - (now - ts) // milliseconds
+          return expireTime - (now - ts)
         }
       } catch (err) {
         this.err(err)
