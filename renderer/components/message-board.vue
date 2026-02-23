@@ -306,16 +306,14 @@ export default {
 }
 
 .post-message-btn {
-  transition: all 1s;
+  transition: all 0.3s ease-in-out;
   z-index: 1001;
   position: fixed;
-  opacity: 0.5;
-  left: -50px;
+  opacity: 0.75;
+  left: 0px;    /* 已修改：原本是 -50px，現在改為 0px 讓按鈕預設維持展開狀態 */
   top: 120px;
   &:hover {
-    transition: all .5s;
-    opacity: 1.0;
-    left: 0px;
+    opacity: 1.0; /* 已修改：滑鼠移入時才變回完全不透明 */
   }
 }
 </style>

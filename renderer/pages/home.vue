@@ -889,6 +889,9 @@ export default {
       const receivedId = incoming.message?.id || incoming.id;
       const lastReadId = (await this.getChannelLastReadId(channel)) || 0;
       
+      // [核心修正點] 檢查是否為歷史訊息
+      const isHistory = !!(incoming.prepend || incoming.message?.prepend);
+
       if (incoming.type === "ack") {
         this.handleAckMessage(incoming.message);
       } else if (channel === "system") {
@@ -901,15 +904,24 @@ export default {
             !this.$utils.empty(incoming.message) &&
             !this.messages[channel].find((m) => m.id === incoming.id)
           ) {
-            this.messages[channel].push(incoming);
+            // [核心修正點] 歷史訊息置頂，一般訊息置底並捲動
+            if (isHistory) {
+              this.messages[channel].unshift(incoming);
+            } else {
+              this.messages[channel].push(incoming);
+              this.scrollToBottom();
+            }
+
             if (receivedId > lastReadId)
               this.setChannelUnread(channel, receivedId);
-            this.triggerNotification(incoming);
-            this.delayLatestMessage();
-            this.scrollToBottom();
+            
+            if (!isHistory) {
+              this.triggerNotification(incoming);
+              this.delayLatestMessage();
+            }
           }
         });
-      } else if (incoming.message && incoming.sender !== "system") {
+      } else if (incoming.message && incoming.sender !== "system" && !isHistory) {
         if (
           receivedId > lastReadId &&
           [

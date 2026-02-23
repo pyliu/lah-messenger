@@ -9,7 +9,9 @@ b-card.announcement-card(
     span(style="width: 380px").mr-auto {{ dataJson.title }}
     span.ml-1 \#{{ dataJson.id }}
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
-  template(#footer): .d-flex.justify-content-between.align-items-center.small.text-muted
+  
+  //- 移除了原有的 .small，並使用 protected-footer 進行絕對隔離
+  template(#footer): .protected-footer.d-flex.justify-content-between.align-items-center.text-muted
     span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
     b-button-group(v-if="!preview && (mine || isAdmin)", size="sm")
       b-button(
@@ -36,7 +38,7 @@ b-card.announcement-card(
 </template>
 
 <script>
-import MessageInputEditAnnouncement from '~/components/message-input-edit-announcement.vue'
+import MessageInputEditAnnouncement from '~/components/message-input-edit-announcement.vue';
 export default {
   name: 'AnnouncementCard',
   components: {
@@ -168,6 +170,44 @@ export default {
     font-size: 1.25rem;
     font-weight: 900;
     color: red;
+  }
+}
+
+/* ------------------------------------------------------------------------- */
+/* 防禦性樣式：極致隔離 footer 區塊，不受任何外層放大干擾                    */
+/* ------------------------------------------------------------------------- */
+.announcement-card {
+  ::v-deep .card-footer {
+    padding: 6px 12px !important; // 配合更小的字體，稍微收斂 padding 讓版面更緊湊
+  }
+}
+
+.protected-footer {
+  // 1. 使用 px 絕對單位 (從 11px 調大至 12px)，徹底阻斷所有相對單位的繼承
+  font-size: 12px !important; 
+  line-height: 1.5 !important;
+  zoom: 1 !important; // 阻斷 zoom 縮放
+
+  // 2. 萬用字元鎖定：強制所有內部包裹的 span 等元素維持 12px
+  &, *, span {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    letter-spacing: normal !important;
+  }
+
+  // 3. 按鈕與圖示特例保護
+  ::v-deep .btn {
+    font-size: 11px !important; // 按鈕字體等比調大至 11px
+    padding: 2px 6px !important; // 縮小按鈕內距
+    height: auto !important;
+    display: inline-flex;
+    align-items: center;
+    
+    .b-icon {
+      font-size: 11px !important;
+      width: 1em !important;
+      height: 1em !important;
+    }
   }
 }
 </style>
