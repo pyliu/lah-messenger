@@ -272,7 +272,9 @@ export default {
     reconnectMs: 20 * 1000,
     syncDepartmentTimer: null,
     checkUnreadTimer: null,
-    checkUreadDuration: 3 * 60 * 60 * 1000
+    checkUreadDuration: 3 * 60 * 60 * 1000,
+    asking: false,
+    adQuerying: false // [FIX] 新增：防止 loadApiADUserData 並發執行的旗標
   }),
 
   // ==========================================================================
@@ -776,19 +778,38 @@ export default {
         this.timeout(this.loadApiUserData, 400);
       }
     },
-
+    /**
+     * [FIX] 從 API 伺服器查詢並更新使用者的真實姓名與部門資訊。
+     * 修復點：
+     *   1. 新增 adQuerying 並發防護旗標，避免多次重複呼叫。
+     *   2. 新增 Fallback 機制：API 返回空名稱或呼叫失敗時，以 userMap 或 adAccount 保底。
+     *   3. catch 區塊加入 Fallback 設定，確保 adName 不會永久空白。
+     */
     loadApiADUserData() {
+      // [防護] 避免並發執行
+      if (this.adQuerying) return;
+
       if (this.validHost && this.validAdAccount) {
+        this.adQuerying = true;
+
         this.$axios
           .post(this.userQueryStr, { type: "ad_user_info", id: this.adAccount })
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
-              if (!this.empty(raw.name)) {
-                this.adName = raw.name;
-                this.$store.commit("username", raw.name);
-                this.$localForage.setItem("adName", raw.name);
+
+              // [FIX] 補上 Fallback：API 返回空名稱時，使用 userMap 或帳號本身作為顯示名稱
+              const resolvedName = !this.empty(raw.name)
+                ? raw.name
+                : (this.userMap[this.adAccount] || this.adAccount);
+
+              if (!this.empty(resolvedName) && this.empty(this.adName)) {
+                this.adName = resolvedName;
+                this.$store.commit("username", resolvedName);
+                this.$localForage.setItem("adName", resolvedName);
               }
+
+              // 部門處理邏輯（維持原有不動）
               const deptArr = raw.department;
               if (Array.isArray(deptArr) && deptArr.length > 0) {
                 const deptName = deptArr[0];
@@ -796,23 +817,36 @@ export default {
                   const prev = this.deptName;
                   this.handleApiUserInfoUpdate({ unit: deptName });
                   this.$store.commit("apiUserinfo", { unit: deptName });
-                  if (prev !== deptName)
+                  if (prev !== deptName) {
                     this.ipcRenderer.invoke("change-user-dept", {
                       api: `${this.apiQueryUrl}${this.$consts.API.JSON.USER}`,
                       type: "upd_dept",
                       id: this.userid,
                       dept: deptName
                     });
+                  }
                 }
               }
             }
           })
-          .catch((err) => this.alert(err.toString()));
+          .catch((err) => {
+            // [FIX] API 呼叫失敗時，以 Fallback 確保 adName 不為空，讓使用者仍能手動連線
+            if (this.empty(this.adName)) {
+              const fallbackName = this.userMap[this.adAccount] || this.adAccount;
+              if (!this.empty(fallbackName)) {
+                this.adName = fallbackName;
+              }
+            }
+            if (!isProd) console.warn("[loadApiADUserData] API 呼叫失敗，已使用 Fallback 名稱：", this.adName, err);
+          })
+          .finally(() => {
+            this.adQuerying = false;
+          });
       } else {
+        // validHost 或 validAdAccount 尚未就緒，400ms 後重試
         this.timeout(this.loadApiADUserData, 400);
       }
     },
-
     loadUserMapData() {
       if (this.validHost) {
         this.$axios
@@ -1350,17 +1384,28 @@ export default {
       this.register();
       this.ipcRenderer.invoke("injectUserinfo", { ...u, userdept: this.userdept });
     },
-
+    /**
+     * [FIX] 修正 restoreSettings 的 await 賦值順序。
+     * 核心原則：先載入「網路設定」，最後載入「會觸發 watcher 的帳號資訊」。
+     * 這樣可確保 adAccount watcher 觸發 loadApiADUserData() 時，wsHost 已就緒。
+     */
     async restoreSettings() {
-      this.adAccount = await this.$localForage.getItem("adAccount");
-      this.adName = await this.$localForage.getItem("adName");
+      // --- 第一優先：載入網路連線設定（為後續 watcher 的 API 呼叫做好準備）---
+      this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
+      this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
+      this.adHost   = (await this.$localForage.getItem("adHost")) || "";
+
+      // --- 第二優先：載入不觸發 API 呼叫的使用者設定 ---
       this.adPassword = await this.$localForage.getItem("adPassword");
       this.department = await this.$localForage.getItem("department");
-      this.adHost = await this.$localForage.getItem("adHost");
-      this.wsHost = await this.$localForage.getItem("wsHost");
-      this.wsPort = (await this.$localForage.getItem("wsPort")) || 8081;
-    },
 
+      // --- 第三優先：adName 必須在 adAccount 之前載入 ---
+      // 原因：adAccount watcher 觸發時，adName 若已有快取值，可省去一次 API 呼叫。
+      this.adName = await this.$localForage.getItem("adName");
+
+      // --- 最後：載入 adAccount，此步驟會觸發 watcher → loadApiADUserData() ---
+      this.adAccount = await this.$localForage.getItem("adAccount");
+    },
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
     },
