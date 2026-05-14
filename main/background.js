@@ -288,6 +288,12 @@ ipcMain.handle('unread', (event, channel) => {
 
 /**
  * 根據未讀計數更新圖示與閃爍
+ * 
+ * [FIX] 移除 mainWindow.setIcon()，改以 setOverlayIcon() 取代。
+ * 
+ * 根因：setIcon() 底層呼叫 Win32 WM_SETICON，會觸發 DWM 重算非客戶區尺寸，
+ *       與 useContentSize: true 產生衝突，導致視窗短暫膨脹。
+ *       視窗圖示已於 initializeMainWindow() 設定，無需於此動態變更。
  */
 ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
   try {
@@ -299,18 +305,34 @@ ipcMain.handle('toggleUnreadTrayIcon', (event, payload) => {
       toolTip = `👉 您有 ${payload.unread} 則未讀訊息！`;
       mainWindow && mainWindow.show();
       mainWindow && mainWindow.flashFrame(true);
-    } else { 
-        mainWindow && mainWindow.flashFrame(false);
+    } else {
+      mainWindow && mainWindow.flashFrame(false);
     }
 
     const iconPath = path.join(__dirname, iconName);
     const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
-    
+
     if (tray && !tray.isDestroyed()) {
       tray.setImage(trayIcon);
       tray.setToolTip(toolTip);
     }
-    if (mainWindow) mainWindow.setIcon(iconPath);
+
+    // [FIX] 移除以下這行，它是視窗尺寸跳動的根本原因：
+    // if (mainWindow) mainWindow.setIcon(iconPath); ← 已刪除
+
+    // [FIX] 改用 setOverlayIcon() 在工作列按鈕疊加通知徽章（符合 Windows UX 規範）
+    //       有未讀時顯示紅點，無未讀時清除（傳入 null）。
+    if (mainWindow) {
+      if (payload.unread > 0) {
+        const overlayIcon = nativeImage.createFromPath(
+          path.join(__dirname, 'message_notice.ico')
+        ).resize({ width: 16, height: 16 });
+        mainWindow.setOverlayIcon(overlayIcon, `${payload.unread} 則未讀訊息`);
+      } else {
+        mainWindow.setOverlayIcon(null, '');
+      }
+    }
+
   } catch (error) {
     handleError(error, 'ToggleUnreadTrayIcon');
   }
