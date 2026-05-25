@@ -1189,6 +1189,13 @@ export default {
           message: title,
           showMainWindow: true
         });
+        // 2. [修復 2] 呼叫 global-vue-mixin 的 notify，顯示右下角 Toast
+        const senderName = this.userMap[i.sender] || i.sender;
+        this.notify(title, {
+          title: `💬 來自 ${senderName}`,
+          variant: 'success',
+          autoHideDelay: 6000
+        });
     },
 
     // ------------------------------------------------------------------------
@@ -1218,8 +1225,18 @@ export default {
         this.$utils.md5(this.keyCodes.join(",")) ===
         "f20b4566a1f6b848f1fbec48b2ab2c10"
       ) {
-        this.$store.commit("authority", { isAdmin: !this.authority.isAdmin });
+        // 取得切換後的新狀態
+        const newAdminState = !this.authority.isAdmin;
+        this.$store.commit("authority", { isAdmin: newAdminState });
         this.keyCodes.length = 0;
+
+        // [修復] 補上缺失的 UI 通知，讓使用者明確知道密技啟動狀態
+        const statusText = newAdminState ? "🔓 管理者權限已開啟" : "🔒 管理者權限已關閉";
+        this.notify(statusText, {
+          title: "💡 系統隱藏指令",
+          variant: newAdminState ? "danger" : "secondary",
+          autoHideDelay: 3000
+        });
       }
     },
 
@@ -1428,6 +1445,9 @@ export default {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
     this.resetReconnectTimer();
+
+    // [修復 1] 應用程式啟動時，主動初始化 windowVisible 狀態，解開 Toast 被全域封鎖的死結
+    this.visibilityChange();
 
     this.$nextTick(async () => {
       await this.restoreSettings();
