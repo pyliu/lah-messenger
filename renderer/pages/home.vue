@@ -1234,7 +1234,7 @@ export default {
         const statusText = newAdminState ? "🔓 管理者權限已開啟" : "🔒 管理者權限已關閉";
         this.notify(statusText, {
           title: "💡 系統隱藏指令",
-          variant: newAdminState ? "danger" : "secondary",
+          variant: newAdminState ? "success" : "secondary",
           autoHideDelay: 3000
         });
       }

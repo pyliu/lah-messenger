@@ -79,16 +79,30 @@ const initializeTray = () => {
  * 初始化主視窗
  */
 const initializeMainWindow = async () => {
+  // [防禦 1] 將目標寬高抽離為常數，確保全域一致性
+  const targetWidth = isProd ? 490 : 960;
+  const targetHeight = 740;
+
   mainWindow = createWindow('main', {
-    width: isProd ? 490 : 960,
-    height: 740,
+    width: targetWidth,
+    height: targetHeight,
+    // [防禦 2] 作業系統層級的硬約束：鎖死最大與最小尺寸，無視任何外力拉扯或 DPI 變更
+    minWidth: targetWidth,
+    maxWidth: targetWidth,
+    minHeight: targetHeight,
+    maxHeight: targetHeight,
     show: false,
     useContentSize: true,
     center: true,
     resizable: false,
     maximizable: false,
+    fullscreenable: false, // [防禦 3] 關閉全螢幕能力，防止 Windows 貼齊功能或 F11 撐開視窗
     icon: path.join(__dirname, 'message.ico'),
   });
+
+  // [防禦 4] 抵禦 createWindow 模組的歷史快取：
+  // 即使 helpers 內部讀取了舊的寬度 (如 960)，在此強制再次覆寫回精準尺寸
+  mainWindow.setContentSize(targetWidth, targetHeight);
 
   mainWindow.setMenuBarVisibility(false);
 
@@ -120,11 +134,9 @@ const initializeMainWindow = async () => {
   
   if (isProd) {
     await mainWindow.loadURL('app://./home');
-    // 生產模式下已關閉自動開啟 DevTools 功能 (F12 仍可手動開啟，若 home.vue 有綁定)
   } else {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/home`);
-    // 開發模式下保持開啟 DevTools 以利除錯
     mainWindow.webContents.openDevTools();
   }
 };
