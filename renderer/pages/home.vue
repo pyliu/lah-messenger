@@ -499,7 +499,9 @@ export default {
       }
       this.messages[oVal] && (this.messages[oVal].length = 0);
       this.latestMessage();
-      if (!this.showUnreadChannels.includes(nVal)) this.queryOnlineClients();
+      if (!this.showUnreadChannels.includes(nVal)) {
+        if (typeof this.delayQueryOnlineClients === 'function') this.delayQueryOnlineClients();
+      }
       this.clear();
       this.scrollToBottom();
     },
@@ -778,15 +780,7 @@ export default {
         this.timeout(this.loadApiUserData, 400);
       }
     },
-    /**
-     * [FIX] 從 API 伺服器查詢並更新使用者的真實姓名與部門資訊。
-     * 修復點：
-     *   1. 新增 adQuerying 並發防護旗標，避免多次重複呼叫。
-     *   2. 新增 Fallback 機制：API 返回空名稱或呼叫失敗時，以 userMap 或 adAccount 保底。
-     *   3. catch 區塊加入 Fallback 設定，確保 adName 不會永久空白。
-     */
     loadApiADUserData() {
-      // [防護] 避免並發執行
       if (this.adQuerying) return;
 
       if (this.validHost && this.validAdAccount) {
@@ -798,7 +792,6 @@ export default {
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
 
-              // [FIX] 補上 Fallback：API 返回空名稱時，使用 userMap 或帳號本身作為顯示名稱
               const resolvedName = !this.empty(raw.name)
                 ? raw.name
                 : (this.userMap[this.adAccount] || this.adAccount);
@@ -809,7 +802,6 @@ export default {
                 this.$localForage.setItem("adName", resolvedName);
               }
 
-              // 部門處理邏輯（維持原有不動）
               const deptArr = raw.department;
               if (Array.isArray(deptArr) && deptArr.length > 0) {
                 const deptName = deptArr[0];
@@ -830,7 +822,6 @@ export default {
             }
           })
           .catch((err) => {
-            // [FIX] API 呼叫失敗時，以 Fallback 確保 adName 不為空，讓使用者仍能手動連線
             if (this.empty(this.adName)) {
               const fallbackName = this.userMap[this.adAccount] || this.adAccount;
               if (!this.empty(fallbackName)) {
@@ -843,7 +834,6 @@ export default {
             this.adQuerying = false;
           });
       } else {
-        // validHost 或 validAdAccount 尚未就緒，400ms 後重試
         this.timeout(this.loadApiADUserData, 400);
       }
     },
@@ -866,16 +856,12 @@ export default {
     // ------------------------------------------------------------------------
     // [Connection & WS] WebSocket 通訊
     // ------------------------------------------------------------------------
-    /**
-     * [FIXED] 還原正確的連線清理邏輯，解決 state 衝突問題
-     */
     connect() {
       if (this.connected && this.websocket?.readyState === 1) {
         this.resetReconnectTimer();
       } else if (this.validInformation) {
         this.connecting = true;
         try {
-          // [還原] 如果已有連線實例，先關閉它以釋放資源
           if (this.websocket) {
             this.websocket.onopen = null;
             this.websocket.onmessage = null;
@@ -923,12 +909,12 @@ export default {
       const receivedId = incoming.message?.id || incoming.id;
       const lastReadId = (await this.getChannelLastReadId(channel)) || 0;
       
-      // [核心修正點] 檢查是否為歷史訊息
       const isHistory = !!(incoming.prepend || incoming.message?.prepend);
 
       if (incoming.type === "ack") {
         this.handleAckMessage(incoming.message);
       } else if (channel === "system") {
+        // [FIXED] 系統廣播頻道處理入口
         this.handleSystemMessage(incoming.message);
       } else if (this.currentChannel === channel) {
         if (!Array.isArray(this.messages[channel]))
@@ -938,7 +924,6 @@ export default {
             !this.$utils.empty(incoming.message) &&
             !this.messages[channel].find((m) => m.id === incoming.id)
           ) {
-            // [核心修正點] 歷史訊息置頂，一般訊息置底並捲動
             if (isHistory) {
               this.messages[channel].unshift(incoming);
             } else {
@@ -972,9 +957,6 @@ export default {
       this.connecting = false;
     },
 
-    /**
-     * 處理系統確認訊息 (ACK)
-     */
     async handleAckMessage(json) {
       const cmd = json?.command;
       this.log(this.time(), `處理系統 ACK: ${cmd}`, json);
@@ -1071,12 +1053,30 @@ export default {
       }
     },
 
+    /**
+     * [FIXED] 精確攔截伺服器主動發送的系統廣播
+     */
     async handleSystemMessage(json) {
       if (json.command === "update_user" && json.payload.id) {
         await this.$localForage.setItem("adAccount", json.payload.id);
         await this.$localForage.setItem("adName", json.payload.name);
         await this.$localForage.setItem("department", json.payload.dept);
         this.ipcRenderer.invoke("reload");
+      } 
+      // 🟢 [修復核心] 攔截後端送出的 user_connected 與 user_disconnected
+      // 🟢 [超前部署] 預留 user_channel_changed (若後端實作頻道切換廣播即可無縫接軌)
+      else if (["user_connected", "user_disconnected", "user_channel_changed"].includes(json.command)) {
+        this.log(this.time(), `[系統廣播] 偵測到使用者狀態異動: ${json.command}`, json.payload);
+        
+        // 使用防抖查詢，避免多人同時登出入時產生風暴
+        if (typeof this.delayQueryOnlineClients === 'function') {
+          this.delayQueryOnlineClients();
+        }
+        
+        // 🟢 [補強] 將伺服器傳來的「XXX 已上線/離線」顯示在右下角狀態列
+        if (!this.$utils.empty(json.message)) {
+          this.setConnectText(json.message);
+        }
       }
     },
 
@@ -1089,16 +1089,12 @@ export default {
       this.$refs.textarea?.focus();
     },
 
-    /**
-     * [FIXED] 加入強大的狀態檢查機制，解決 CLOSING/CLOSED 狀態下的發送錯誤
-     */
     sendTo(msg, opts = {}) {
       if (this.$utils.empty(msg)) return false;
 
-      // [核心修正] 檢查連線狀態是否為 1 (OPEN)
       if (!this.websocket || this.websocket.readyState !== 1) {
         this.setConnectText("連線不穩定，正在自動修復...");
-        this.connect(); // 嘗試背景重連
+        this.connect(); 
         return false;
       }
 
@@ -1189,7 +1185,6 @@ export default {
           message: title,
           showMainWindow: true
         });
-        // 2. [修復 2] 呼叫 global-vue-mixin 的 notify，顯示右下角 Toast
         const senderName = this.userMap[i.sender] || i.sender;
         this.notify(title, {
           title: `💬 來自 ${senderName}`,
@@ -1225,12 +1220,10 @@ export default {
         this.$utils.md5(this.keyCodes.join(",")) ===
         "f20b4566a1f6b848f1fbec48b2ab2c10"
       ) {
-        // 取得切換後的新狀態
         const newAdminState = !this.authority.isAdmin;
         this.$store.commit("authority", { isAdmin: newAdminState });
         this.keyCodes.length = 0;
 
-        // [修復] 補上缺失的 UI 通知，讓使用者明確知道密技啟動狀態
         const statusText = newAdminState ? "🔓 管理者權限已開啟" : "🔒 管理者權限已關閉";
         this.notify(statusText, {
           title: "💡 系統隱藏指令",
@@ -1396,31 +1389,21 @@ export default {
       this.$store.commit("userinfo", u);
       this.$localForage.setItem("userinfo", u);
       if (!this.$utils.isIPv4(this.adHost)) this.adHost = this.getFirstDNSIp();
-      // 更新視窗標題
       this.updateWindowTitle();
       this.register();
       this.ipcRenderer.invoke("injectUserinfo", { ...u, userdept: this.userdept });
     },
-    /**
-     * [FIX] 修正 restoreSettings 的 await 賦值順序。
-     * 核心原則：先載入「網路設定」，最後載入「會觸發 watcher 的帳號資訊」。
-     * 這樣可確保 adAccount watcher 觸發 loadApiADUserData() 時，wsHost 已就緒。
-     */
+
     async restoreSettings() {
-      // --- 第一優先：載入網路連線設定（為後續 watcher 的 API 呼叫做好準備）---
       this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
       this.adHost   = (await this.$localForage.getItem("adHost")) || "";
 
-      // --- 第二優先：載入不觸發 API 呼叫的使用者設定 ---
       this.adPassword = await this.$localForage.getItem("adPassword");
       this.department = await this.$localForage.getItem("department");
 
-      // --- 第三優先：adName 必須在 adAccount 之前載入 ---
-      // 原因：adAccount watcher 觸發時，adName 若已有快取值，可省去一次 API 呼叫。
       this.adName = await this.$localForage.getItem("adName");
 
-      // --- 最後：載入 adAccount，此步驟會觸發 watcher → loadApiADUserData() ---
       this.adAccount = await this.$localForage.getItem("adAccount");
     },
     addChatChannel(payload) {
@@ -1444,9 +1427,17 @@ export default {
   mounted() {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
+
+    // 🟢 [修復核心] 註冊防抖版本的查詢函數，觸發間隔為 1.5 秒
+    this.delayQueryOnlineClients = this.$utils.debounce(() => {
+      // 確保 queryOnlineClients 存在且當前不在公告等無須查線上名單的頻道
+      if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
+        this.queryOnlineClients();
+      }
+    }, 1500);
+
     this.resetReconnectTimer();
 
-    // [修復 1] 應用程式啟動時，主動初始化 windowVisible 狀態，解開 Toast 被全域封鎖的死結
     this.visibilityChange();
 
     this.$nextTick(async () => {
