@@ -1061,6 +1061,24 @@ export default {
         await this.$localForage.setItem("adAccount", json.payload.id);
         await this.$localForage.setItem("adName", json.payload.name);
         await this.$localForage.setItem("department", json.payload.dept);
+        
+        // 🟢 [核心修復] 同步更新 apiUserinfo 的快取資料！
+        // 避免重新載入 (reload) 後，系統讀取舊的 apiUserinfo 快取並觸發 watcher，
+        // 導致 handleApiUserInfoUpdate 再次把 department 覆寫回舊的部門 (例如從行政課又變回測量課)。
+        try {
+          const deptName = this.getDepartmentName(json.payload.dept);
+          const cachedInfo = (await this.getCache("apiUserinfo")) || {};
+          cachedInfo.unit = deptName;
+          this.setCache("apiUserinfo", cachedInfo, this.userDataCacheDuration);
+
+          // 一併更新使用者對應表快取，確保名稱也正確顯示
+          const cachedMap = (await this.getCache("userMapping")) || {};
+          cachedMap[json.payload.id] = json.payload.name;
+          this.setCache("userMapping", cachedMap, this.userDataCacheDuration);
+        } catch (err) {
+          console.warn('同步更新使用者快取時發生錯誤', err);
+        }
+
         this.ipcRenderer.invoke("reload");
       } 
       // 🟢 [修復核心] 攔截後端送出的 user_connected 與 user_disconnected
@@ -1180,17 +1198,21 @@ export default {
       temp.innerHTML = i.message.title || i.message;
       const title = temp.innerText.substring(0, 18) + "...";
       this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
-      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel))
+      
+      // 觸發 OS 原生通知 (僅在符合條件時)
+      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
         this.ipcRenderer.invoke("notification", {
           message: title,
           showMainWindow: true
         });
+      }
+      
+      // 🟢 [修改點] 一般收發訊息不再使用 APP 內的 Toast(this.notify) 干擾畫面，
+      // 改為使用右下角狀態列 (status) 來隱性提示，但只有在非自己發送時才提示
+      if (i.sender !== this.adAccount) {
         const senderName = this.userMap[i.sender] || i.sender;
-        this.notify(title, {
-          title: `💬 來自 ${senderName}`,
-          variant: 'success',
-          autoHideDelay: 6000
-        });
+        this.setConnectText(`💬 來自 ${senderName}: ${title}`);
+      }
     },
 
     // ------------------------------------------------------------------------
@@ -1434,7 +1456,7 @@ export default {
       if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
         this.queryOnlineClients();
       }
-    }, 1500);
+    }, 400);
 
     this.resetReconnectTimer();
 
