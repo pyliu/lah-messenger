@@ -455,7 +455,11 @@ export default {
     },
     markdMessage() {
       if (this.empty(this.inputText) && this.empty(this.inputImages)) return "";
-      return this.$utils.convertMarkd(`${this.inputText} ${this.markdImages}`);
+      
+      // 🟢 [修復] 保護本機網路路徑 (UNC) 與 本機磁碟路徑，自動加入反引號 ` 避免被 Markdown 吃掉 \
+      const protectedText = this.protectLocalPath(this.inputText);
+      
+      return this.$utils.convertMarkd(`${protectedText} ${this.markdImages}`);
     },
     messagePreviewJson() {
       return {
@@ -576,6 +580,18 @@ export default {
     // ------------------------------------------------------------------------
     // [UI Interaction] 狀態文字佇列處理
     // ------------------------------------------------------------------------
+    /**
+     * 🟢 [新增] 自動保護網路路徑/本機路徑的正則替換方法
+     */
+    protectLocalPath(text) {
+      if (!text) return '';
+      return String(text)
+        // 1. 處理帶有雙引號或單引號的路徑 (允許內部有空白，如 "\\server\folder space\file")
+        .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
+        // 2. 處理無空白的常規路徑 (如 \\220.1.34.57\分享區\@TBD 或 C:\Users\xxx)
+        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
+    },
+
     /**
      * 設定狀態列文字 (使用 Queue 機制)
      */
@@ -1450,13 +1466,13 @@ export default {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
 
-    // 🟢 [修復核心] 註冊防抖版本的查詢函數，觸發間隔為 1.5 秒
+    // 🟢 [優化] 將 debounce 查詢縮短為 300 毫秒，既能防止請求風暴，又能讓使用者感覺是即時更新。
     this.delayQueryOnlineClients = this.$utils.debounce(() => {
       // 確保 queryOnlineClients 存在且當前不在公告等無須查線上名單的頻道
       if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
         this.queryOnlineClients();
       }
-    }, 400);
+    }, 300);
 
     this.resetReconnectTimer();
 

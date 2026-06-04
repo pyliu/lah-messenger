@@ -87,10 +87,10 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 </template>
 
 <script>
-import AnnouncementCard from '~/components/announcement-card.vue'
-import Help from '~/components/help.vue'
-import ImageUpload from '~/components/image-upload.vue'
-import Message from '~/components/message.vue'
+import AnnouncementCard from '~/components/announcement-card.vue';
+import Help from '~/components/help.vue';
+import ImageUpload from '~/components/image-upload.vue';
+import Message from '~/components/message.vue';
 
 export default {
   name: 'MessageInput',
@@ -136,16 +136,17 @@ export default {
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
+      // 🟢 [修復] 發送前先將網路路徑與本機路徑保護起來
+      const protectedText = this.protectLocalPath(this.message);
+
       if (this.$utils.empty(this.images)) {
-        return this.message
+        return protectedText
       }
       let imgMdText = this.images.map((base64, idx) => {
         return `![給${this.toName}${idx}](${base64})`
       }).join('\n')
-      // if (!this.empty(this.message) && !this.empty(imgMdText)) {
-      //   imgMdText = `\n***\n ${imgMdText}`
-      // }
-      return `${this.message}\n\n***\n\n${imgMdText}`
+
+      return `${protectedText}\n\n***\n\n${imgMdText}`
     },
     markdMergedMessage () {
       // return DOMPurify?.sanitize(Markd(this.mergedMessage.replaceAll('\n', '  \n')))
@@ -213,6 +214,14 @@ export default {
     this.queryOnlineClients()
   },
   methods: {
+    // 🟢 [新增] 自動保護網路路徑/本機路徑的正則替換方法
+    protectLocalPath(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
+        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
+    },
+
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)
     },
