@@ -61,7 +61,7 @@ div: client-only
           b-icon.mr-1(icon="arrow-left-circle-fill", font-scale="1.25", title="返回列表")
           span {{ getChannelName($store.getters.currentChannel) }}
 
-        //- 線上使用者頭像組
+        //- 線 picked Users Avatar Group
         b-avatar-group.mr-4(
           v-if="connectedUsersCount > 1",
           size="2rem",
@@ -273,7 +273,6 @@ export default {
     syncDepartmentTimer: null,
     checkUnreadTimer: null,
     checkUreadDuration: 3 * 60 * 60 * 1000,
-    asking: false,
     adQuerying: false
   }),
 
@@ -500,7 +499,14 @@ export default {
       }
       this.messages[oVal] && (this.messages[oVal].length = 0);
       this.latestMessage();
-      if (!this.showUnreadChannels.includes(nVal)) this.queryOnlineClients();
+      if (!this.showUnreadChannels.includes(nVal)) {
+        // 🟢 [合併還原] 使用防抖函數查詢線上名單，避免伺服器負載
+        if (typeof this.delayQueryOnlineClients === 'function') {
+          this.delayQueryOnlineClients();
+        } else {
+          this.queryOnlineClients();
+        }
+      }
       this.clear();
       this.scrollToBottom();
     },
@@ -820,6 +826,7 @@ export default {
         this.timeout(this.loadApiADUserData, 400);
       }
     },
+
     loadUserMapData() {
       if (this.validHost) {
         this.$axios
@@ -1047,7 +1054,34 @@ export default {
         await this.$localForage.setItem("adAccount", json.payload.id);
         await this.$localForage.setItem("adName", json.payload.name);
         await this.$localForage.setItem("department", json.payload.dept);
+        
+        // 🟢 [合併還原] 同步更新 apiUserinfo 的快取資料防呆
+        try {
+          const deptName = this.getDepartmentName(json.payload.dept);
+          const cachedInfo = (await this.getCache("apiUserinfo")) || {};
+          cachedInfo.unit = deptName;
+          this.setCache("apiUserinfo", cachedInfo, this.userDataCacheDuration);
+
+          const cachedMap = (await this.getCache("userMapping")) || {};
+          cachedMap[json.payload.id] = json.payload.name;
+          this.setCache("userMapping", cachedMap, this.userDataCacheDuration);
+        } catch (err) {
+          console.warn('同步更新使用者快取時發生錯誤', err);
+        }
+
         this.ipcRenderer.invoke("reload");
+      } 
+      // 🟢 [合併還原] 攔截後端送出的 user_connected 與 user_disconnected
+      else if (["user_connected", "user_disconnected", "user_channel_changed"].includes(json.command)) {
+        this.log(this.time(), `[系統廣播] 偵測到使用者狀態異動: ${json.command}`, json.payload);
+        
+        if (typeof this.delayQueryOnlineClients === 'function') {
+          this.delayQueryOnlineClients();
+        }
+        
+        if (!this.$utils.empty(json.message)) {
+          this.setConnectText(json.message);
+        }
       }
     },
 
@@ -1145,17 +1179,20 @@ export default {
       temp.innerHTML = i.message.title || i.message;
       const title = temp.innerText.substring(0, 18) + "...";
       this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
-      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel))
+      
+      // 觸發 OS 原生通知
+      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
         this.ipcRenderer.invoke("notification", {
           message: title,
           showMainWindow: true
         });
+      }
+      
+      // 🟢 [合併還原] 一般收發訊息不再使用 Toast 彈出，改用右下角狀態列隱性提示
+      if (i.sender !== this.adAccount) {
         const senderName = this.userMap[i.sender] || i.sender;
-        this.notify(title, {
-          title: `💬 來自 ${senderName}`,
-          variant: 'success',
-          autoHideDelay: 6000
-        });
+        this.setConnectText(`💬 來自 ${senderName}: ${title}`);
+      }
     },
 
     resetReconnectTimer() {
@@ -1186,6 +1223,7 @@ export default {
         this.$store.commit("authority", { isAdmin: newAdminState });
         this.keyCodes.length = 0;
 
+        // 🟢 [合併還原] 補上 Konami UI 密技提示
         const statusText = newAdminState ? "🔓 管理者權限已開啟" : "🔒 管理者權限已關閉";
         this.notify(statusText, {
           title: "💡 系統隱藏指令",
@@ -1357,17 +1395,22 @@ export default {
     },
 
     async restoreSettings() {
+      // --- 🟢 [合併還原] 第一優先：載入網路連線設定 ---
       this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
       this.adHost   = (await this.$localForage.getItem("adHost")) || "";
 
+      // --- 第二優先：載入不觸發 API 呼叫的使用者設定 ---
       this.adPassword = await this.$localForage.getItem("adPassword");
       this.department = await this.$localForage.getItem("department");
 
+      // --- 第三優先：adName 必須在 adAccount 之前載入 ---
       this.adName = await this.$localForage.getItem("adName");
 
+      // --- 最後：載入 adAccount，此步驟會觸發 watcher → loadApiADUserData() ---
       this.adAccount = await this.$localForage.getItem("adAccount");
     },
+    
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
     },
@@ -1389,8 +1432,15 @@ export default {
   mounted() {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
-    this.resetReconnectTimer();
+    
+    // 🟢 [合併還原] 註冊 300ms 防抖版本的查詢函數，平滑更新名單
+    this.delayQueryOnlineClients = this.$utils.debounce(() => {
+      if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
+        this.queryOnlineClients();
+      }
+    }, 300);
 
+    this.resetReconnectTimer();
     this.visibilityChange();
 
     this.$nextTick(async () => {
