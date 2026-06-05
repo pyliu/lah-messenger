@@ -3,7 +3,7 @@ div
   .center.d-flex.my-2(title="連線使用者資訊")
     b-input-group(prepend="帳號")
       b-input.mr-1(v-model="adId", placeholder="... 輸入AD帳號 ...", readonly, trim, title="輸入AD帳號")
-      b-input.mr-1(v-model="adName", placeholder="... 輸入AD姓名 ...", readonly, trim, title="輸入AD姓名")
+      b-input.mr-1(v-model="adName", placeholder="... 輸入AD姓名 ...", trim, title="輸入AD姓名")
 
   .center.d-flex.my-2
     b-input-group(prepend="部門")
@@ -15,11 +15,11 @@ div
   
   .center.d-flex.my-2
     b-input-group(prepend="分機")
-      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, readonly, title="輸入分機號碼")
+      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, title="輸入分機號碼")
 
   .center.d-flex.my-2
     b-input-group(prepend="工作")
-      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, readonly, title="輸入工作描述")
+      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, title="輸入工作描述")
 
   b-button.animate__animated(
     variant="outline-success",
