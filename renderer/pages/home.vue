@@ -500,7 +500,6 @@ export default {
       this.messages[oVal] && (this.messages[oVal].length = 0);
       this.latestMessage();
       if (!this.showUnreadChannels.includes(nVal)) {
-        // 🟢 [合併還原] 使用防抖函數查詢線上名單，避免伺服器負載
         if (typeof this.delayQueryOnlineClients === 'function') {
           this.delayQueryOnlineClients();
         } else {
@@ -554,14 +553,10 @@ export default {
       this.$store.commit("password", val);
       this.$localForage.setItem("adPassword", val);
     },
-
-    inputImages() {
-      this.adjustPreviewPosition();
-    },
-
-    inputText() {
-      this.$nextTick(() => this.adjustPreviewPosition());
-    },
+    
+    // 🟢 [修復] 移除不必要的 watch，因為我們已經用 CSS 完全取代了 JS 的高度計算！
+    // inputImages() { this.adjustPreviewPosition(); },
+    // inputText() { this.$nextTick(() => this.adjustPreviewPosition()); },
 
     keyCodes() {
       this.handleKonamiCode();
@@ -632,12 +627,6 @@ export default {
         };
         window.requestAnimationFrame(step);
       });
-    },
-
-    adjustPreviewPosition() {
-      if (this.$refs.floatPreview)
-        this.$refs.floatPreview.style.top =
-          "-" + this.$refs.floatPreview.offsetHeight + "px";
     },
 
     clear() {
@@ -981,7 +970,6 @@ export default {
             const payload = json.payload.payload;
             const found = this.messages[channel]?.find(msg => msg.id === payload.id);
             if (found) {
-              // 🟢 [FIX] 分辨公告訊息與一般訊息的 payload 結構
               if (channel.startsWith('announcement')) {
                 found.message = {
                   ...found.message,
@@ -1055,7 +1043,6 @@ export default {
         await this.$localForage.setItem("adName", json.payload.name);
         await this.$localForage.setItem("department", json.payload.dept);
         
-        // 🟢 [合併還原] 同步更新 apiUserinfo 的快取資料防呆
         try {
           const deptName = this.getDepartmentName(json.payload.dept);
           const cachedInfo = (await this.getCache("apiUserinfo")) || {};
@@ -1071,7 +1058,6 @@ export default {
 
         this.ipcRenderer.invoke("reload");
       } 
-      // 🟢 [合併還原] 攔截後端送出的 user_connected 與 user_disconnected
       else if (["user_connected", "user_disconnected", "user_channel_changed"].includes(json.command)) {
         this.log(this.time(), `[系統廣播] 偵測到使用者狀態異動: ${json.command}`, json.payload);
         
@@ -1180,7 +1166,6 @@ export default {
       const title = temp.innerText.substring(0, 18) + "...";
       this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
       
-      // 觸發 OS 原生通知
       if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
         this.ipcRenderer.invoke("notification", {
           message: title,
@@ -1188,7 +1173,6 @@ export default {
         });
       }
       
-      // 🟢 [合併還原] 一般收發訊息不再使用 Toast 彈出，改用右下角狀態列隱性提示
       if (i.sender !== this.adAccount) {
         const senderName = this.userMap[i.sender] || i.sender;
         this.setConnectText(`💬 來自 ${senderName}: ${title}`);
@@ -1223,7 +1207,6 @@ export default {
         this.$store.commit("authority", { isAdmin: newAdminState });
         this.keyCodes.length = 0;
 
-        // 🟢 [合併還原] 補上 Konami UI 密技提示
         const statusText = newAdminState ? "🔓 管理者權限已開啟" : "🔒 管理者權限已關閉";
         this.notify(statusText, {
           title: "💡 系統隱藏指令",
@@ -1395,25 +1378,18 @@ export default {
     },
 
     async restoreSettings() {
-      // --- 第一優先：載入網路連線設定（為後續 watcher 的 API 呼叫做好準備）---
       this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
       this.adHost   = (await this.$localForage.getItem("adHost")) || "";
 
-      // --- 第二優先：載入不觸發 API 呼叫的使用者設定 ---
       this.adPassword = await this.$localForage.getItem("adPassword");
       
       const savedDept = await this.$localForage.getItem("department");
-      // 🟢 [防呆機制] 如果沒有部門資訊，預設帶入人事室 (hr)
       this.department = this.$utils.empty(savedDept) ? "hr" : savedDept;
 
-      // --- 第三優先：adName 必須在 adAccount 之前載入 ---
-      // 原因：adAccount watcher 觸發時，adName 若已有快取值，可省去一次 API 呼叫。
       const savedName = await this.$localForage.getItem("adName");
-      // 🟢 [防呆機制] 如果沒有姓名資訊，預設帶入「請更新」
       this.adName = this.$utils.empty(savedName) ? "請更新" : savedName;
 
-      // --- 最後：載入 adAccount，此步驟會觸發 watcher → loadApiADUserData() ---
       this.adAccount = await this.$localForage.getItem("adAccount");
     },
     addChatChannel(payload) {
@@ -1438,7 +1414,6 @@ export default {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
     
-    // 🟢 [合併還原] 註冊 300ms 防抖版本的查詢函數，平滑更新名單
     this.delayQueryOnlineClients = this.$utils.debounce(() => {
       if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
         this.queryOnlineClients();
@@ -1503,15 +1478,23 @@ export default {
   right: 2rem;
   top: 0.55rem;
 }
+
+/* 🟢 [修改點] 使用純 CSS 解決預覽框遮擋輸入框的問題 */
 .float-preview {
   z-index: 1002;
   position: absolute;
-  top: -80px;
-  opacity: 0.85;
+  /* 拋棄寫死的 top: -80px 或 JS 計算，改用 bottom 100% 錨定在輸入框正上方 */
+  bottom: calc(100% + 8px); 
+  left: 2.5%;
+  opacity: 0.92;
   border-radius: 15px;
-  background-color: gray;
+  background-color: #6c757d; /* Bootstrap secondary 灰，搭配白字更清晰 */
   width: 95%;
+  max-height: 60vh; /* 避免單張圖片過大時衝出螢幕頂端 */
+  overflow-y: auto; /* 若內容過長則自動顯示捲動條 */
+  box-shadow: 0px -5px 15px rgba(0,0,0,0.25); /* 補上陰影增加層次感 */
 }
+
 .float-emoji {
   z-index: 1002;
   position: absolute;
