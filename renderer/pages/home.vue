@@ -785,7 +785,7 @@ export default {
                 ? raw.name
                 : (this.userMap[this.adAccount] || this.adAccount);
 
-              if (!this.empty(resolvedName) && this.empty(this.adName)) {
+              if (!this.empty(resolvedName) && (this.empty(this.adName) || this.adName === "請更新")) {
                 this.adName = resolvedName;
                 this.$store.commit("username", resolvedName);
                 this.$localForage.setItem("adName", resolvedName);
@@ -811,7 +811,7 @@ export default {
             }
           })
           .catch((err) => {
-            if (this.empty(this.adName)) {
+            if (this.empty(this.adName) || this.adName === "請更新") {
               const fallbackName = this.userMap[this.adAccount] || this.adAccount;
               if (!this.empty(fallbackName)) {
                 this.adName = fallbackName;
@@ -1395,22 +1395,27 @@ export default {
     },
 
     async restoreSettings() {
-      // --- 🟢 [合併還原] 第一優先：載入網路連線設定 ---
+      // --- 第一優先：載入網路連線設定（為後續 watcher 的 API 呼叫做好準備）---
       this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
       this.adHost   = (await this.$localForage.getItem("adHost")) || "";
 
       // --- 第二優先：載入不觸發 API 呼叫的使用者設定 ---
       this.adPassword = await this.$localForage.getItem("adPassword");
-      this.department = await this.$localForage.getItem("department");
+      
+      const savedDept = await this.$localForage.getItem("department");
+      // 🟢 [防呆機制] 如果沒有部門資訊，預設帶入人事室 (hr)
+      this.department = this.$utils.empty(savedDept) ? "hr" : savedDept;
 
       // --- 第三優先：adName 必須在 adAccount 之前載入 ---
-      this.adName = await this.$localForage.getItem("adName");
+      // 原因：adAccount watcher 觸發時，adName 若已有快取值，可省去一次 API 呼叫。
+      const savedName = await this.$localForage.getItem("adName");
+      // 🟢 [防呆機制] 如果沒有姓名資訊，預設帶入「請更新」
+      this.adName = this.$utils.empty(savedName) ? "請更新" : savedName;
 
       // --- 最後：載入 adAccount，此步驟會觸發 watcher → loadApiADUserData() ---
       this.adAccount = await this.$localForage.getItem("adAccount");
     },
-    
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
     },
