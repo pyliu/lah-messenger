@@ -15,11 +15,11 @@ div
   
   .center.d-flex.my-2
     b-input-group(prepend="分機")
-      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, title="輸入分機號碼")
+      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, readonly, title="輸入分機號碼")
 
   .center.d-flex.my-2
     b-input-group(prepend="工作")
-      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, title="輸入工作描述")
+      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, readonly, title="輸入工作描述")
 
   b-button.animate__animated(
     variant="outline-success",
@@ -44,7 +44,7 @@ export default {
     ext: '',
     uIp: '',
     work: '',
-    department: "adm",
+    department: "hr",
     departmentOpts: [
       { value: "reg", text: "登記課" },
       { value: "inf", text: "資訊課" },
@@ -78,12 +78,14 @@ export default {
       const found = this.departmentOpts.find((item) => {
         return item.text === this.userData?.unit
       })
-      return found ? found.value : 'adm'
+      // 🟢 [修改] 找不到部門時，預設帶入人事室 (hr)
+      return found ? found.value : 'hr'
     }
   },
   async created () {
     this.adId = this.userData.id;
-    this.adName = this.userData.name;
+    // 🟢 [修改] 姓名為空值時，自動帶入預設值「請更新」
+    this.adName = this.empty(this.userData.name) ? '請更新' : this.userData.name;
     this.department = this.unit;
     this.ext = this.userData.ext
     this.uIp = this.userData.ip
