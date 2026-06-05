@@ -274,7 +274,7 @@ export default {
     checkUnreadTimer: null,
     checkUreadDuration: 3 * 60 * 60 * 1000,
     asking: false,
-    adQuerying: false // [FIX] 新增：防止 loadApiADUserData 並發執行的旗標
+    adQuerying: false
   }),
 
   // ==========================================================================
@@ -455,10 +455,7 @@ export default {
     },
     markdMessage() {
       if (this.empty(this.inputText) && this.empty(this.inputImages)) return "";
-      
-      // 🟢 [修復] 保護本機網路路徑 (UNC) 與 本機磁碟路徑，自動加入反引號 ` 避免被 Markdown 吃掉 \
       const protectedText = this.protectLocalPath(this.inputText);
-      
       return this.$utils.convertMarkd(`${protectedText} ${this.markdImages}`);
     },
     messagePreviewJson() {
@@ -503,9 +500,7 @@ export default {
       }
       this.messages[oVal] && (this.messages[oVal].length = 0);
       this.latestMessage();
-      if (!this.showUnreadChannels.includes(nVal)) {
-        if (typeof this.delayQueryOnlineClients === 'function') this.delayQueryOnlineClients();
-      }
+      if (!this.showUnreadChannels.includes(nVal)) this.queryOnlineClients();
       this.clear();
       this.scrollToBottom();
     },
@@ -527,7 +522,6 @@ export default {
       this.resetReconnectTimer();
       this.$store.commit("userdept", val);
       this.$localForage.setItem("department", val);
-      // 部門變動即刻更新視窗標題
       this.updateWindowTitle();
     },
 
@@ -547,7 +541,6 @@ export default {
     adName(val) {
       this.$localForage.setItem("adName", val);
       this.$store.commit("username", val);
-      // 姓名變動即刻更新視窗標題
       this.updateWindowTitle();
     },
 
@@ -577,24 +570,13 @@ export default {
   // Methods: 方法定義
   // ==========================================================================
   methods: {
-    // ------------------------------------------------------------------------
-    // [UI Interaction] 狀態文字佇列處理
-    // ------------------------------------------------------------------------
-    /**
-     * 🟢 [新增] 自動保護網路路徑/本機路徑的正則替換方法
-     */
     protectLocalPath(text) {
       if (!text) return '';
       return String(text)
-        // 1. 處理帶有雙引號或單引號的路徑 (允許內部有空白，如 "\\server\folder space\file")
         .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
-        // 2. 處理無空白的常規路徑 (如 \\220.1.34.57\分享區\@TBD 或 C:\Users\xxx)
         .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
     },
 
-    /**
-     * 設定狀態列文字 (使用 Queue 機制)
-     */
     setConnectText(text) {
       this.msgQueue.push(text);
       if (this.msgQueue.length > 10) this.msgQueue.shift();
@@ -612,21 +594,12 @@ export default {
       }, 1000);
     },
 
-    // ------------------------------------------------------------------------
-    // [UI Helpers] 視窗與介面控制
-    // ------------------------------------------------------------------------
-    /**
-     * 統一更新視窗標題的方法
-     */
     updateWindowTitle() {
       const parts = [];
-      // 1. IP (優先使用主進程回傳的優先 IP)
       const ip = this.userinfo?.ip || this.ip || "";
       if (!this.empty(ip) && String(ip) !== "undefined") parts.push(ip);
-      // 2. 姓名
       const name = this.adName || this.adAccount || this.userid || "";
       if (!this.empty(name) && String(name) !== "undefined") parts.push(name);
-      // 3. 部門
       const dept = this.deptName;
       if (
         !this.empty(dept) &&
@@ -666,9 +639,6 @@ export default {
       this.inputImages = [];
     },
 
-    // ------------------------------------------------------------------------
-    // [Input Handlers] 輸入與媒體處理
-    // ------------------------------------------------------------------------
     pasted(base64) {
       !this.inputImages.includes(base64) && this.inputImages.push(base64);
     },
@@ -742,9 +712,6 @@ export default {
         this.adPasswordType === "password" ? "text" : "password";
     },
 
-    // ------------------------------------------------------------------------
-    // [Auth & Data Loading] 驗證與資料載入
-    // ------------------------------------------------------------------------
     invokeADQuery() {
       if (this.asking === true) return;
       this.adName = this.userMap[this.adAccount] || this.adAccount;
@@ -796,6 +763,7 @@ export default {
         this.timeout(this.loadApiUserData, 400);
       }
     },
+
     loadApiADUserData() {
       if (this.adQuerying) return;
 
@@ -807,7 +775,6 @@ export default {
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
               const raw = data.data || {};
-
               const resolvedName = !this.empty(raw.name)
                 ? raw.name
                 : (this.userMap[this.adAccount] || this.adAccount);
@@ -869,9 +836,6 @@ export default {
       }
     },
 
-    // ------------------------------------------------------------------------
-    // [Connection & WS] WebSocket 通訊
-    // ------------------------------------------------------------------------
     connect() {
       if (this.connected && this.websocket?.readyState === 1) {
         this.resetReconnectTimer();
@@ -930,7 +894,6 @@ export default {
       if (incoming.type === "ack") {
         this.handleAckMessage(incoming.message);
       } else if (channel === "system") {
-        // [FIXED] 系統廣播頻道處理入口
         this.handleSystemMessage(incoming.message);
       } else if (this.currentChannel === channel) {
         if (!Array.isArray(this.messages[channel]))
@@ -1011,14 +974,24 @@ export default {
             const payload = json.payload.payload;
             const found = this.messages[channel]?.find(msg => msg.id === payload.id);
             if (found) {
-              found.message = payload.message;
+              // 🟢 [FIX] 分辨公告訊息與一般訊息的 payload 結構
+              if (channel.startsWith('announcement')) {
+                found.message = {
+                  ...found.message,
+                  title: payload.title,
+                  content: payload.content,
+                  priority: payload.priority
+                };
+              } else {
+                found.message = payload.message;
+              }
               const cascade = json.payload.cascade;
               if (cascade?.id && cascade?.to) {
                 this.websocket?.send(JSON.stringify({
                   type: "command", sender: this.userid, date: this.date(), time: this.time(), channel: 'system',
                   message: {
                     command: 'edit_message', channel: cascade.to, id: cascade.id, sender: this.userid,
-                    payload: { ...payload, id: cascade.id, channel: cascade.to, sender: this.userid, title: 'dontcare', message: payload.message.replaceAll(this.regexpReplyHeader, '') }
+                    payload: { ...payload, id: cascade.id, channel: cascade.to, sender: this.userid, title: 'dontcare', message: payload.message?.replaceAll(this.regexpReplyHeader, '') }
                   }
                 }));
               }
@@ -1069,54 +1042,15 @@ export default {
       }
     },
 
-    /**
-     * [FIXED] 精確攔截伺服器主動發送的系統廣播
-     */
     async handleSystemMessage(json) {
       if (json.command === "update_user" && json.payload.id) {
         await this.$localForage.setItem("adAccount", json.payload.id);
         await this.$localForage.setItem("adName", json.payload.name);
         await this.$localForage.setItem("department", json.payload.dept);
-        
-        // 🟢 [核心修復] 同步更新 apiUserinfo 的快取資料！
-        // 避免重新載入 (reload) 後，系統讀取舊的 apiUserinfo 快取並觸發 watcher，
-        // 導致 handleApiUserInfoUpdate 再次把 department 覆寫回舊的部門 (例如從行政課又變回測量課)。
-        try {
-          const deptName = this.getDepartmentName(json.payload.dept);
-          const cachedInfo = (await this.getCache("apiUserinfo")) || {};
-          cachedInfo.unit = deptName;
-          this.setCache("apiUserinfo", cachedInfo, this.userDataCacheDuration);
-
-          // 一併更新使用者對應表快取，確保名稱也正確顯示
-          const cachedMap = (await this.getCache("userMapping")) || {};
-          cachedMap[json.payload.id] = json.payload.name;
-          this.setCache("userMapping", cachedMap, this.userDataCacheDuration);
-        } catch (err) {
-          console.warn('同步更新使用者快取時發生錯誤', err);
-        }
-
         this.ipcRenderer.invoke("reload");
-      } 
-      // 🟢 [修復核心] 攔截後端送出的 user_connected 與 user_disconnected
-      // 🟢 [超前部署] 預留 user_channel_changed (若後端實作頻道切換廣播即可無縫接軌)
-      else if (["user_connected", "user_disconnected", "user_channel_changed"].includes(json.command)) {
-        this.log(this.time(), `[系統廣播] 偵測到使用者狀態異動: ${json.command}`, json.payload);
-        
-        // 使用防抖查詢，避免多人同時登出入時產生風暴
-        if (typeof this.delayQueryOnlineClients === 'function') {
-          this.delayQueryOnlineClients();
-        }
-        
-        // 🟢 [補強] 將伺服器傳來的「XXX 已上線/離線」顯示在右下角狀態列
-        if (!this.$utils.empty(json.message)) {
-          this.setConnectText(json.message);
-        }
       }
     },
 
-    // ------------------------------------------------------------------------
-    // [Messaging] 訊息發送與註冊
-    // ------------------------------------------------------------------------
     send() {
       if (this.sendTo(this.markdMessage, { channel: this.currentChannel }))
         this.clear();
@@ -1180,9 +1114,6 @@ export default {
         );
     },
 
-    // ------------------------------------------------------------------------
-    // [Electron] IPC 與系統通知
-    // ------------------------------------------------------------------------
     ipcRendererSetup() {
       const { ipcRenderer } = require("electron");
       this.ipcRenderer = ipcRenderer;
@@ -1214,26 +1145,19 @@ export default {
       temp.innerHTML = i.message.title || i.message;
       const title = temp.innerText.substring(0, 18) + "...";
       this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
-      
-      // 觸發 OS 原生通知 (僅在符合條件時)
-      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
+      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel))
         this.ipcRenderer.invoke("notification", {
           message: title,
           showMainWindow: true
         });
-      }
-      
-      // 🟢 [修改點] 一般收發訊息不再使用 APP 內的 Toast(this.notify) 干擾畫面，
-      // 改為使用右下角狀態列 (status) 來隱性提示，但只有在非自己發送時才提示
-      if (i.sender !== this.adAccount) {
         const senderName = this.userMap[i.sender] || i.sender;
-        this.setConnectText(`💬 來自 ${senderName}: ${title}`);
-      }
+        this.notify(title, {
+          title: `💬 來自 ${senderName}`,
+          variant: 'success',
+          autoHideDelay: 6000
+        });
     },
 
-    // ------------------------------------------------------------------------
-    // [Timers & Lifecycle] 計時器與生命週期輔助
-    // ------------------------------------------------------------------------
     resetReconnectTimer() {
       this.clearReconnectTimer();
       if (this.timer === null && this.$route.name === "home")
@@ -1465,15 +1389,6 @@ export default {
   mounted() {
     this.delayConnect = this.$utils.debounce(this.connect, 1500);
     this.delayLatestMessage = this.$utils.debounce(this.latestMessage, 400);
-
-    // 🟢 [優化] 將 debounce 查詢縮短為 300 毫秒，既能防止請求風暴，又能讓使用者感覺是即時更新。
-    this.delayQueryOnlineClients = this.$utils.debounce(() => {
-      // 確保 queryOnlineClients 存在且當前不在公告等無須查線上名單的頻道
-      if (typeof this.queryOnlineClients === 'function' && !this.showUnreadChannels.includes(this.currentChannel)) {
-        this.queryOnlineClients();
-      }
-    }, 300);
-
     this.resetReconnectTimer();
 
     this.visibilityChange();
