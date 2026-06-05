@@ -260,9 +260,6 @@ export default {
       return days + " 天";
     }
   },
-  /**
-   * [最佳化] 安全的民國年轉換，不竄改原始物件的 prototype
-   */
   twDateStr(dateObj) {
     if (!(dateObj instanceof Date) || isNaN(dateObj.valueOf())) {
       console.warn("twDateStr", dateObj, "is not a valid Date object");
@@ -325,9 +322,6 @@ export default {
       ""
     );
   },
-  /**
-   * 🟢 [最佳化] 增強版的時間與日期醒目標示過濾器
-   */
   highlightTimestamp(str, css = "text-bold-blue") {
     // 0. 支援星期幾的標示，例如 (五)、（日）、(星期一)、（週三）
     const dayOfWeek = "(?:\\s*[\\(（](?:星期|週|周)?[一二三四五六日天][\\)）])?";
@@ -363,7 +357,7 @@ export default {
   
   /**
    * 🟢 [核心修復] 將高亮管道套上「保護屏障 (Masking)」
-   * 完全解決 Base64 影像亂碼及 Inline Code 遭日期解析器破壞的問題。
+   * 擴增網路路徑與純 IP 的保護，避免被日期解析器誤判。
    */
   highlightPipeline(str) {
     if (!str) return str;
@@ -371,6 +365,8 @@ export default {
     const mdProtections = [];
     const codeProtections = [];
     const urlProtections = [];
+    const pathProtections = [];
+    const ipProtections = [];
     let tmp = str;
 
     // 1. 保護 Inline Code (如 `\\192.168.1.1\TBD`)
@@ -380,7 +376,6 @@ export default {
     });
 
     // 2. 保護 Markdown 連結與圖片 (如 ![標題](data:image/jpeg;base64,...))
-    // 解決 Base64 內部隨機編碼的數字與斜線被 highlightTimestamp 誤判
     tmp = tmp.replace(/(!?\[.*?\]\([^)]+\))/g, (match) => {
       mdProtections.push(match);
       return `__MD_PROTECT_${mdProtections.length - 1}__`;
@@ -392,7 +387,21 @@ export default {
       return `__URL_PROTECT_${urlProtections.length - 1}__`;
     });
 
-    // 4. 執行各式高亮轉換
+    // 4. 🟢 [新增] 保護 UNC 網路路徑與本機路徑 (如 \\220.1.34.57\folder 或 C:\folder)
+    // 使用與 replaceFilepath 相同的正則以確保一致性，避免其內容的斜線或小數點被日期解析破壞
+    const pathRegex = /(([c-zC-Z]:\\|\\\\)[^<>:"\/|?*\n\r\t]+(\\(.+\.[a-zA-Z]{1,4})?)?)/gim;
+    tmp = tmp.replace(pathRegex, (match) => {
+      pathProtections.push(match);
+      return `__PATH_PROTECT_${pathProtections.length - 1}__`;
+    });
+
+    // 5. 🟢 [新增] 保護單獨的 IPv4 位址 (如 220.1.34.57)，防範其被短日期格式誤抓
+    tmp = tmp.replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, (match) => {
+      ipProtections.push(match);
+      return `__IP_PROTECT_${ipProtections.length - 1}__`;
+    });
+
+    // 6. 執行各式高亮轉換
     tmp = this.highlightBlue(tmp);
     tmp = this.highlightRed(tmp);
     tmp = this.highlightOrange(tmp);
@@ -400,7 +409,13 @@ export default {
     tmp = this.highlightTimestamp(tmp);
     tmp = this.highlightTitle(tmp);
 
-    // 5. 依序還原受保護的原始結構
+    // 7. 依序還原受保護的原始結構 (順序需與前面相反，或互不干涉)
+    ipProtections.forEach((ip, idx) => {
+      tmp = tmp.replace(`__IP_PROTECT_${idx}__`, ip);
+    });
+    pathProtections.forEach((path, idx) => {
+      tmp = tmp.replace(`__PATH_PROTECT_${idx}__`, path);
+    });
     urlProtections.forEach((url, idx) => {
       tmp = tmp.replace(`__URL_PROTECT_${idx}__`, url);
     });
