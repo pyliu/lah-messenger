@@ -56,16 +56,17 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
   lah-transition(fade): .float-emoji(v-if="emoji" ref="floatEmoji")
     emoji-pickup(@click="addEmoji")
 
+  //- 🟢 [修復] 改為直接傳遞 messageJson (未經二次HTML轉換的乾淨資料)，交由 message 底層統一解析
   lah-transition: .d-flex.justify-content-between.p-1.preview.mt-2(v-if="realtime && !empty(mergedMessage)" ref="preview")
     span.text-white.font-weight-bold 編輯預覽
-    message.mr-2.my-message(:raw="previewJson", :preview="true")
+    message.mr-2.my-message(:raw="messageJson", :preview="true")
 
 </template>
 
 <script>
-import ImageUpload from '~/components/image-upload.vue'
-import Message from '~/components/message.vue'
-import Help from '~/components/help.vue'
+import Help from '~/components/help.vue';
+import ImageUpload from '~/components/image-upload.vue';
+import Message from '~/components/message.vue';
 
 export default {
   name: 'MessageInputEditMessage',
@@ -113,7 +114,10 @@ export default {
     toName () { return this.userMap[this.toUser] || this.toUser },
     modalTitle () { return `傳送圖片給 ${this.toName}` },
     mergedMessage () {
-      const merged = this.empty(this.replyHeader) ? this.message : `${this.replyHeader}${this.replyHeader.includes('<hr') ? "\n" : '<hr/>'}${this.message}`
+      // 🟢 [修復] 發送與預覽前，先將網路路徑與本機路徑保護起來
+      const protectedMsg = this.protectLocalPath(this.message);
+      
+      const merged = this.empty(this.replyHeader) ? protectedMsg : `${this.replyHeader}${this.replyHeader.includes('<hr') ? "\n" : '<hr/>'}${protectedMsg}`
       if (this.empty(this.images)) {
         return merged
       }
@@ -135,19 +139,6 @@ export default {
         sender: this.userid,
         type: "remote"
       }
-    },
-    previewMessage () {
-      const markd = this.$utils.convertMarkd(this.mergedMessage)
-      if (this.regexpMarkdImage.test(markd)) {
-        return this.$utils.convertMarkd(markd).replaceAll(/(<br\/?>)?<hr\/?>(<br\/?>)?/igm, '<hr/>')
-      }
-      return markd
-    },
-    previewJson () {
-      return {
-        ...this.messageJson,
-        message: this.previewMessage
-      }
     }
   },
   watch: {
@@ -166,6 +157,13 @@ export default {
     this.normalize(this.raw?.message)
   },
   methods: {
+    // 🟢 [新增] 同步自 input 的路徑保護機制
+    protectLocalPath(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
+        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
+    },
     normalize (txt) {
       // keep "給 XXXX" html header in own channel
       let foundArr = this.regexpReplyHeader.exec(txt)
@@ -211,10 +209,9 @@ export default {
       this.emoji = false
     },
     openPreview () {
-      // const Message = import('~/components/message.vue')
       this.modal(this.$createElement(Message, {
         props: {
-          raw: this.previewJson,
+          raw: this.messageJson, // 🟢 直接傳入最原始的 JSON 即可
           preview: true
         }
       }), {

@@ -77,9 +77,9 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
 </template>
 
 <script>
-import ImageUpload from '~/components/image-upload.vue'
-import AnnouncementCard from '~/components/announcement-card.vue'
-import Help from '~/components/help.vue'
+import AnnouncementCard from '~/components/announcement-card.vue';
+import Help from '~/components/help.vue';
+import ImageUpload from '~/components/image-upload.vue';
 
 export default {
   name: 'MessageInputEditAnnouncement',
@@ -135,13 +135,16 @@ export default {
     },
     modalTitle () { return `傳送圖片到 ${this.currentChannelName}` },
     mergedMessage () {
+      // 🟢 [修復] 發送與預覽前，同步套用路徑保護機制
+      const protectedContent = this.protectLocalPath(this.content);
+      
       if (this.empty(this.images)) {
-        return this.content
+        return protectedContent
       }
       let imgMdText = this.images.map((base64, idx) => {
         return `![公告圖${idx}](${base64})`
       }).join('\n')
-      return `${this.content}<hr/>${imgMdText}`
+      return `${protectedContent}<hr/>${imgMdText}`
     },
     announcementJson () {
       // announcement-card required json
@@ -174,6 +177,13 @@ export default {
     this.title = this.dataJson?.title
   },
   methods: {
+    // 🟢 [新增] 同步路徑保護邏輯
+    protectLocalPath(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
+        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
+    },
     normalize (txt) {
       this.content = txt
       // restore <br/> to \n
