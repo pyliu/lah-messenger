@@ -11,15 +11,15 @@ div
 
   .center.d-flex.my-2
     b-input-group(prepend="電腦")
-      b-input.mr-1(v-model="uIp", :state="$utils.isIPv4(uIp)", placeholder="... 輸入電腦IP ...", trim, readonly, title="輸入電腦IP")
+      b-input.mr-1(v-model="uIp", :state="$utils.isIPv4(uIp)", placeholder="... 輸入電腦IP ...", trim, title="輸入電腦IP")
   
   .center.d-flex.my-2
     b-input-group(prepend="分機")
-      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, readonly, title="輸入分機號碼")
+      b-input.mr-1(v-model="ext", placeholder="... 輸入分機號碼 ...", trim, title="輸入分機號碼")
 
   .center.d-flex.my-2
     b-input-group(prepend="工作")
-      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, readonly, title="輸入工作描述")
+      b-input.mr-1(v-model="work", placeholder="... 輸入工作描述 ...", trim, title="輸入工作描述")
 
   b-button.animate__animated(
     variant="outline-success",
