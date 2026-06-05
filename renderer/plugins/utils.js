@@ -356,52 +356,67 @@ export default {
   },
   
   /**
-   * 🟢 [核心修復] 將高亮管道套上「保護屏障 (Masking)」
-   * 擴增網路路徑與純 IP 的保護，避免被日期解析器誤判。
+   * 🟢 [核心修復] 終極高亮保護管線 (Super Masking Pipeline)
+   * 透過嚴謹的正則與執行順序，確保 HTML、超長 Base64 與特殊語法不被干擾破壞。
    */
   highlightPipeline(str) {
     if (!str) return str;
 
-    const mdProtections = [];
+    const b64Protections = [];
+    const htmlProtections = [];
     const codeProtections = [];
+    const mdProtections = [];
     const urlProtections = [];
     const pathProtections = [];
     const ipProtections = [];
     let tmp = str;
 
-    // 1. 保護 Inline Code (如 `\\192.168.1.1\TBD`)
+    // 1. 🟢 保護 Base64 Data URI (最優先執行！)
+    // 解決超長字串導致 Regex 引擎效能限制 (Catastrophic Backtracking) 與誤判截斷的問題
+    tmp = tmp.replace(/(data:image\/[a-zA-Z0-9+.-]+;base64,[A-Za-z0-9+/=_\r\n]+)/g, (match) => {
+      b64Protections.push(match);
+      return `__B64_PROTECT_${b64Protections.length - 1}__`;
+    });
+
+    // 2. 🟢 保護已被解析的 HTML 標籤 
+    // 確保如 `<img src="...">` 內部屬性不會被後續的日期/IP高亮器破壞
+    tmp = tmp.replace(/(<[^>]+>)/g, (match) => {
+      htmlProtections.push(match);
+      return `__HTML_PROTECT_${htmlProtections.length - 1}__`;
+    });
+
+    // 3. 保護 Inline Code (如 `\\192.168.1.1\TBD`)
     tmp = tmp.replace(/(`[^`]+`)/g, (match) => {
       codeProtections.push(match);
       return `__CODE_PROTECT_${codeProtections.length - 1}__`;
     });
 
-    // 2. 保護 Markdown 連結與圖片 (如 ![標題](data:image/jpeg;base64,...))
+    // 4. 保護 Markdown 連結與圖片 (因為 Base64 已經變短，這個 Regex 100% 不會再失敗)
     tmp = tmp.replace(/(!?\[.*?\]\([^)]+\))/g, (match) => {
       mdProtections.push(match);
       return `__MD_PROTECT_${mdProtections.length - 1}__`;
     });
 
-    // 3. 保護純文字 URL (如 http://192.168.1.1/file.pdf)
+    // 5. 保護純文字 URL
     tmp = tmp.replace(/(https?:\/\/[^\s<]+)/g, (match) => {
       urlProtections.push(match);
       return `__URL_PROTECT_${urlProtections.length - 1}__`;
     });
 
-    // 4. 🟢 [新增] 保護 UNC 網路路徑與本機路徑 (如 \\220.1.34.57\folder 或 C:\folder)
-    // 使用與 replaceFilepath 相同的正則以確保一致性，避免其內容的斜線或小數點被日期解析破壞
+    // 6. 保護 UNC 網路路徑與本機路徑
     const pathRegex = /(([c-zC-Z]:\\|\\\\)[^<>:"\/|?*\n\r\t]+(\\(.+\.[a-zA-Z]{1,4})?)?)/gim;
     tmp = tmp.replace(pathRegex, (match) => {
       pathProtections.push(match);
       return `__PATH_PROTECT_${pathProtections.length - 1}__`;
     });
 
-    // 5. 🟢 [新增] 保護單獨的 IPv4 位址 (如 220.1.34.57)，防範其被短日期格式誤抓
+    // 7. 保護單獨的 IPv4 位址
     tmp = tmp.replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, (match) => {
       ipProtections.push(match);
       return `__IP_PROTECT_${ipProtections.length - 1}__`;
     });
 
-    // 6. 執行各式高亮轉換
+    // 8. 執行各式高亮轉換
     tmp = this.highlightBlue(tmp);
     tmp = this.highlightRed(tmp);
     tmp = this.highlightOrange(tmp);
@@ -409,7 +424,7 @@ export default {
     tmp = this.highlightTimestamp(tmp);
     tmp = this.highlightTitle(tmp);
 
-    // 7. 依序還原受保護的原始結構 (順序需與前面相反，或互不干涉)
+    // 9. 依序還原受保護的原始結構 (從下往上，順序反轉)
     ipProtections.forEach((ip, idx) => {
       tmp = tmp.replace(`__IP_PROTECT_${idx}__`, ip);
     });
@@ -424,6 +439,12 @@ export default {
     });
     codeProtections.forEach((code, idx) => {
       tmp = tmp.replace(`__CODE_PROTECT_${idx}__`, code);
+    });
+    htmlProtections.forEach((html, idx) => {
+      tmp = tmp.replace(`__HTML_PROTECT_${idx}__`, html);
+    });
+    b64Protections.forEach((b64, idx) => {
+      tmp = tmp.replace(`__B64_PROTECT_${idx}__`, b64);
     });
 
     return tmp;
