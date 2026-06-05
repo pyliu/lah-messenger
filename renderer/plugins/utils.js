@@ -260,9 +260,6 @@ export default {
       return days + " 天";
     }
   },
-  /**
-   * [最佳化] 移除了會竄改原始 Date 物件的重複函數，保留安全且穩定的民國年轉換方法
-   */
   twDateStr(dateObj) {
     if (!(dateObj instanceof Date) || isNaN(dateObj.valueOf())) {
       console.warn("twDateStr", dateObj, "is not a valid Date object");
@@ -325,33 +322,17 @@ export default {
       ""
     );
   },
-  /**
-   * 🟢 [最佳化] 增強版的時間與日期醒目標示過濾器
-   */
   highlightTimestamp(str, css = "text-bold-blue") {
-    // 0. 支援星期幾的標示，例如 (五)、（日）、(星期一)、（週三）
     const dayOfWeek = "(?:\\s*[\\(（](?:星期|週|周)?[一二三四五六日天][\\)）])?";
-
-    // 1. 日期格式 (含完整與短日期)
     const fullDate = `(?:\\d{2,4}[-\\/／\\.年])(?:1[0-2]|0?[1-9])[-\\/／\\.月](?:3[01]|[12]\\d|0?[1-9])[日號]?${dayOfWeek}`;
     const shortDate = `(?:1[0-2]|0?[1-9])[\\/／月](?:3[01]|[12]\\d|0?[1-9])[日號]?${dayOfWeek}`;
     const dateRe = `(?:${fullDate}|${shortDate})`;
-    
-    // 2. 時間格式 (擴增：早上、上午、中午、下午、晚上、凌晨)
     const timeRe = "(?:(?:早上|上午|中午|下午|晚上|凌晨)\\s*)?(?:[01]?\\d|2[0-3])(?:[:：][0-5]\\d|[點時][0-5]\\d分?|[點時])";
-
-    // 3. 複合格式：日期+時間 (讓 "5/29下午5:30" 可以被視為單一整體匹配)
     const dateTimeRe = `(?:${dateRe}\\s*${timeRe})`;
-
-    // 4. 區間格式 (支援 日期區間、時間區間 與 日期時間混合區間，且具備高強度的空白容錯)
     const dateTimeRange = `(?:${dateTimeRe}\\s*[-~]\\s*${dateTimeRe})`;
     const dateRange = `(?:${dateRe}\\s*[-~]\\s*${dateRe})`;
     const timeRange = `(?:${timeRe}\\s*[-~]\\s*${timeRe})`;
-
-    // 5. 括號包覆格式 (精準擷取括號內的單一或區間日期時間)
     const parensRe = `\\([^)]*?(?:${dateTimeRange}|${dateRange}|${timeRange}|${dateTimeRe}|${dateRe}|${timeRe})[^)]*?\\)`;
-
-    // 6. 組合所有正則條件 (優先度：區間 > 複合日期時間 > 單一日期/時間)
     const combinedStr = `(${[dateTimeRange, dateRange, timeRange, parensRe, dateTimeRe, fullDate, shortDate, timeRe].join('|')})`;
     const regex = new RegExp(combinedStr, "gi");
 
@@ -360,18 +341,50 @@ export default {
   highlightTitle(str, css = "font-weight-bold") {
     return this.highlight(str, /(['「（【《『〈〔].+?[〕〉』》】）」'])/i, css);
   },
+  
+  /**
+   * 🟢 [核心修復] 將高亮管道套上「保護屏障」
+   * 避免高亮解析器破壞 Markdown 圖片 (Base64) 與 Inline Code 的語法結構。
+   */
   highlightPipeline(str) {
-    if (str) {
-      let tmp = this.highlightBlue(str);
-      tmp = this.highlightRed(tmp);
-      tmp = this.highlightOrange(tmp);
-      tmp = this.highlightGreen(tmp);
-      tmp = this.highlightTimestamp(tmp);
-      tmp = this.highlightTitle(tmp);
-      return tmp;
-    }
-    return str;
+    if (!str) return str;
+
+    const mdProtections = [];
+    const codeProtections = [];
+    let tmp = str;
+
+    // 1. 保護 Inline Code (如 `\\192.168.1.1\Path`)，避免反斜線與內容被破壞
+    tmp = tmp.replace(/(`[^`]+`)/g, (match) => {
+      codeProtections.push(match);
+      return `__CODE_PROTECT_${codeProtections.length - 1}__`;
+    });
+
+    // 2. 保護 Markdown 連結與圖片 (如 ![給HA100](data:image/jpeg;base64,...))
+    // 解決 Base64 字串內部的 `/` 與數字被誤判為日期的 Bug
+    tmp = tmp.replace(/(!?\[.*?\]\([^)]+\))/g, (match) => {
+      mdProtections.push(match);
+      return `__MD_PROTECT_${mdProtections.length - 1}__`;
+    });
+
+    // 3. 執行各式高亮轉換 (安全地)
+    tmp = this.highlightBlue(tmp);
+    tmp = this.highlightRed(tmp);
+    tmp = this.highlightOrange(tmp);
+    tmp = this.highlightGreen(tmp);
+    tmp = this.highlightTimestamp(tmp);
+    tmp = this.highlightTitle(tmp);
+
+    // 4. 依序還原受保護的內容
+    mdProtections.forEach((md, idx) => {
+      tmp = tmp.replace(`__MD_PROTECT_${idx}__`, md);
+    });
+    codeProtections.forEach((code, idx) => {
+      tmp = tmp.replace(`__CODE_PROTECT_${idx}__`, code);
+    });
+
+    return tmp;
   },
+
   handleSpecialClick(event) {
     const element = event.target;
     const { ipcRenderer, clipboard } = require("electron");
