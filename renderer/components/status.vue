@@ -53,7 +53,7 @@ export default {
   width: 475px;
   position: absolute;
   left: .5rem;
-  bottom: .4rem;
+  bottom: .35rem;
 }
 .help {
   cursor: pointer;
