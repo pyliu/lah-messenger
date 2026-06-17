@@ -1,5 +1,5 @@
 <template lang="pug">
-.bottom.d-flex.justify-content-between.text-muted.s-75
+.bottom.d-flex.justify-content-between.text-muted.s-85
   .d-flex.justify-content-start.truncate
     b-icon.mr-1.my-auto(icon="info-circle-fill" :animation="empty(displayText) ? '' : 'fade'" :variant="empty(displayText) ? 'light' : 'info'" font-scale="1.25")
     transition(name="list" mode="out-in"): .my-auto.mr-2(v-if="!empty(displayText)") #[span {{ displayText }}] #[b-icon(icon="three-dots" animation="cylon")]
@@ -53,7 +53,7 @@ export default {
   width: 475px;
   position: absolute;
   left: .5rem;
-  bottom: .25rem;
+  bottom: .4rem;
 }
 .help {
   cursor: pointer;
