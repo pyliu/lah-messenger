@@ -33,11 +33,13 @@
         ) 清空
     
     .text-center.text-muted.my-4(v-if="history.length === 0") 尚無紀錄
-    b-list-group(v-else flush)
-      b-list-group-item.py-2.px-3(v-for="(item, idx) in history" :key="`history_${idx}`")
-        .d-flex.w-100.justify-content-between.align-items-center
-          span.text-dark {{ item.text }}
-          small.text-muted.text-nowrap.ml-3 {{ item.time }}
+    //- 🟢 [修改點] 包覆 history-container 確保絕對在 body 內滾動
+    .history-container(v-else)
+      b-list-group(flush)
+        b-list-group-item.py-2.px-3(v-for="(item, idx) in history" :key="`history_${idx}`")
+          .d-flex.w-100.justify-content-between.align-items-center
+            span.text-dark {{ item.text }}
+            small.text-muted.text-nowrap.ml-3 {{ item.time }}
 </template>
 
 <script>
@@ -48,7 +50,7 @@ export default {
     clearTimer: null,
     displayText: '',
     appVer: '',
-    // 🟢 [新增點] 歷史紀錄陣列與視窗控制開關
+    // 歷史紀錄陣列與視窗控制開關
     history: [],
     showHistory: false
   }),
@@ -64,14 +66,15 @@ export default {
       const text = this.empty(this.userid) ? '等待擷取目前登入使用者ID' : val
       this.displayText = text
       
-      // 🟢 [新增點] 攔截並推入歷史紀錄
+      // 攔截並推入歷史紀錄
       if (!this.empty(text)) {
         this.history.unshift({
-          time: this.$utils.now(), // 格式如 2026-06-22 09:30:00
+          // 🟢 [修改點] 利用 split(' ')[1] 移除日期，僅保留時間 (如 09:30:00)
+          time: this.$utils.now().split(' ')[1],
           text: text
         })
-        // 限制最多保留 50 筆，避免常駐程式記憶體膨脹
-        if (this.history.length > 50) {
+        // 🟢 [修改點] 限制最多保留 100 筆
+        if (this.history.length > 100) {
           this.history.pop()
         }
       }
@@ -107,7 +110,7 @@ export default {
   cursor: pointer;
 }
 
-/* 🟢 [新增點] 讓狀態列看起來是可以互動的按鈕 */
+/* 讓狀態列看起來是可以互動的按鈕 */
 .status-clickable {
   cursor: pointer;
   transition: background-color 0.2s;
@@ -117,5 +120,12 @@ export default {
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
+}
+
+/* 🟢 [新增點] 確保歷史紀錄在 Modal Body 內獨立滾動，不影響外部視窗 */
+.history-container {
+  max-height: 65vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
