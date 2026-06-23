@@ -25,7 +25,7 @@
       .d-flex.align-items-center
         b-icon.mr-2(icon="clock-history")
         span 狀態列歷史紀錄
-        //- 🟢 [新增點] 顯示目前紀錄筆數
+        //- 顯示目前紀錄筆數
         b-badge.ml-2(variant="secondary" pill) {{ history.length }}
         b-button.ml-3(
           v-if="history.length > 0"
@@ -36,7 +36,7 @@
         ) 清空
     
     .text-center.text-muted.my-4(v-if="history.length === 0") 尚無紀錄
-    //- 🟢 [修改點] 使用 transition-group 實作插入動畫，讓 b-modal 原生 body 接管內部滾動
+    //- 使用 transition-group 實作插入動畫，讓 b-modal 原生 body 接管內部滾動
     transition-group.list-group.list-group-flush(v-else name="history-list" tag="div")
       b-list-group-item.py-2.px-3(v-for="item in history" :key="item.id")
         .d-flex.w-100.justify-content-between.align-items-center
@@ -71,7 +71,7 @@ export default {
       // 攔截並推入歷史紀錄
       if (!this.empty(text)) {
         this.history.unshift({
-          // 🟢 [修改點] 補上唯一 ID，這是 Vue 渲染 transition-group 的必備條件
+          // 補上唯一 ID，這是 Vue 渲染 transition-group 的必備條件
           id: this.$utils.uuid(),
           time: this.$utils.now().split(' ')[1],
           text: text
@@ -125,7 +125,7 @@ export default {
   }
 }
 
-/* 🟢 [新增點] Vue Transition Group 的平滑插入/擠壓動畫 */
+/* Vue Transition Group 的平滑插入/擠壓動畫 */
 .history-list-enter-active, .history-list-leave-active {
   transition: all 0.4s ease;
 }
@@ -137,8 +137,19 @@ export default {
   transition: transform 0.4s ease; /* 其他項目往下推擠的平滑效果 */
 }
 
-/* 🟢 [修改點] 覆寫 modal 的最大高度，使其延伸到底部，且保留 Scrollable 原本在 body 內的滾動屬性 */
+/* 🟢 [核心修改點] 精確視角佈局：強制 95vh 高度並將 Dialog 置中 */
+::v-deep .history-modal {
+  margin: 2.5vh auto !important; /* 限制上下各有 2.5vh 邊界，達成 100vh 完美切分 */
+}
+
 ::v-deep .history-modal .modal-content {
-  max-height: 85vh;
+  max-height: 95vh !important;
+  height: 95vh !important; /* 拋棄內容自動縮放，強制鎖定為 95vh 打造專業日誌視窗感 */
+}
+
+::v-deep .history-modal .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
