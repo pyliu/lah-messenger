@@ -42,7 +42,7 @@
         .d-flex.w-100.justify-content-between.align-items-center
           //- 加上 v-b-tooltip 與 text-truncate 確保長文字顯示 Tooltip 並維持版面不被撐破
           span.text-dark.text-truncate(
-            v-b-tooltip.hover="item.text"
+            v-b-tooltip.hover="{ title: item.text, boundary: 'window', container: 'body' }"
             style="min-width: 0;"
           ) {{ item.text }}
           small.text-muted.text-nowrap.ml-3 {{ item.time }}
