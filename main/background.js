@@ -16,6 +16,9 @@ import { createWindow, exitOnChange, notify } from './helpers';
 const isProd = process.env.NODE_ENV === 'production';
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
+// [新增] L4 方案：強制 Electron 忽略系統 DPI 縮放，永遠保持 100% 原始像素
+app.commandLine.appendSwitch('force-device-scale-factor', '1');
+
 let mainWindow = null;
 let tray = null;
 
