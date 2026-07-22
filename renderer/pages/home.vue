@@ -1470,9 +1470,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* 🟢 [修復] 解決放大字體時，版面高度寫死導致與底部狀態列重疊的問題 */
+/* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
-  height: calc(100vh - 2rem); /* 隨字體放大自動增加底部 status 的預留空間 */
+  height: calc(100vh - 2.85rem); /* 加大底部留白，確保卡片圓角與最後一筆資料完整顯示 */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 防止整個頁面出現原生滾動條 */
