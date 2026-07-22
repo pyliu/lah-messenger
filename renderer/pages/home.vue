@@ -233,6 +233,7 @@ export default {
     image: null,
     inputText: "",
     inputImages: [],
+    currentFontSize: 'normal', // 記錄當前字體大小設定
 
     // --- 狀態訊息佇列 (解決閃爍問題) ---
     connectText: "",
@@ -331,8 +332,20 @@ export default {
     },
 
     // --- UI 顯示邏輯 ---
+    // 依據當前字體大小決定一排最多可容納幾個 Avatar 不重疊 (大: 5, 中: 6, 正常: 7)
+    maxUnwrappedAvatars() {
+      if (this.currentFontSize === 'large') return 5;
+      if (this.currentFontSize === 'medium') return 6;
+      return 7; // normal
+    },
     connectedUsersOverlapRatio() {
-      return this.connectedUsers.length < 10 ? 0.0 : 0.4;
+      const count = this.connectedUsers.length;
+      // 若人數小於或等於該字體下的不換行上限，則完全不重疊 (0.0)
+      if (count <= this.maxUnwrappedAvatars) {
+        return 0.0;
+      }
+      // 超過上限時動態計算壓縮比例，確保所有成員可在一排呈現
+      return Math.min(0.4, (count - this.maxUnwrappedAvatars) * 0.08 + 0.15);
     },
     showInputGroup() {
       return (
@@ -1387,6 +1400,11 @@ export default {
       this.adName = this.$utils.empty(savedName) ? "請更新" : savedName;
 
       this.adAccount = await this.$localForage.getItem("adAccount");
+      
+      // 同步讀取本機儲存的字體大小並套用
+      this.currentFontSize = await this.$localForage.getItem('fontSize') || 'normal';
+      const sizeMap = { normal: '16px', medium: '18px', large: '20px' };
+      document.documentElement.style.setProperty('font-size', sizeMap[this.currentFontSize] || '16px', 'important');
     },
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
@@ -1476,7 +1494,6 @@ export default {
 ::v-deep .scrollable-board {
   flex: 1;
   min-height: 0;
-  /* 移除 height: 100%，改由 flex: 1 完全接管高度計算 */
   overflow-y: auto !important; /* 確保產生內部滾動條 */
   overflow-x: hidden !important;
   position: relative;
