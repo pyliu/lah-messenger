@@ -1494,8 +1494,9 @@ export default {
 ::v-deep .scrollable-board {
   flex: 1;
   min-height: 0;
-  overflow-y: auto !important; /* 確保產生內部滾動條 */
-  overflow-x: hidden !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important; /* 修正雙重滾動條：確保外層不產生多餘捲動條，交由內部組件自行捲動 */
   position: relative;
 }
 
