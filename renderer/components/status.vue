@@ -1,14 +1,19 @@
 <template lang="pug">
 .bottom.d-flex.justify-content-between.text-muted.s-85
-  //- 加上 status-clickable 類別與 @click 事件
-  .d-flex.justify-content-start.truncate.status-clickable(
+  //- 加上 status-clickable 類別與 @click 事件，並加上 flex-grow-1 與 min-width: 0 讓內部文字可截斷
+  .d-flex.justify-content-start.truncate.status-clickable.flex-grow-1(
+    style="min-width: 0;"
     @click="showHistory = true"
     title="點擊查看歷史狀態訊息"
   )
-    b-icon.mr-1.my-auto(icon="info-circle-fill" :animation="empty(displayText) ? '' : 'fade'" :variant="empty(displayText) ? 'light' : 'info'" font-scale="1.25")
-    transition(name="list" mode="out-in"): .my-auto.mr-2(v-if="!empty(displayText)") #[span {{ displayText }}] #[b-icon(icon="three-dots" animation="cylon")]
+    b-icon.mr-1.my-auto.flex-shrink-0(icon="info-circle-fill" :animation="empty(displayText) ? '' : 'fade'" :variant="empty(displayText) ? 'light' : 'info'" font-scale="1.25")
+    transition(name="list" mode="out-in")
+      //- 確保外層 text-truncate 生效，保護主畫面不被超長訊息撐破
+      .my-auto.mr-2.text-truncate(v-if="!empty(displayText)") 
+        span {{ displayText }} 
+        b-icon.ml-1(icon="three-dots" animation="cylon")
   
-  .text-right.text-nowrap
+  .text-right.text-nowrap.flex-shrink-0
     span {{ appVer }}
     b-icon.ml-1.help(icon="question-circle-fill", variant="success", @click="showHelp", title="簡易說明")
 
@@ -40,12 +45,12 @@
     transition-group.list-group.list-group-flush(v-else name="history-list" tag="div")
       b-list-group-item.py-2.px-3(v-for="item in history" :key="item.id")
         .d-flex.w-100.justify-content-between.align-items-center
-          //- 🟢 [修復] 動態判定: 若字串本身已包含 `...` (源頭已截斷)，則禁用 Tooltip (傳入空字串)
+          //- 🟢 [修復] 因為 home.vue 已經改傳完整訊息，這裡恢復直接綁定 item.text，並依賴 text-truncate 進行視覺截斷
           span.text-dark.text-truncate(
-            v-b-tooltip.hover="{ title: item.text.includes('...') ? '' : item.text, boundary: 'window', container: 'body' }"
+            v-b-tooltip.hover="{ title: item.text, boundary: 'window', container: 'body' }"
             style="min-width: 0;"
           ) {{ item.text }}
-          small.text-muted.text-nowrap.ml-3 {{ item.time }}
+          small.text-muted.text-nowrap.ml-3.flex-shrink-0 {{ item.time }}
 </template>
 
 <script>

@@ -1169,22 +1169,23 @@ export default {
       }
     },
 
+    // 🟢 [修改重點] 取消字串 18 字硬截斷，保留原始完整訊息傳遞
     async invokeNotification(i) {
       const temp = document.createElement("div");
       temp.innerHTML = i.message.title || i.message;
-      const title = temp.innerText.substring(0, 18) + "...";
+      const fullText = temp.textContent || temp.innerText || "";
       this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
       
       if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
         this.ipcRenderer.invoke("notification", {
-          message: title,
+          message: fullText,
           showMainWindow: true
         });
       }
       
       if (i.sender !== this.adAccount) {
         const senderName = this.userMap[i.sender] || i.sender;
-        this.setConnectText(`💬 來自 ${senderName}: ${title}`);
+        this.setConnectText(`💬 來自 ${senderName}: ${fullText}`);
       }
     },
 
@@ -1472,7 +1473,7 @@ export default {
 <style lang="scss" scoped>
 /* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
-  /* 🟢 將底部留白從 2.85rem 縮減至 2rem，消除過大的間隔 */
+  /* 🟢 將底部留白從 2.85rem 縮減至 1.85rem，消除過大的間隔 */
   height: calc(100vh - 1.85rem); 
   display: flex;
   flex-direction: column;
