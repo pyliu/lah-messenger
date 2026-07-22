@@ -1391,6 +1391,10 @@ export default {
       this.adName = this.$utils.empty(savedName) ? "請更新" : savedName;
 
       this.adAccount = await this.$localForage.getItem("adAccount");
+      // 在 home.vue 的 restoreSettings() 內補上：
+      const savedSize = await this.$localForage.getItem('fontSize') || 'normal';
+      const sizeMap = { normal: '16px', medium: '18px', large: '20px' };
+      document.documentElement.style.setProperty('font-size', sizeMap[savedSize], 'important');
     },
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });

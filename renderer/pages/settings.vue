@@ -23,6 +23,7 @@
         b-icon.my-auto.mr-2(icon="person-badge" font-scale="2.25" variant="secondary")
         span.my-auto 顯示姓名
       b-input.ml-2(v-model="adName" placeholder="... 顯示名稱 ..." trim :disabled="!authority.isAdmin")
+    
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="unlock-fill" font-scale="2.25" variant="secondary")
@@ -30,6 +31,7 @@
       b-input.ml-2(:type="adPasswordType" v-model="adPassword" :placeholder="`${userid}的網域密碼`" trim @change="queryAd")
       b-icon.my-auto.ml-2.eye(ref="eye" :icon="adPasswordIcon" font-scale="1.25" variant="secondary" @click="switchAdPasswordIcon")
       b-button.ml-1(@click="queryAd" :disabled="!validAdInfo" :variant="validAdInfo ? 'primary' : 'danger'" title="透過AD驗證") 驗證
+    
     b-input-group.my-2
       template(#prepend)
         b-icon.my-auto.mr-2(icon="building" font-scale="2.25" variant="secondary")
@@ -46,6 +48,12 @@
         b-icon.my-auto.mr-2(icon="app-indicator" font-scale="2.25" variant="secondary")
         span.my-auto 提示效果
       b-select.ml-2(v-model="effectVal" :options="effectOpts")
+
+    b-input-group.my-2(title="應用程式字體大小")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="fonts" font-scale="2.25" variant="secondary")
+        span.my-auto 字體大小
+      b-select.ml-2(v-model="fontSize" :options="fontSizeOpts")
 
     b-input-group.my-2(title="歷史訊息")
       template(#prepend)
@@ -120,6 +128,12 @@ export default {
     adPasswordType: 'password',
     adPasswordIcon: 'eye-slash',
     historyCount: 10,
+    fontSize: 'normal',
+    fontSizeOpts: [
+      { value: 'normal', text: '正常 (16px)' },
+      { value: 'medium', text: '中 (18px)' },
+      { value: 'large', text: '大 (20px)' }
+    ],
     notification: {
       announcement: true,
       personal: true,
@@ -247,6 +261,14 @@ export default {
       this.$store.commit('history', val)
       this.$localForage.setItem('history', val)
     },
+    fontSize(val) {
+      // 避免 store 沒有定義 fontSize mutation 導致報錯，使用防禦性寫法
+      if (this.$store._mutations && this.$store._mutations['fontSize']) {
+        this.$store.commit('fontSize', val)
+      }
+      this.$localForage.setItem('fontSize', val)
+      this.applyFontSize(val)
+    },
     'notification.announcement' (val) {
       const obj = { ...this.notification, announcement: val }
       this.$store.commit('notifySettings', obj)
@@ -264,6 +286,15 @@ export default {
     }
   },
   methods: {
+    applyFontSize(size) {
+      const sizeMap = {
+        normal: '16px',
+        medium: '18px',
+        large: '20px'
+      };
+      // 強制寫入根節點 font-size 以影響全域 rem 比例
+      document.documentElement.style.setProperty('font-size', sizeMap[size] || '16px', 'important');
+    },
     switchAdPasswordIcon() {
       if (this.adPasswordIcon === 'eye') {
         this.adPasswordIcon = 'eye-slash'
@@ -283,6 +314,11 @@ export default {
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
       this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10
+      
+      // 還原字體大小設定並套用
+      this.fontSize = await this.$localForage.getItem('fontSize') || 'normal'
+      this.applyFontSize(this.fontSize)
+      
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
       this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
       this.notification = { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') }
