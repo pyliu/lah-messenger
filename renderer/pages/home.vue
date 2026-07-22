@@ -1464,17 +1464,22 @@ export default {
   min-height: 0; /* 允許 flex 子元素在空間不足時縮小，防止撐破 */
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 防止卡片本身被內容撐破 */
 }
 /* 確保 Header 與 控制列 不會被壓縮 */
 ::v-deep .card-header,
-::v-deep .list-group {
+::v-deep .list-group,
+.flex-shrink-0 {
   flex-shrink: 0;
 }
 /* 強制內容區塊填滿剩餘空間，不再依賴固定 calc() 像素 */
 ::v-deep .scrollable-board {
   flex: 1;
-  height: 100% !important;
   min-height: 0;
+  /* 移除 height: 100%，改由 flex: 1 完全接管高度計算 */
+  overflow-y: auto !important; /* 確保產生內部滾動條 */
+  overflow-x: hidden !important;
+  position: relative;
 }
 
 .color-primary {
