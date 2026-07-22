@@ -262,7 +262,6 @@ export default {
       this.$localForage.setItem('history', val)
     },
     fontSize(val) {
-      // 避免 store 沒有定義 fontSize mutation 導致報錯，使用防禦性寫法
       if (this.$store._mutations && this.$store._mutations['fontSize']) {
         this.$store.commit('fontSize', val)
       }
@@ -325,11 +324,6 @@ export default {
     },
     read() {
       this.$store.commit('resetUnreadAll')
-      // return state.unread['lds']  // 全所聊天室
-      //        + state.unread['announcement'] // 公告
-      //        + state.unread[`announcement_${state.userdept}`] // 部門公告
-      //        + state.unread[state.userinfo.userid?.toUpperCase()] // 私訊
-      //        + state.unread[state.userdept] // 部門聊天室
     },
     logout() {
       this.confirm(`確認登出清除所有設定？`).then((answer) => {
@@ -394,11 +388,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 🟢 [修復] 允許設定頁面超出視窗高度時自動出現滾動條 */
+.vh-100 {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 fieldset {
 	border:0;
 	padding:10px;
 	padding-top:30px;
-  margin: 25px 10px 35px 10px;
+  /* 🟢 [修復] 將底部留白從 35px 增加至 60px，確保捲動到底時不被下方的 status 擋住 */
+  margin: 25px 10px 60px 10px;
   background:rgb(255, 255, 255);
 
 	border-radius: 15px;
@@ -434,10 +436,6 @@ legend {
 
 .color-primary {
   color: #007bff;
-}
-
-.vh-100 {
-  height: 100vh;
 }
 
 .logo {

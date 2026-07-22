@@ -3,8 +3,8 @@ div: client-only
   //- =========================================================================
   //- 主要應用程式區塊 (已連線狀態)
   //- =========================================================================
-  transition(v-if="connected", name="list", mode="out-in"): div
-    b-card.m-1(no-body, header-tag="nav", v-cloak)
+  transition(v-if="connected", name="list", mode="out-in"): .main-layout
+    b-card.m-1.main-card(no-body, header-tag="nav", v-cloak)
       //- 1. 頂部導航欄 (頻道切換)
       template(#header): b-nav(card-header, tabs, fill)
         //- 公告頻道
@@ -81,9 +81,9 @@ div: client-only
 
       //- 3. 內容顯示區
       //- 聊天頻道列表 (Chat Board)
-      transition(name="list", mode="out-in"): chat-board(v-if="showChatBoard")
+      transition(name="list", mode="out-in"): chat-board.scrollable-board(v-if="showChatBoard")
       //- 訊息內容列表 (Message Board)
-      transition(name="list", mode="out-in"): message-board(
+      transition(name="list", mode="out-in"): message-board.scrollable-board(
         ref="msgBoard",
         v-if="showMessageBoard",
         :list="list",
@@ -91,7 +91,7 @@ div: client-only
       )
 
     //- 4. 訊息輸入區
-    transition(name="listY", mode="out-in"): b-input-group.p-1(
+    transition(name="listY", mode="out-in"): b-input-group.p-1.flex-shrink-0(
       v-if="showInputGroup",
       size="sm",
       style="position: relative",
@@ -553,10 +553,6 @@ export default {
       this.$store.commit("password", val);
       this.$localForage.setItem("adPassword", val);
     },
-    
-    // 🟢 [修復] 移除不必要的 watch，因為我們已經用 CSS 完全取代了 JS 的高度計算！
-    // inputImages() { this.adjustPreviewPosition(); },
-    // inputText() { this.$nextTick(() => this.adjustPreviewPosition()); },
 
     keyCodes() {
       this.handleKonamiCode();
@@ -1391,10 +1387,6 @@ export default {
       this.adName = this.$utils.empty(savedName) ? "請更新" : savedName;
 
       this.adAccount = await this.$localForage.getItem("adAccount");
-      // 在 home.vue 的 restoreSettings() 內補上：
-      const savedSize = await this.$localForage.getItem('fontSize') || 'normal';
-      const sizeMap = { normal: '16px', medium: '18px', large: '20px' };
-      document.documentElement.style.setProperty('font-size', sizeMap[savedSize], 'important');
     },
     addChatChannel(payload) {
       this.$store.commit("addParticipatedChannel", { id: payload.id, name: payload.name, participants: payload.participants, type: payload.type });
@@ -1460,6 +1452,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 🟢 [修復] 解決放大字體時，版面高度寫死導致與底部狀態列重疊的問題 */
+.main-layout {
+  height: calc(100vh - 2rem); /* 隨字體放大自動增加底部 status 的預留空間 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 防止整個頁面出現原生滾動條 */
+}
+.main-card {
+  flex: 1;
+  min-height: 0; /* 允許 flex 子元素在空間不足時縮小，防止撐破 */
+  display: flex;
+  flex-direction: column;
+}
+/* 確保 Header 與 控制列 不會被壓縮 */
+::v-deep .card-header,
+::v-deep .list-group {
+  flex-shrink: 0;
+}
+/* 強制內容區塊填滿剩餘空間，不再依賴固定 calc() 像素 */
+::v-deep .scrollable-board {
+  flex: 1;
+  height: 100% !important;
+  min-height: 0;
+}
+
 .color-primary {
   color: #007bff;
 }
