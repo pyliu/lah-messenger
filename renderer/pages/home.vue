@@ -1472,7 +1472,8 @@ export default {
 <style lang="scss" scoped>
 /* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
-  height: calc(100vh - 2.85rem); /* 加大底部留白，確保卡片圓角與最後一筆資料完整顯示 */
+  /* 🟢 將底部留白從 2.85rem 縮減至 2.1rem，消除過大的間隔 */
+  height: calc(100vh - 2.1rem); 
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 防止整個頁面出現原生滾動條 */
@@ -1490,14 +1491,25 @@ export default {
 .flex-shrink-0 {
   flex-shrink: 0;
 }
-/* 強制內容區塊填滿剩餘空間，不再依賴固定 calc() 像素 */
+/* 強制內容區塊為 Flex 容器，並隱藏外部多餘捲動條 */
 ::v-deep .scrollable-board {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden !important; /* 修正雙重滾動條：確保外層不產生多餘捲動條，交由內部組件自行捲動 */
+  overflow: hidden !important; 
   position: relative;
+}
+
+/* 🟢 [核心修復] 擊碎內部寫死的高度的終極解法 */
+/* 針對內部最後一個元素 (通常是列表清單)，強制覆寫其高度並接管滾動，徹底解決底部被裁切的問題 */
+::v-deep .scrollable-board > *:last-child {
+  flex: 1;
+  min-height: 0;
+  height: auto !important; /* 擊碎內建寫死的 calc(100vh - xxxpx) */
+  max-height: none !important;
+  overflow-y: auto !important; /* 確保清單本身正常滾動 */
+  overflow-x: hidden !important;
 }
 
 .color-primary {
