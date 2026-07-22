@@ -1472,8 +1472,8 @@ export default {
 <style lang="scss" scoped>
 /* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
-  /* 🟢 將底部留白從 2.85rem 縮減至 2.1rem，消除過大的間隔 */
-  height: calc(100vh - 2.1rem); 
+  /* 🟢 將底部留白從 2.85rem 縮減至 2rem，消除過大的間隔 */
+  height: calc(100vh - 1.85rem); 
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 防止整個頁面出現原生滾動條 */

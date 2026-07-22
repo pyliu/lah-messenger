@@ -40,9 +40,9 @@
     transition-group.list-group.list-group-flush(v-else name="history-list" tag="div")
       b-list-group-item.py-2.px-3(v-for="item in history" :key="item.id")
         .d-flex.w-100.justify-content-between.align-items-center
-          //- 加上 v-b-tooltip 與 text-truncate 確保長文字顯示 Tooltip 並維持版面不被撐破
+          //- 🟢 [修復] 動態判定: 若字串本身已包含 `...` (源頭已截斷)，則禁用 Tooltip (傳入空字串)
           span.text-dark.text-truncate(
-            v-b-tooltip.hover="{ title: item.text, boundary: 'window', container: 'body' }"
+            v-b-tooltip.hover="{ title: item.text.includes('...') ? '' : item.text, boundary: 'window', container: 'body' }"
             style="min-width: 0;"
           ) {{ item.text }}
           small.text-muted.text-nowrap.ml-3 {{ item.time }}
