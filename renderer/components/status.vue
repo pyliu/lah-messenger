@@ -44,12 +44,27 @@
     //- 使用 transition-group 實作插入動畫，讓 b-modal 原生 body 接管內部滾動
     transition-group.list-group.list-group-flush(v-else name="history-list" tag="div")
       b-list-group-item.py-2.px-3(v-for="item in history" :key="item.id")
-        .d-flex.w-100.justify-content-between.align-items-center
-          //- 🟢 [修復] 因為 home.vue 已經改傳完整訊息，這裡恢復直接綁定 item.text，並依賴 text-truncate 進行視覺截斷
-          span.text-dark.text-truncate(
-            v-b-tooltip.hover="{ title: item.text, boundary: 'window', container: 'body' }"
-            style="min-width: 0;"
-          ) {{ item.text }}
+        .d-flex.w-100.justify-content-between.align-items-start
+          .flex-grow-1(style="min-width: 0;")
+            //- 外層截斷文字行
+            .d-flex.align-items-center
+              span.text-dark.text-truncate.history-text(
+                :ref="'text_' + item.id"
+                style="min-width: 0;"
+              ) {{ item.text }}
+              //- 只有被截斷的訊息才顯示展開按鈕
+              b-button.ml-1.flex-shrink-0(
+                v-if="item.truncated"
+                size="sm"
+                variant="link"
+                class="p-0 toggle-btn"
+                @click.stop="item.expanded = !item.expanded"
+                :title="item.expanded ? '收合' : '展開完整訊息'"
+              )
+                b-icon(:icon="item.expanded ? 'chevron-up' : 'chevron-down'" font-scale="0.85")
+            //- 展開區域（b-collapse）
+            b-collapse(:visible="item.expanded && item.truncated")
+              .history-full-text.mt-1.text-dark {{ item.text }}
           small.text-muted.text-nowrap.ml-3.flex-shrink-0 {{ item.time }}
 </template>
 
@@ -83,15 +98,25 @@ export default {
           // 補上唯一 ID，這是 Vue 渲染 transition-group 的必備條件
           id: this.$utils.uuid(),
           time: this.$utils.now().split(' ')[1],
-          text: text
+          text: text,
+          expanded: false,
+          truncated: false
         })
         // 限制最多保留 100 筆
         if (this.history.length > 100) {
           this.history.pop()
         }
+        // 等 DOM 更新後偵測是否溢出
+        this.$nextTick(() => this.detectTruncation())
       }
 
       this.clearTimer = setTimeout(() => this.displayText = '', 5000)
+    },
+    // 開啟 Modal 時也重新偵測（因為 Modal 顯示前 DOM 不存在）
+    showHistory (val) {
+      if (val) {
+        this.$nextTick(() => this.detectTruncation())
+      }
     }
   },
   mounted () {
@@ -105,6 +130,16 @@ export default {
       this.modal(this.$createElement(Help), {
         size: 'xl',
         title: `說明 - ${this.appVer}`
+      })
+    },
+    detectTruncation () {
+      this.history.forEach(item => {
+        const ref = this.$refs[`text_${item.id}`]
+        const el = Array.isArray(ref) ? ref[0] : ref
+        if (el) {
+          // scrollWidth > offsetWidth 表示文字被截斷
+          this.$set(item, 'truncated', el.scrollWidth > el.offsetWidth)
+        }
       })
     }
   }
@@ -160,5 +195,25 @@ export default {
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* 展開按鈕樣式 */
+.toggle-btn {
+  line-height: 1;
+  color: #6c757d;
+  &:hover {
+    color: #343a40;
+  }
+}
+
+/* 展開後的完整訊息樣式 */
+.history-full-text {
+  font-size: 0.9em;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-left: 3px solid #dee2e6;
+  padding: 4px 8px;
+  border-radius: 0 4px 4px 0;
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 </style>
