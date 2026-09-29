@@ -119,8 +119,28 @@ export default {
         { text: '主任祕書室', users: [], id: 'supervisor' },
         { text: '無歸屬', users: [], id: 'none' }
       ]
+      // 確保使用者唯一，若有重複保留上線時間最新者
+      const userMap = new Map()
+      const anonymous = []
       for (let i = 0; i < this.connectedUsersCount; i++) {
         const user = this.connectedUsers[i]
+        if (!user) continue
+        const uid = user.userid || user.id
+        if (uid) {
+          const existing = userMap.get(uid)
+          const userTs = parseInt(user.timestamp) || 0
+          const existingTs = existing ? (parseInt(existing.timestamp) || 0) : 0
+          if (!existing || userTs > existingTs) {
+            userMap.set(uid, user)
+          }
+        } else {
+          anonymous.push(user)
+        }
+      }
+
+      const uniqueUsers = [...userMap.values(), ...anonymous]
+      for (let i = 0; i < uniqueUsers.length; i++) {
+        const user = uniqueUsers[i]
         if (
           this.$utils.empty(keyword) ||
           user.userid?.includes(keyword) ||

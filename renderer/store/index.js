@@ -391,7 +391,25 @@ const mutations = {
     this.$config.isDev && console.log(timestamp(), `現在暫存 message data 數量為 ${state.messageMemento.length}。 [Vuex::addMessageMemento]`)
   },
   connectedUsers (state, array) {
-    state.connectedUsers = [...array]
+    const map = new Map()
+    const anonymous = []
+    ;(array || []).forEach((user) => {
+      if (!user) return
+      const key = user.userid || user.id
+      if (key) {
+        const existing = map.get(key)
+        const userTs = parseInt(user.timestamp) || 0
+        const existingTs = existing ? (parseInt(existing.timestamp) || 0) : 0
+        if (!existing || userTs > existingTs) {
+          map.set(key, user)
+        }
+      } else {
+        anonymous.push(user)
+      }
+    })
+    const uniqueUsers = [...map.values(), ...anonymous]
+    uniqueUsers.sort((a, b) => (parseInt(b.timestamp) || 0) - (parseInt(a.timestamp) || 0))
+    state.connectedUsers = uniqueUsers
   },
   statusText (state, string) {
     state.statusText = string

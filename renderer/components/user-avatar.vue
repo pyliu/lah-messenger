@@ -25,7 +25,12 @@ export default {
     uid () { return this.userData?.userid },
     uname () { return this.userData?.username || this.userMap[this.userData?.userid] || this.userData?.userid },
     nametag () { return this.uid === this.uname ? this.uid : `${this.uid} ${this.uname}` },
-    logon () { return `登入時間：${this.$utils.toADDate(this.userData.timestamp).split(' ')[1]} (${this.$utils.formatDistanceToNow(this.userData.timestamp)})` },
+    logon () {
+      if (!this.userData?.timestamp) {
+        return '登入時間：未知'
+      }
+      return `登入時間：${this.$utils.toADDate(this.userData.timestamp).split(' ')[1]} (${this.$utils.formatDistanceToNow(this.userData.timestamp)})`
+    },
     avatarSrc () { return `${this.apiQueryUrl}/get_user_img.php?id=${this.uid}_avatar&name=${this.uname}_avatar` }
   },
   methods: {
