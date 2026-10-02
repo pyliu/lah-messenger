@@ -255,7 +255,7 @@
           .col-md-6.mb-2
             .p-2.border.rounded.h-100.bg-light
               .d-flex.align-items-center.mb-1
-                b-badge.mr-1(variant="primary") 💬 LDS
+                b-badge.mr-1(variant="primary") 💬 全所頻道
                 strong 全所交誼聊天室
               .text-muted 全所同仁公開交誼與即時討論空間，可發布各類共同事項或休閒交流。
           .col-md-6.mb-2
