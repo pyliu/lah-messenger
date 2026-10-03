@@ -14,7 +14,7 @@
           h6.font-weight-bold.mb-0 自訂醒目色彩文字
         p.s-90.text-muted.mb-2
           span 使用大括號標籤包圍文字，即可自訂粗體醒目色彩（半形 
-          code {{ }}
+          code(v-pre) {{ }}
           span  或全形 
           code ｛｛ ｝｝
           span  皆支援）：
@@ -28,19 +28,19 @@
             tbody
               tr
                 td.text-center: b-badge(variant="primary") 藍色文字 (b)
-                td: code {{b 藍色重點文字 b}}
+                td: code(v-pre) {{b 藍色重點文字 b}}
                 td: span.text-bold-blue 藍色重點文字
               tr
                 td.text-center: b-badge(variant="danger") 紅色文字 (r)
-                td: code {{r 紅色緊急提醒 r}}
+                td: code(v-pre) {{r 紅色緊急提醒 r}}
                 td: span.text-bold-red 紅色緊急提醒
               tr
                 td.text-center: b-badge(variant="success") 綠色文字 (g)
-                td: code {{g 綠色正常進度 g}}
+                td: code(v-pre) {{g 綠色正常進度 g}}
                 td: span.text-bold-green 綠色正常進度
               tr
                 td.text-center: b-badge(variant="warning") 橘色文字 (o)
-                td: code {{o 橘色警示事項 o}}
+                td: code(v-pre) {{o 橘色警示事項 o}}
                 td: span.text-bold-orange 橘色警示事項
 
       //- 2. 系統智慧辨識自動醒目
