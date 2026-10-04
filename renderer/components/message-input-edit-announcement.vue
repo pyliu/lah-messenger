@@ -55,8 +55,10 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         @click="send"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
-        title="送出"
-      ): b-icon(icon="cursor" rotate="45")
+        title="儲存變更"
+      )
+        b-icon.mr-1(icon="check2")
+        span 儲存變更
       b-button(
         @click="help"
         variant="success"
@@ -161,7 +163,7 @@ export default {
     this.realtime = userSetting !== false
   },
   computed: {
-    id () { return this.dataJson?.id },
+    id () { return parseInt(this.dataJson?.id || this.dataJson?.messageId || this.dataJson?.message_id) || 0 },
     randFace () { return this.faces[this.$utils._.random(this.faces.length - 1)] },
     titleValid () { return !this.empty(this.title) && this.$utils.length(this.title) <= 92 },
     existingAttachments () { return this.dataJson?.attachments || [] },
@@ -296,6 +298,10 @@ export default {
       this.uploadFiles.splice(idx, 1)
     },
     send () {
+      if (!this.id) {
+        this.alert('無效的公告 ID，無法更新公告！', { title: '錯誤', type: 'danger' })
+        return
+      }
       const json = {
         type: "command",
         sender: this.userid,
@@ -326,6 +332,7 @@ export default {
       }
       this.$emit('sent', {
         ...this.dataJson,
+        id: this.id,
         title: this.title,
         content: this.content,
         priority: this.priority

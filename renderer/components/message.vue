@@ -179,6 +179,7 @@ export default {
       if (typeof this.raw?.message === 'object' && this.raw.message !== null) {
         return {
           ...this.raw.message,
+          id: this.raw.id || this.raw.message.id,
           attachments: this.attachments
         }
       }

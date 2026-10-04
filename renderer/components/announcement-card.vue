@@ -7,7 +7,7 @@ b-card.announcement-card(
 )
   template(#header style="position:relative"): .d-flex.font-weight-bold.align-items-center
     span(style="width: 380px").mr-auto {{ dataJson.title }}
-    span.ml-1 \#{{ dataJson.id }}
+    span.ml-1(v-if="effectiveId > 0") \#{{ effectiveId }}
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
   .attachments.mt-2.pt-2.border-top(v-if="attachments && attachments.length > 0")
     .small.text-muted.mb-1
@@ -16,12 +16,12 @@ b-card.announcement-card(
     .d-flex.flex-wrap.align-items-center
       b-button-group.mr-2.mb-1(
         v-for="(att, aIdx) in attachments"
-        :key="`card_att_${dataJson.id}_${aIdx}`"
+        :key="`card_att_${effectiveId}_${aIdx}`"
         size="sm"
       )
         b-button.text-left(
           variant="outline-secondary"
-          @click="downloadAttachment(channel, dataJson.id, att.name)"
+          @click="downloadAttachment(channel, effectiveId, att.name)"
           :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
         )
           b-icon.mr-1(icon="paperclip")
@@ -74,9 +74,13 @@ export default {
     dataJson: { type: Object, required: true },
     channel: { type: String, required: true },
     preview: { type: Boolean, default: false },
-    rawAttachments: { type: Array, default: () => [] }
+    rawAttachments: { type: Array, default: () => [] },
+    messageId: { type: [Number, String], default: 0 }
   },
   computed: {
+    effectiveId () {
+      return parseInt(this.dataJson?.id || this.dataJson?.messageId || this.dataJson?.message_id || this.messageId) || 0
+    },
     isAdmin () { return this.authority.isAdmin },
     mine () { return this.$utils.equal(this.dataJson.sender, this.userid) },
     header () { return this.dataJson.title },
@@ -143,6 +147,7 @@ export default {
         props: {
           dataJson: {
             ...this.dataJson,
+            id: this.effectiveId,
             attachments: this.attachments
           },
           channel: this.channel
@@ -169,7 +174,7 @@ export default {
         message: JSON.stringify({
           command: 'remove_message',
           channel: this.channel,
-          id: this.dataJson.id
+          id: this.effectiveId
         }),
         channel: 'system'
       })
@@ -180,7 +185,7 @@ export default {
       this.confirm(`確定要刪除附件「${displayName}」？`).then(async (result) => {
         if (result) {
           try {
-            const data = await this.deleteAttachment(this.channel, this.dataJson.id, filename)
+            const data = await this.deleteAttachment(this.channel, this.effectiveId, filename)
             const nextAttachments = data && data.attachments ? data.attachments : this.attachments.filter(att => att.name !== filename)
             this.$set(this.dataJson, 'attachments', nextAttachments)
             this.notify(`已刪除附件「${displayName}」`, { type: 'success' })
