@@ -9,6 +9,22 @@ b-card.announcement-card(
     span(style="width: 380px").mr-auto {{ dataJson.title }}
     span.ml-1 \#{{ dataJson.id }}
   b-card-text(ref="content" v-html="content" @click="$utils.handleSpecialClick($event)")
+  .attachments.mt-2.pt-2.border-top(v-if="attachments && attachments.length > 0")
+    .small.text-muted.mb-1
+      b-icon.mr-1(icon="paperclip")
+      span 附加檔案 ({{ attachments.length }})
+    .d-flex.flex-wrap.align-items-center
+      b-button.mr-2.mb-1.text-left(
+        v-for="(att, aIdx) in attachments"
+        :key="`card_att_${dataJson.id}_${aIdx}`"
+        size="sm"
+        variant="outline-secondary"
+        @click="downloadAttachment(channel, dataJson.id, att.name)"
+        :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+      )
+        b-icon.mr-1(icon="paperclip")
+        span.small.text-truncate(style="max-width: 200px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+        b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
   
   //- 移除了原有的 .small，並使用 protected-footer 進行絕對隔離
   template(#footer): .protected-footer.d-flex.justify-content-between.align-items-center.text-muted
@@ -48,7 +64,8 @@ export default {
   props: {
     dataJson: { type: Object, required: true },
     channel: { type: String, required: true },
-    preview: { type: Boolean, default: false }
+    preview: { type: Boolean, default: false },
+    rawAttachments: { type: Array, default: () => [] }
   },
   computed: {
     isAdmin () { return this.authority.isAdmin },
@@ -90,6 +107,15 @@ export default {
       }
       // add open-os-explorer class for the file path uri
       return this.$utils.replaceFilepath(markd)
+    },
+    attachments () {
+      if (Array.isArray(this.rawAttachments) && this.rawAttachments.length > 0) {
+        return this.rawAttachments
+      }
+      if (Array.isArray(this.dataJson?.attachments)) {
+        return this.dataJson.attachments
+      }
+      return []
     }
   },
   methods: {
@@ -106,7 +132,10 @@ export default {
     edit () {
       this.modal(this.$createElement(MessageInputEditAnnouncement, {
         props: {
-          dataJson: this.dataJson,
+          dataJson: {
+            ...this.dataJson,
+            attachments: this.attachments
+          },
           channel: this.channel
         },
         on: {

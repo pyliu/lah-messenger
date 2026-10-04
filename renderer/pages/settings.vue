@@ -80,6 +80,14 @@
       span.my-auto.mx-1 :
       b-input(v-model="wsPort" type="number" min="1025" max="65535" :state="validPort" style="max-width: 100px;")
 
+    b-input-group.my-2(v-b-tooltip="'附件伺服器'")
+      template(#prepend)
+        b-icon.my-auto.mr-2(icon="paperclip" font-scale="2.25" variant="warning")
+        span.my-auto 附件主機
+      b-input.ml-2(v-model="wsHost" :state="validHost" trim readonly)
+      span.my-auto.mx-1 :
+      b-input(v-model="wsHttpPortSetting" type="number" min="80" max="65535" :state="validWsHttpPort" style="max-width: 100px;")
+
     b-input-group.my-2(v-b-tooltip="'API伺服器'")
       template(#prepend)
         b-icon.my-auto.mr-2(icon="hdd-network" font-scale="2.25" variant="info")
@@ -121,6 +129,7 @@ export default {
     adHost: '',
     wsHost: undefined,
     wsPort: 8081,
+    wsHttpPortSetting: 8082,
     apiPortSetting: 80,
     fePortSetting: 8080,
     adName: '',
@@ -191,6 +200,10 @@ export default {
       const i = parseInt(trim(this.wsPort))
       return (i > 1024 && i < 65536) === false ? false : null
     },
+    validWsHttpPort() {
+      const i = parseInt(trim(this.wsHttpPortSetting))
+      return (i > 79 && i < 65536) === false ? false : null
+    },
     validApiPort() {
       const i = parseInt(trim(this.apiPortSetting))
       return (i > 79 && i < 65536) === false ? false : null
@@ -219,10 +232,16 @@ export default {
     },
     wsPort(val) {
       this.$localForage.setItem('wsPort', val)
+      this.$store.commit('wsPort', val)
+    },
+    wsHttpPortSetting(val) {
+      this.$localForage.setItem('wsHttpPort', val)
+      this.$store.commit('wsHttpPort', val)
     },
     wsHost(val) {
       this.$localForage.setItem('wsHost', val)
       this.$store.commit('apiHost', val)
+      this.$store.commit('wsHost', val)
     },
     apiPortSetting(val) {
       this.$localForage.setItem('apiPort', val)
@@ -320,6 +339,8 @@ export default {
       
       this.apiPortSetting = await this.$localForage.getItem('apiPort') || 80
       this.fePortSetting = await this.$localForage.getItem('fePort') || 8080
+      this.wsHttpPortSetting = await this.$localForage.getItem('wsHttpPort') || 8082
+      this.$store.commit('wsHttpPort', this.wsHttpPortSetting)
       this.notification = { ...this.notifySettings, ...await this.$localForage.getItem('notifySettings') }
     },
     read() {

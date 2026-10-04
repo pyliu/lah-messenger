@@ -30,6 +30,18 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         title="附加圖片"
       ): b-icon(icon="images")
       b-button.mr-1(
+        @click="pickAttachment"
+        variant="outline-info"
+        title="附加檔案"
+      ): b-icon(icon="paperclip")
+      input(
+        ref="fileInput"
+        type="file"
+        multiple
+        style="display: none"
+        @change="handleFileChange"
+      )
+      b-button.mr-1(
         @click="send"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
@@ -40,6 +52,24 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         variant="success"
         title="顯示語法說明"
       ): b-icon(icon="question-circle-fill")
+  .d-flex.flex-wrap.align-items-center.my-1(v-if="existingAttachments.length > 0 || uploadFiles.length > 0")
+    span.small.text-muted.mr-1(v-if="existingAttachments.length > 0") 現有附件:
+    b-badge.mr-1.mb-1.p-1(
+      v-for="(att, aIdx) in existingAttachments"
+      :key="`exist_att_${aIdx}`"
+      variant="secondary"
+    )
+      b-icon.mr-1(icon="paperclip")
+      span {{ getAttachmentDisplayName(att.name) }} ({{ formatFileSize(att.size) }})
+    span.small.text-muted.mx-1(v-if="uploadFiles.length > 0") 新增附件:
+    b-badge.mr-1.mb-1.p-1(
+      v-for="(f, fIdx) in uploadFiles"
+      :key="`new_att_${fIdx}`"
+      variant="info"
+    )
+      b-icon.mr-1(icon="paperclip")
+      span {{ f.name }} ({{ formatFileSize(f.size) }})
+      b-icon.ml-1(icon="x-circle" style="cursor: pointer;" @click="removeUploadFile(fIdx)")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -97,6 +127,7 @@ export default {
     faces: ['😀', '😁', '😂', '😃', '😅', '😆', '👍', '👌'],
     message: '',
     images: [],
+    uploadFiles: [],
     replyHeader: '',
     cascade: null
   }),
@@ -110,7 +141,8 @@ export default {
     to () { return this.raw?.channel },
     toUser () { return this.userMap[this.to] || this.to },
     randFace () { return this.faces[this.$utils._.random(this.faces.length - 1)] },
-    notValid () { return this.empty(this.message) && this.empty(this.images) },
+    existingAttachments () { return this.raw?.attachments || [] },
+    notValid () { return this.empty(this.message) && this.empty(this.images) && this.empty(this.uploadFiles) },
     toName () { return this.userMap[this.toUser] || this.toUser },
     modalTitle () { return `傳送圖片給 ${this.toName}` },
     mergedMessage () {
@@ -238,6 +270,17 @@ export default {
         title: this.modalTitle
       })
     },
+    pickAttachment () {
+      this.$refs.fileInput?.click()
+    },
+    handleFileChange (e) {
+      const files = Array.from(e.target.files || [])
+      files.forEach(f => this.uploadFiles.push(f))
+      e.target.value = ''
+    },
+    removeUploadFile (idx) {
+      this.uploadFiles.splice(idx, 1)
+    },
     send () {
       const json = {
         type: "command",
@@ -256,6 +299,21 @@ export default {
         channel: 'system'
       }
       this.websocket?.send(JSON.stringify(json))
+      if (this.uploadFiles.length > 0) {
+        const filesToUpload = [...this.uploadFiles]
+        this.uploadFiles = []
+        const uploadChannel = this.cascade?.to || this.to
+        const uploadMsgId = this.cascade?.id || this.id
+        filesToUpload.forEach(async (file) => {
+          try {
+            await this.uploadAttachment(uploadChannel, uploadMsgId, file)
+            this.notify(`訊息 #${uploadMsgId} 附件 ${file.name} 上傳成功`, { type: 'success' })
+          } catch (err) {
+            this.err(`上傳 ${file.name} 失敗`, err)
+            this.notify(`訊息 #${uploadMsgId} 附件 ${file.name} 上傳失敗`, { type: 'danger' })
+          }
+        })
+      }
       this.$emit('sent', {...this.raw, message: this.message})
     },
     remove (base64data) {

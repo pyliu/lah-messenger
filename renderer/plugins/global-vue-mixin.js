@@ -88,7 +88,12 @@ Vue.mixin({
       'tySvrIp',
       'userDataCacheDuration',
       'regexpMarkdImage',
-      'regexpReplyHeader'
+      'regexpReplyHeader',
+      'wsHost',
+      'wsPort',
+      'wsHttpPort',
+      'wsHttpUrl',
+      'pendingAttachmentUploads'
     ]),
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },
@@ -623,6 +628,66 @@ Vue.mixin({
     debug () {
       this.debugMessage = String(arguments[0])
       this.$config.isDev && this.$utils.debug(`🐛 ${this.time()}`, ...(arguments))
+    },
+    async uploadAttachment (channel, messageId, file) {
+      if (!channel || !messageId || !file) {
+        throw new Error('缺少上傳參數 (channel, messageId, file)')
+      }
+      const formData = new FormData()
+      // 欄位順序必須為 channel, message_id, file
+      formData.append('channel', String(channel))
+      formData.append('message_id', String(messageId))
+      formData.append('file', file)
+
+      const uploadUrl = `${this.wsHttpUrl}/api/upload`
+      const headers = {}
+      const token = this.$config?.uploadAuthToken || ''
+      if (token) {
+        headers['x-auth-token'] = token
+      }
+
+      // 使用原生 fetch 發送 multipart/form-data，避免被全域 axios 攔截器 (qs.stringify) 破壞 FormData
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        headers,
+        body: formData
+      })
+      const resData = await res.json()
+
+      if (res.ok && resData?.status === 1) {
+        return resData.data
+      } else {
+        throw new Error(resData?.message || `上傳失敗 (${res.status})`)
+      }
+    },
+    formatFileSize (bytes) {
+      if (!bytes || isNaN(bytes)) return '0 B'
+      const units = ['B', 'KB', 'MB', 'GB']
+      let size = Number(bytes)
+      let unitIdx = 0
+      while (size >= 1024 && unitIdx < units.length - 1) {
+        size /= 1024
+        unitIdx++
+      }
+      return `${size.toFixed(unitIdx === 0 ? 0 : 1)} ${units[unitIdx]}`
+    },
+    getAttachmentDisplayName (storedName) {
+      if (!storedName) return ''
+      return String(storedName).replace(/^\d+_/, '')
+    },
+    downloadAttachment (channel, messageId, filename) {
+      if (!channel || !messageId || !filename) return
+      const url = `${this.wsHttpUrl}/api/download/${channel}/${messageId}/${encodeURIComponent(filename)}`
+      try {
+        const { shell } = require('electron')
+        if (shell && shell.openExternal) {
+          shell.openExternal(url)
+          return
+        }
+      } catch (e) {
+        // fallback
+      }
+      window.open(url, '_blank')
     }
   }
 })

@@ -125,6 +125,31 @@ div: client-only
       ) #[span.h5 {{ emojiTxt }}]
       b-button(@click="pick", variant="outline-success", title="傳送圖片")
         b-icon(icon="image")
+      b-button.ml-1(
+        @click="pickAttachment",
+        variant="outline-info",
+        title="附加檔案"
+      )
+        b-icon(icon="paperclip")
+      input(
+        ref="fileInput",
+        type="file",
+        multiple,
+        style="display: none",
+        @change="handleFileChange"
+      )
+
+      //- 待上傳附件清單
+      .d-flex.flex-wrap.align-items-center.w-100.mt-1.p-1.bg-light.rounded(v-if="uploadFiles.length > 0")
+        span.small.text-muted.mr-1 附件 ({{ uploadFiles.length }}):
+        b-badge.mr-1.mb-1.p-1(
+          v-for="(f, fIdx) in uploadFiles",
+          :key="`home_att_${fIdx}`",
+          variant="info"
+        )
+          b-icon.mr-1(icon="paperclip")
+          span {{ f.name }} ({{ formatFileSize(f.size) }})
+          b-icon.ml-1(icon="x-circle", style="cursor: pointer;", @click="removeUploadFile(fIdx)")
 
       //- 輸入預覽
       lah-transition: .d-flex.justify-content-between.p-2.float-preview.preview(
@@ -233,6 +258,7 @@ export default {
     image: null,
     inputText: "",
     inputImages: [],
+    uploadFiles: [],
     currentFontSize: 'normal', // 記錄當前字體大小設定
 
     // --- 狀態訊息佇列 (解決閃爍問題) ---
@@ -400,7 +426,7 @@ export default {
 
     // --- 驗證 (Validation) ---
     valid() {
-      return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages);
+      return !this.empty(trim(this.inputText)) || !this.empty(this.inputImages) || this.uploadFiles.length > 0;
     },
     validAdHost() {
       return this.$utils.isIPv4(this.adHost) === false ? false : null;
@@ -528,6 +554,7 @@ export default {
       if (this.$utils.isIPv4(val) || this.$utils.empty(val)) {
         this.$localForage.setItem("wsHost", val);
         this.$store.commit("apiHost", val);
+        this.$store.commit("wsHost", val);
       }
     },
 
@@ -641,6 +668,21 @@ export default {
     clear() {
       this.inputText = "";
       this.inputImages = [];
+      this.uploadFiles = [];
+    },
+
+    pickAttachment() {
+      this.$refs.fileInput?.click();
+    },
+
+    handleFileChange(e) {
+      const files = Array.from(e.target.files || []);
+      files.forEach((f) => this.uploadFiles.push(f));
+      e.target.value = "";
+    },
+
+    removeUploadFile(idx) {
+      this.uploadFiles.splice(idx, 1);
     },
 
     pasted(base64) {
@@ -938,6 +980,14 @@ export default {
           this.plusUnread(channel);
         this.triggerNotification(incoming);
       }
+      const isSelfMessage =
+        this.$utils.equal(incoming.sender, this.userid) ||
+        (incoming.message &&
+          typeof incoming.message === "object" &&
+          this.$utils.equal(incoming.message.sender, this.userid));
+      if (isSelfMessage && receivedId > 0 && !isHistory) {
+        this.handleCreatedMessageForUpload(channel, receivedId);
+      }
       this.connecting = false;
     },
 
@@ -1021,6 +1071,9 @@ export default {
         case "private_message":
           const insertedId = json.payload.insertedId;
           const insertedChannel = json.payload.channel;
+          if (insertedId > 0 && insertedChannel) {
+            this.handleCreatedMessageForUpload(insertedChannel, insertedId);
+          }
           if (insertedChannel !== this.adAccount && !insertedChannel?.startsWith("announcement") && !this.chatRooms.includes(insertedChannel)) {
             const remove = JSON.stringify({ to: insertedChannel, id: insertedId });
             this.websocket.send(this.packMessage(json.payload.message, {
@@ -1028,6 +1081,38 @@ export default {
             }));
           }
           this.setConnectText(`${json.message}`);
+          break;
+        case "attachment_uploaded":
+          const attPayload = json.payload || {};
+          const attChannel = attPayload.channel;
+          const attMsgId = parseInt(attPayload.message_id) || 0;
+          const newAttachments = attPayload.attachments || [];
+
+          const updateMsgAttachments = (msgList) => {
+            if (!Array.isArray(msgList)) return false;
+            const targetMsg = msgList.find((m) => {
+              if (m?.id === attMsgId || (m?.message && m.message.id === attMsgId)) return true;
+              try {
+                const cascade = JSON.parse(m?.remove || m?.title || "{}");
+                if (cascade?.to === attChannel && cascade?.id === attMsgId) return true;
+              } catch (e) {}
+              return false;
+            });
+            if (targetMsg) {
+              this.$set(targetMsg, "attachments", newAttachments);
+              if (targetMsg.message && typeof targetMsg.message === "object") {
+                this.$set(targetMsg.message, "attachments", newAttachments);
+              }
+              return true;
+            }
+            return false;
+          };
+
+          updateMsgAttachments(this.messages[attChannel]);
+          if (attChannel !== this.userid) {
+            updateMsgAttachments(this.messages[this.userid]);
+          }
+          this.setConnectText(`${attPayload.file?.name || "附件"} 上傳成功`);
           break;
         case "set_read":
         case "check_read":
@@ -1080,7 +1165,50 @@ export default {
       }
     },
 
+    async handleCreatedMessageForUpload(channel, messageId) {
+      if (!channel || !messageId) return;
+      const pending = this.pendingAttachmentUploads.filter(
+        (item) => item.channel === String(channel)
+      );
+      if (pending.length === 0) return;
+
+      for (const item of pending) {
+        this.$store.commit("removePendingAttachmentUpload", item.id);
+        for (const file of item.files) {
+          try {
+            await this.uploadAttachment(channel, messageId, file);
+            this.notify(`訊息 #${messageId} 附件 ${file.name} 上傳成功`, {
+              type: "success"
+            });
+          } catch (err) {
+            this.err(`附件 ${file.name} 上傳失敗`, err);
+            this.notify(`訊息 #${messageId} 附件 ${file.name} 上傳失敗`, {
+              type: "danger"
+            });
+          }
+        }
+      }
+    },
+
     send() {
+      if (!this.valid) return;
+      if (!this.websocket || this.websocket.readyState !== 1) {
+        this.setConnectText("連線不穩定，正在自動修復...");
+        this.connect();
+        return;
+      }
+      const hasFiles = this.uploadFiles.length > 0;
+      const filesToUpload = hasFiles ? [...this.uploadFiles] : [];
+      if (hasFiles) {
+        this.$store.commit("addPendingAttachmentUpload", {
+          channel: this.currentChannel,
+          files: filesToUpload
+        });
+        this.uploadFiles = [];
+        if (this.empty(this.inputText) && this.empty(this.inputImages)) {
+          this.inputText = filesToUpload.map((f) => f.name).join(", ");
+        }
+      }
       if (this.sendTo(this.markdMessage, { channel: this.currentChannel }))
         this.clear();
       this.$refs.textarea?.focus();
@@ -1285,6 +1413,7 @@ export default {
         (await this.$localForage.getItem("wsHost")) ||
         this.defaultSvrIp ||
         (await this.timeout(this.checkDefaultSvrIp, 400));
+      this.$store.commit("wsHost", this.wsHost);
     },
 
     reportToAPIServer() {
@@ -1390,6 +1519,10 @@ export default {
     async restoreSettings() {
       this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
+      const wsHttpPort = (await this.$localForage.getItem("wsHttpPort")) || 8082;
+      this.$store.commit("wsHost", this.wsHost);
+      this.$store.commit("wsPort", this.wsPort);
+      this.$store.commit("wsHttpPort", wsHttpPort);
       this.adHost   = (await this.$localForage.getItem("adHost")) || "";
 
       this.adPassword = await this.$localForage.getItem("adPassword");

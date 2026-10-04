@@ -43,6 +43,18 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         title="附加圖片"
       ): b-icon(icon="images")
       b-button.mr-1(
+        @click="pickAttachment"
+        variant="outline-info"
+        title="附加檔案"
+      ): b-icon(icon="paperclip")
+      input(
+        ref="fileInput"
+        type="file"
+        multiple
+        style="display: none"
+        @change="handleFileChange"
+      )
+      b-button.mr-1(
         @click="send"
         :disabled="notValid"
         :variant="notValid ? 'outline-primary' : 'primary'"
@@ -53,6 +65,16 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         variant="success"
         title="顯示語法說明"
       ): b-icon(icon="question-circle-fill")
+  .d-flex.flex-wrap.align-items-center.my-1(v-if="uploadFiles.length > 0")
+    span.small.text-muted.mr-1 附件 ({{ uploadFiles.length }}):
+    b-badge.mr-1.mb-1.p-1(
+      v-for="(f, fIdx) in uploadFiles"
+      :key="`input_att_${fIdx}`"
+      variant="info"
+    )
+      b-icon.mr-1(icon="paperclip")
+      span {{ f.name }} ({{ formatFileSize(f.size) }})
+      b-icon.ml-1(icon="x-circle" style="cursor: pointer;" @click="removeUploadFile(fIdx)")
   .d-flex.flex-wrap.align-items-center
     transition-group(name="listY" mode="out-in")
       b-img.memento.m-1(
@@ -111,6 +133,7 @@ export default {
     priority: 3,
     message: '',
     images: [],
+    uploadFiles: [],
     priorityOpts: [
       { text: '最高', value: 0 },
       { text: '高', value: 1 },
@@ -130,7 +153,7 @@ export default {
       if (this.isAnnouncementChannel && !this.titleValid) {
         return true
       }
-      return this.empty(this.message) && this.empty(this.images)
+      return this.empty(this.message) && this.empty(this.images) && this.empty(this.uploadFiles)
     },
     toName () { return this.userMap[this.toUser] || this.toUser },
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
@@ -283,15 +306,43 @@ export default {
         title: this.modalTitle
       })
     },
+    pickAttachment () {
+      this.$refs.fileInput?.click()
+    },
+    handleFileChange (e) {
+      const files = Array.from(e.target.files || [])
+      files.forEach(f => this.uploadFiles.push(f))
+      e.target.value = ''
+    },
+    removeUploadFile (idx) {
+      this.uploadFiles.splice(idx, 1)
+    },
     send () {
-      if (this.websocket && !this.notValid) {
-        // send to target
-        this.websocket.send(this.packMessage(this.mergedMessage, {
-          channel: this.currentChannel.startsWith('announcement') ? this.currentChannel : this.toUser,
-          title: this.messageTitle,
-          priority: this.priority
-        }))
+      if (this.notValid) {
+        return
       }
+      if (!this.websocket || this.websocket.readyState !== 1) {
+        this.warning('WebSocket 尚未連線，無法發送訊息')
+        return
+      }
+      const targetChannel = this.isAnnouncementChannel ? (this.to || this.currentChannel || 'announcement') : (this.toUser || this.to)
+      if (this.uploadFiles.length > 0) {
+        const filesToUpload = [...this.uploadFiles]
+        this.uploadFiles = []
+        this.$store.commit('addPendingAttachmentUpload', {
+          channel: targetChannel,
+          files: filesToUpload
+        })
+        if (this.empty(this.message) && this.empty(this.images)) {
+          this.message = filesToUpload.map(f => f.name).join(', ')
+        }
+      }
+      // send to target
+      this.websocket.send(this.packMessage(this.mergedMessage, {
+        channel: targetChannel,
+        title: this.messageTitle,
+        priority: this.priority
+      }))
       this.$emit("sent", this.message)
       this.message = ''
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()

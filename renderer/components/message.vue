@@ -45,13 +45,27 @@
     announcement-card(
       v-if="isAnnouncement"
       :data-json="announcementPayload"
+      :raw-attachments="attachments"
       :channel="channel"
       :message-id="id"
       :class="isToday ? 'today-card' : ''"
     )
 
     //- 遠端或系統文字訊息
-    p(ref="remoteMessage" v-else-if="!myMessage" v-html="message" @click="$utils.handleSpecialClick($event)")
+    .d-flex.flex-column.align-items-start(v-else-if="!myMessage" style="max-width: 85%;")
+      p(ref="remoteMessage" v-html="message" @click="$utils.handleSpecialClick($event)" style="max-width: 100%;")
+      .attachments.d-flex.flex-wrap.align-items-center.mt-1(v-if="attachments.length > 0")
+        b-button.mr-1.mb-1.p-1.text-left(
+          v-for="(att, aIdx) in attachments"
+          :key="`att_${id}_${aIdx}`"
+          size="sm"
+          variant="outline-secondary"
+          @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
+          :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+        )
+          b-icon.mr-1(icon="paperclip")
+          span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+          b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
 
     //- 狀態、時間與操作按鈕
     .time.s-60.mx-1.text-muted.text-right(
@@ -96,12 +110,25 @@
           div(v-if="!isAnnouncement", v-b-tooltip.v-secondary.bottom="timeDistance") {{ mtime }}
 
     //- 自己的文字訊息
-    p(
-      v-if="myMessage"
-      ref="myMessage"
-      v-html="message"
-      @click="$utils.handleSpecialClick($event)"
-    )
+    .d-flex.flex-column.align-items-end(v-if="myMessage" style="max-width: 85%;")
+      p(
+        ref="myMessage"
+        v-html="message"
+        @click="$utils.handleSpecialClick($event)"
+        style="max-width: 100%;"
+      )
+      .attachments.d-flex.flex-wrap.align-items-center.mt-1(v-if="attachments.length > 0")
+        b-button.ml-1.mb-1.p-1.text-left(
+          v-for="(att, aIdx) in attachments"
+          :key="`att_my_${id}_${aIdx}`"
+          size="sm"
+          variant="outline-success"
+          @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
+          :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+        )
+          b-icon.mr-1(icon="paperclip")
+          span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+          b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
 
 </template>
 
@@ -130,7 +157,15 @@ export default {
     },
     isCascadeMessage () { return (this.raw.flag & 1) === 1 && typeof this.cascadeInfo === 'object' },
     isRead () { return (this.raw.flag & 2) === 2 },
-    announcementPayload () { return this.raw?.message },
+    announcementPayload () {
+      if (typeof this.raw?.message === 'object' && this.raw.message !== null) {
+        return {
+          ...this.raw.message,
+          attachments: this.attachments
+        }
+      }
+      return this.raw?.message
+    },
     isAnnouncement () { return typeof this.announcementPayload === 'object' },
     myAnnouncement () { return this.isAnnouncement && this.announcementPayload.sender === this.userid },
     showMdate () { return this.prevMdate !== this.mdate },
@@ -139,6 +174,15 @@ export default {
     system () { return 'system' === this.sender },
     id () { return this.raw?.id },
     type () { return this.raw?.type },
+    attachments () {
+      if (Array.isArray(this.raw?.attachments)) {
+        return this.raw.attachments
+      }
+      if (typeof this.raw?.message === 'object' && Array.isArray(this.raw.message.attachments)) {
+        return this.raw.message.attachments
+      }
+      return []
+    },
     
     // 判斷是否為今天發送的訊息
     isToday () {
@@ -195,6 +239,18 @@ export default {
     mtime () { return this.raw?.time },
     timeDistance() { return this.$utils.formatDistanceToNow(+new Date(`${this.raw.date} ${this.raw.time}`)) },
     channel () { return this.raw?.channel },
+    downloadTargetChannel () {
+      if (this.isCascadeMessage && this.cascadeInfo?.to) {
+        return this.cascadeInfo.to
+      }
+      return this.channel
+    },
+    downloadTargetId () {
+      if (this.isCascadeMessage && this.cascadeInfo?.id) {
+        return this.cascadeInfo.id
+      }
+      return this.id
+    },
     prevMdate () {
       if (this.prev) {
         if (this.isAnnouncement) {

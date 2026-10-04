@@ -126,7 +126,11 @@ const state = () => ({
     ['HF', '220.1.39.235'],
     ['HG', '220.1.40.62'],
     ['HH', '220.1.41.83']
-  ])
+  ]),
+  wsHost: '',
+  wsPort: 8081,
+  wsHttpPort: 8082,
+  pendingAttachmentUploads: []
 })
 
 const getters = {
@@ -225,7 +229,13 @@ const getters = {
   userDataCacheDuration: state => 12 * 60 * 60 * 1000,
 
   regexpMarkdImage: state => /!\[.+\]\(.+\)/igm,
-  regexpReplyHeader: state => /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm
+  regexpReplyHeader: state => /^(<p>)?給.+?(<\/p>)?\n?(<hr.*\/?>|\*{3})/igm,
+
+  wsHost: state => state.wsHost || state.apiHost,
+  wsPort: state => state.wsPort,
+  wsHttpPort: state => state.wsHttpPort,
+  wsHttpUrl: state => `http://${state.wsHost || state.apiHost}:${state.wsHttpPort || 8082}`,
+  pendingAttachmentUploads: state => state.pendingAttachmentUploads
 }
 
 // only sync operation
@@ -264,6 +274,32 @@ const mutations = {
   },
   apiHost (state, host) {
     state.apiHost = host
+  },
+  wsHost (state, host) {
+    state.wsHost = host
+  },
+  wsPort (state, port) {
+    state.wsPort = port
+  },
+  wsHttpPort (state, port) {
+    state.wsHttpPort = port
+  },
+  addPendingAttachmentUpload (state, item) {
+    state.pendingAttachmentUploads.push({
+      id: +new Date() + '_' + Math.random(),
+      channel: String(item.channel),
+      files: item.files,
+      timestamp: +new Date()
+    })
+  },
+  removePendingAttachmentUpload (state, id) {
+    const idx = state.pendingAttachmentUploads.findIndex(i => i.id === id)
+    if (idx > -1) {
+      state.pendingAttachmentUploads.splice(idx, 1)
+    }
+  },
+  clearPendingAttachmentUploads (state) {
+    state.pendingAttachmentUploads = []
   },
   apiPort (state, port) {
     state.apiPort = port
