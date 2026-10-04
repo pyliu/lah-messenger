@@ -55,17 +55,26 @@
     .d-flex.flex-column.align-items-start(v-else-if="!myMessage" style="max-width: 85%;")
       p(ref="remoteMessage" v-html="message" @click="$utils.handleSpecialClick($event)" style="max-width: 100%;")
       .attachments.d-flex.flex-wrap.align-items-center.mt-1(v-if="attachments.length > 0")
-        b-button.mr-1.mb-1.p-1.text-left(
+        b-button-group.mr-1.mb-1(
           v-for="(att, aIdx) in attachments"
           :key="`att_${id}_${aIdx}`"
           size="sm"
-          variant="outline-secondary"
-          @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
-          :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
         )
-          b-icon.mr-1(icon="paperclip")
-          span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
-          b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+          b-button.p-1.text-left(
+            variant="outline-secondary"
+            @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
+            :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+          )
+            b-icon.mr-1(icon="paperclip")
+            span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+            b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+          b-button.p-1.px-2(
+            v-if="!preview && (isAdmin || myMessage)"
+            variant="outline-danger"
+            @click="confirmDeleteAttachment(att.name)"
+            title="刪除此附件"
+          )
+            b-icon(icon="trash-fill" font-scale="0.9")
 
     //- 狀態、時間與操作按鈕
     .time.s-60.mx-1.text-muted.text-right(
@@ -118,17 +127,26 @@
         style="max-width: 100%;"
       )
       .attachments.d-flex.flex-wrap.align-items-center.mt-1(v-if="attachments.length > 0")
-        b-button.ml-1.mb-1.p-1.text-left(
+        b-button-group.ml-1.mb-1(
           v-for="(att, aIdx) in attachments"
           :key="`att_my_${id}_${aIdx}`"
           size="sm"
-          variant="outline-success"
-          @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
-          :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
         )
-          b-icon.mr-1(icon="paperclip")
-          span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
-          b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+          b-button.p-1.text-left(
+            variant="outline-success"
+            @click="downloadAttachment(downloadTargetChannel, downloadTargetId, att.name)"
+            :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+          )
+            b-icon.mr-1(icon="paperclip")
+            span.small.text-truncate(style="max-width: 160px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+            b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+          b-button.p-1.px-2(
+            v-if="!preview && (isAdmin || myMessage)"
+            variant="outline-danger"
+            @click="confirmDeleteAttachment(att.name)"
+            title="刪除此附件"
+          )
+            b-icon(icon="trash-fill" font-scale="0.9")
 
 </template>
 
@@ -390,6 +408,21 @@ export default {
         channel: 'system'
       }
       this.websocket.send(JSON.stringify(json))
+    },
+    confirmDeleteAttachment (filename) {
+      const displayName = this.getAttachmentDisplayName(filename)
+      this.confirm(`確定要刪除附件「${displayName}」？`).then(async (result) => {
+        if (result) {
+          try {
+            const data = await this.deleteAttachment(this.downloadTargetChannel, this.downloadTargetId, filename)
+            const nextAttachments = data && data.attachments ? data.attachments : this.attachments.filter(att => att.name !== filename)
+            this.$set(this.raw, 'attachments', nextAttachments)
+            this.notify(`已刪除附件「${displayName}」`, { type: 'success' })
+          } catch (err) {
+            this.alert(err.message || '刪除附件失敗', { title: '錯誤', type: 'danger' })
+          }
+        }
+      })
     }
   }
 }

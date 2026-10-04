@@ -688,6 +688,29 @@ Vue.mixin({
         // fallback
       }
       window.open(url, '_blank')
+    },
+    async deleteAttachment (channel, messageId, filename) {
+      if (!channel || !messageId || !filename) {
+        throw new Error('缺少刪除附件參數 (channel, messageId, filename)')
+      }
+      const deleteUrl = `${this.wsHttpUrl}/api/attachments/${channel}/${messageId}/${encodeURIComponent(filename)}`
+      const headers = {}
+      const token = this.$config?.uploadAuthToken || ''
+      if (token) {
+        headers['x-auth-token'] = token
+      }
+
+      const res = await fetch(deleteUrl, {
+        method: 'DELETE',
+        headers
+      })
+      const resData = await res.json()
+
+      if (res.ok && resData?.status === 1) {
+        return resData.data
+      } else {
+        throw new Error(resData?.message || `刪除附件失敗 (${res.status})`)
+      }
     }
   }
 })

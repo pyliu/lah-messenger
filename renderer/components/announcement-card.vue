@@ -14,17 +14,26 @@ b-card.announcement-card(
       b-icon.mr-1(icon="paperclip")
       span 附加檔案 ({{ attachments.length }})
     .d-flex.flex-wrap.align-items-center
-      b-button.mr-2.mb-1.text-left(
+      b-button-group.mr-2.mb-1(
         v-for="(att, aIdx) in attachments"
         :key="`card_att_${dataJson.id}_${aIdx}`"
         size="sm"
-        variant="outline-secondary"
-        @click="downloadAttachment(channel, dataJson.id, att.name)"
-        :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
       )
-        b-icon.mr-1(icon="paperclip")
-        span.small.text-truncate(style="max-width: 200px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
-        b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+        b-button.text-left(
+          variant="outline-secondary"
+          @click="downloadAttachment(channel, dataJson.id, att.name)"
+          :title="`點擊下載：${getAttachmentDisplayName(att.name)} (${formatFileSize(att.size)})`"
+        )
+          b-icon.mr-1(icon="paperclip")
+          span.small.text-truncate(style="max-width: 200px; display: inline-block; vertical-align: middle;") {{ getAttachmentDisplayName(att.name) }}
+          b-badge.ml-1(variant="light") {{ formatFileSize(att.size) }}
+        b-button.px-2(
+          v-if="!preview && (mine || isAdmin)"
+          variant="outline-danger"
+          @click="confirmDeleteAttachment(att.name)"
+          title="刪除此附件"
+        )
+          b-icon(icon="trash-fill" font-scale="0.9")
   
   //- 移除了原有的 .small，並使用 protected-footer 進行絕對隔離
   template(#footer): .protected-footer.d-flex.justify-content-between.align-items-center.text-muted
@@ -165,6 +174,21 @@ export default {
         channel: 'system'
       })
       this.websocket && this.websocket.send(jsonString)
+    },
+    confirmDeleteAttachment (filename) {
+      const displayName = this.getAttachmentDisplayName(filename)
+      this.confirm(`確定要刪除附件「${displayName}」？`).then(async (result) => {
+        if (result) {
+          try {
+            const data = await this.deleteAttachment(this.channel, this.dataJson.id, filename)
+            const nextAttachments = data && data.attachments ? data.attachments : this.attachments.filter(att => att.name !== filename)
+            this.$set(this.dataJson, 'attachments', nextAttachments)
+            this.notify(`已刪除附件「${displayName}」`, { type: 'success' })
+          } catch (err) {
+            this.alert(err.message || '刪除附件失敗', { title: '錯誤', type: 'danger' })
+          }
+        }
+      })
     },
     handleSpecialClick (event) {
       const element = event.target

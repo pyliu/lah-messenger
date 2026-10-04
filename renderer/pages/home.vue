@@ -1083,6 +1083,8 @@ export default {
           this.setConnectText(`${json.message}`);
           break;
         case "attachment_uploaded":
+        case "attachment_deleted":
+          const isUploaded = cmd === "attachment_uploaded";
           const attPayload = json.payload || {};
           const attChannel = attPayload.channel;
           const attMsgId = parseInt(attPayload.message_id) || 0;
@@ -1112,7 +1114,11 @@ export default {
           if (attChannel !== this.userid) {
             updateMsgAttachments(this.messages[this.userid]);
           }
-          this.setConnectText(`${attPayload.file?.name || "附件"} 上傳成功`);
+          const actionText = isUploaded ? "上傳成功" : "已刪除";
+          const targetFilename = isUploaded
+            ? (attPayload.file?.name || "附件")
+            : (this.getAttachmentDisplayName(attPayload.filename) || "附件");
+          this.setConnectText(`${targetFilename} ${actionText}`);
           break;
         case "set_read":
         case "check_read":

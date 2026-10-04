@@ -71,6 +71,12 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
     )
       b-icon.mr-1(icon="paperclip")
       span {{ getAttachmentDisplayName(att.name) }} ({{ formatFileSize(att.size) }})
+      b-icon.ml-1(
+        icon="x-circle"
+        style="cursor: pointer;"
+        title="刪除此附件"
+        @click="confirmDeleteExistingAttachment(att.name)"
+      )
     span.small.text-muted.mx-1(v-if="uploadFiles.length > 0") 新增附件:
     b-badge.mr-1.mb-1.p-1(
       v-for="(f, fIdx) in uploadFiles"
@@ -335,6 +341,21 @@ export default {
       this.modal(this.$createElement(Help), {
         size: 'xl',
         title: `進階編輯語法說明`
+      })
+    },
+    confirmDeleteExistingAttachment (filename) {
+      const displayName = this.getAttachmentDisplayName(filename)
+      this.confirm(`確定要刪除附件「${displayName}」？`).then(async (result) => {
+        if (result) {
+          try {
+            const data = await this.deleteAttachment(this.channel, this.id, filename)
+            const nextAttachments = data && data.attachments ? data.attachments : this.existingAttachments.filter(att => att.name !== filename)
+            this.$set(this.dataJson, 'attachments', nextAttachments)
+            this.notify(`已刪除附件「${displayName}」`, { type: 'success' })
+          } catch (err) {
+            this.alert(err.message || '刪除附件失敗', { title: '錯誤', type: 'danger' })
+          }
+        }
       })
     }
   }
