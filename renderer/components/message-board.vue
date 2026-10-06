@@ -215,13 +215,33 @@ export default {
       return lastRemoteMessage?.sender
     },
     openMessageInput () {
+      const isAnn = this.isAnnouncement || this.isDepartment || this.currentChannel.startsWith('announcement')
       this.modal(this.$createElement(MessageInput, {
         props: {
-          to: this.getLastSender() || this.currentChannel,
+          to: isAnn ? this.currentChannel : (this.getLastSender() || this.currentChannel),
           pickUser: this.currentChannel === this.userid // my channel shows the online user select input
         },
         on: {
-          sent: () => { this.hideModalById('message-input-modal') }
+          sent: () => {
+            this.hideModalById('message-input-modal')
+            if (isAnn) {
+              this.timeout(() => {
+                const jsonString = JSON.stringify({
+                  type: 'command',
+                  sender: this.userid,
+                  date: this.date(),
+                  time: this.time(),
+                  message: JSON.stringify({
+                    command: 'latest',
+                    channel: this.currentChannel,
+                    count: 15
+                  }),
+                  channel: 'system'
+                })
+                this.websocket?.send(jsonString)
+              }, 500)
+            }
+          }
         }
       }), {
         id: 'message-input-modal',

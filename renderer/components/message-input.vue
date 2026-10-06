@@ -97,7 +97,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
     announcement-card(
       v-if="isAnnouncementChannel"
       :data-json="announcementJson"
-      :channel="to"
+      :channel="targetChannel"
       :preview="true"
     )
     message.mr-2.my-message(
@@ -157,6 +157,12 @@ export default {
     },
     toName () { return this.userMap[this.toUser] || this.toUser },
     isAnnouncementChannel () { return this.currentChannel.startsWith('announcement') },
+    targetChannel () {
+      if (this.isAnnouncementChannel) {
+        return this.currentChannel || this.to || 'announcement'
+      }
+      return this.toUser || this.to
+    },
     modalTitle () { return `傳送圖片${this.isAnnouncementChannel ? `到 ${this.currentChannelName}` : `給 ${this.toName}`}` },
     mergedMessage () {
       // 🟢 [修復] 發送前先將網路路徑與本機路徑保護起來
@@ -274,7 +280,7 @@ export default {
         this.modal(this.$createElement(AnnouncementCard, {
           props: {
             dataJson: this.announcementJson,
-            channel: this.toUser,
+            channel: this.targetChannel,
             preview: true
           }
         }), modalOpts)
@@ -325,7 +331,7 @@ export default {
         this.warning('WebSocket 尚未連線，無法發送訊息')
         return
       }
-      const targetChannel = this.isAnnouncementChannel ? (this.to || this.currentChannel || 'announcement') : (this.toUser || this.to)
+      const targetChannel = this.targetChannel
       if (this.uploadFiles.length > 0) {
         const filesToUpload = [...this.uploadFiles]
         this.uploadFiles = []
@@ -343,8 +349,12 @@ export default {
         title: this.messageTitle,
         priority: this.priority
       }))
+      if (this.isAnnouncementChannel) {
+        this.notify('公告已成功發布', { type: 'success' })
+      }
       this.$emit("sent", this.message)
       this.message = ''
+      this.messageTitle = ''
       this.$refs.msgTextarea && this.$refs.msgTextarea.focus()
     },
     remove (base64data) {
