@@ -1092,19 +1092,28 @@ export default {
 
           const updateMsgAttachments = (msgList) => {
             if (!Array.isArray(msgList)) return false;
-            const targetMsg = msgList.find((m) => {
-              if (m?.id === attMsgId || (m?.message && m.message.id === attMsgId)) return true;
+            const targetIndex = msgList.findIndex((m) => {
+              if (m?.id == attMsgId || m?.message?.id == attMsgId) return true;
               try {
                 const cascade = JSON.parse(m?.remove || m?.title || "{}");
-                if (cascade?.to === attChannel && cascade?.id === attMsgId) return true;
+                if (cascade?.to === attChannel && cascade?.id == attMsgId) return true;
               } catch (e) {}
               return false;
             });
-            if (targetMsg) {
+            if (targetIndex > -1) {
+              const targetMsg = msgList[targetIndex];
               this.$set(targetMsg, "attachments", newAttachments);
               if (targetMsg.message && typeof targetMsg.message === "object") {
                 this.$set(targetMsg.message, "attachments", newAttachments);
               }
+              const updatedMsg = {
+                ...targetMsg,
+                attachments: newAttachments,
+                message: typeof targetMsg.message === "object" && targetMsg.message !== null
+                  ? { ...targetMsg.message, attachments: newAttachments }
+                  : targetMsg.message
+              };
+              this.$set(msgList, targetIndex, updatedMsg);
               return true;
             }
             return false;
