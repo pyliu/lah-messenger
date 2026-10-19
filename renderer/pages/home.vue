@@ -1011,10 +1011,10 @@ export default {
           break;
         case "remove_message":
           if (json.success) {
-            const idx = this.messages[json.payload.channel]?.findIndex(msg => msg.id === json.payload.id);
+            const idx = this.messages[json.payload.channel]?.findIndex(msg => Number(msg.id) === Number(json.payload.id));
             if (idx > -1) this.messages[json.payload.channel].splice(idx, 1);
             const cascade = json.payload.cascade;
-            if (cascade?.to && cascade?.id) {
+            if (cascade?.to && cascade?.id && !json.cascadeHandled && !json.payload?.cascadeHandled) {
               this.websocket.send(JSON.stringify({
                 type: "command", sender: this.adAccount, date: this.date(), time: this.time(), channel: 'system',
                 message: JSON.stringify({ command: 'remove_message', channel: cascade.to, id: cascade.id, cascade: '' })
@@ -1027,7 +1027,7 @@ export default {
           if (json.success) {
             const channel = json.payload.channel;
             const payload = json.payload.payload;
-            const found = this.messages[channel]?.find(msg => msg.id === payload.id);
+            const found = this.messages[channel]?.find(msg => Number(msg.id) === Number(payload.id));
             if (found) {
               if (channel.startsWith('announcement')) {
                 found.message = {
@@ -1040,7 +1040,7 @@ export default {
                 found.message = payload.message;
               }
               const cascade = json.payload.cascade;
-              if (cascade?.id && cascade?.to) {
+              if (cascade?.id && cascade?.to && !json.cascadeHandled && !json.payload?.cascadeHandled) {
                 this.websocket?.send(JSON.stringify({
                   type: "command", sender: this.userid, date: this.date(), time: this.time(), channel: 'system',
                   message: {
