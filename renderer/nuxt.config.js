@@ -1,5 +1,20 @@
+import path from 'path'
+import fs from 'fs'
+
+// 取得真實路徑以解決在不同路徑、Symlink 或 Junction 下相對路徑解析錯誤的問題
+const rendererDir = fs.realpathSync(__dirname)
+const rootDir = fs.realpathSync(path.resolve(__dirname, '..'))
 
 export default {
+  rootDir,
+  srcDir: rendererDir,
+  buildDir: path.resolve(rendererDir, '.nuxt'),
+  modulesDir: [
+    path.resolve(rootDir, 'node_modules')
+  ],
+  generate: {
+    dir: path.resolve(rendererDir, 'dist')
+  },
   ssr: false,
   head: {
     title: process.env.APP,
@@ -31,6 +46,12 @@ export default {
      */
     extend (config, ctx) {
       config.target = 'electron-renderer';
+      // 確保在任何路徑或 Symlink 下 Webpack 都能從根目錄正確解析依賴
+      config.resolve.modules = [
+        path.resolve(rootDir, 'node_modules'),
+        'node_modules'
+      ];
+      config.resolve.symlinks = true;
     },
     babel: { compact: true }
   },
