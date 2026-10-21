@@ -148,6 +148,9 @@ Vue.mixin({
     ]),
     $,  // jQuery '$'
     empty,
+    decodeHtmlEntities (str) {
+      return this.$utils?.decodeHtmlEntities ? this.$utils.decodeHtmlEntities(str) : str
+    },
     getFirstDNSIp () {
       const dnses = [...this.userinfo.dns]
       if (!empty(dnses)) {

@@ -214,7 +214,7 @@ export default {
   created () {
     this.normalize(this.dataJson?.content)
     this.priority = this.dataJson?.priority
-    this.title = this.dataJson?.title
+    this.title = this.decodeHtmlEntities(this.dataJson?.title || '')
   },
   methods: {
     // 🟢 [新增] 同步路徑保護邏輯
@@ -234,6 +234,8 @@ export default {
       this.content = this.$utils.trimTags(this.content)
       // trim message
       this.content = this.$utils.trim(this.content)
+      // decode HTML entities
+      this.content = this.decodeHtmlEntities(this.content)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)

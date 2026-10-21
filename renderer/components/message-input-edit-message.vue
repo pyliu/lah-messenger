@@ -225,6 +225,8 @@ export default {
       this.message = this.message.replaceAll(/\n{3,}/igm, "\n\n")
       // trim message
       this.message = this.$utils.trim(this.message)
+      // decode HTML entities
+      this.message = this.decodeHtmlEntities(this.message)
     },
     pasted (base64) {
       this.images.indexOf(base64) === -1 && this.images.push(base64)

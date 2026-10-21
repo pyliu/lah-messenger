@@ -167,6 +167,51 @@ export default {
   trimTags(x) {
     return _.trim(x?.replace(/(<([^>]+)>)/gi, ""));
   },
+  decodeHtmlEntities(str) {
+      if (!str || typeof str !== 'string') { return '' }
+      if (typeof document !== 'undefined') {
+        try {
+          const textarea = document.createElement('textarea')
+          textarea.innerHTML = str
+          return textarea.value
+        } catch (e) {}
+      }
+      const entityMap = {
+        '&quot;': '"',
+        '&apos;': "'",
+        '&lt;': '<',
+        '&gt;': '>',
+        '&amp;': '&',
+        '&nbsp;': ' ',
+        '&#39;': "'",
+        '&#34;': '"',
+        '&#38;': '&',
+        '&#60;': '<',
+        '&#62;': '>'
+      }
+      return str.replace(/&(?:quot|apos|lt|gt|amp|nbsp|#\d+|#x[0-9a-fA-F]+);/g, (match) => {
+        if (entityMap[match]) {
+          return entityMap[match]
+        }
+        if (match.startsWith('&#x') || match.startsWith('&#X')) {
+          const hex = match.slice(3, -1)
+          try {
+            return String.fromCodePoint(parseInt(hex, 16))
+          } catch (e) {
+            return String.fromCharCode(parseInt(hex, 16))
+          }
+        }
+        if (match.startsWith('&#')) {
+          const dec = match.slice(2, -1)
+          try {
+            return String.fromCodePoint(parseInt(dec, 10))
+          } catch (e) {
+            return String.fromCharCode(parseInt(dec, 10))
+          }
+        }
+        return match
+      })
+    },
   uuid() {
     let d = Date.now();
     if (
