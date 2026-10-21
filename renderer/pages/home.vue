@@ -105,7 +105,8 @@ div: client-only
         @keyup.enter.shift="send",
         @keyup.enter.alt="send",
         @keyup.esc="clear",
-        @keydown="delayConnect",
+        @keydown="delayConnect($event); onKeydown($event)",
+        @blur="closeHistory",
         @paste="pasteImage($event, pasted)",
         no-resize,
         no-auto-shrink,
@@ -137,6 +138,13 @@ div: client-only
         multiple,
         style="display: none",
         @change="handleFileChange"
+      )
+      input-history(
+        :open="historyOpen",
+        :list="historyList",
+        :index="historyIndex",
+        @choose="chooseHistory",
+        @hover="historyIndex = $event"
       )
 
       //- 待上傳附件清單
@@ -239,14 +247,18 @@ div: client-only
  */
 import trim from "lodash/trim";
 import ImageUpload from "~/components/image-upload.vue";
+import InputHistory from "~/components/input-history.vue";
+import inputHistoryMixin from "~/mixins/input-history";
 
 export default {
   transition: "list",
   head: {
     title: `${process.env.APP}`
   },
+  mixins: [inputHistoryMixin],
   components: {
-    ImageUpload
+    ImageUpload,
+    InputHistory
   },
 
   // ==========================================================================
@@ -1224,6 +1236,7 @@ export default {
           this.inputText = filesToUpload.map((f) => f.name).join(", ");
         }
       }
+      this.pushHistory(this.inputText);
       if (this.sendTo(this.markdMessage, { channel: this.currentChannel }))
         this.clear();
       this.$refs.textarea?.focus();

@@ -14,17 +14,31 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
   b-input-group(v-if="pickUser" size="sm" prepend="傳給")
     b-select(v-model="toUser" :options="toUsersOpts" :disabled="toMe")
     b-checkbox.my-auto.ml-1(v-model="toMe") 給我自己
-  b-textarea.my-2(
-    ref="msgTextarea"
-    v-model="message"
-    debounce="200"
-    placeholder="... 訊息內容 ...",
-    size="sm"
-    rows="5"
-    no-resize
-    no-auto-shrink
-    autofocus
-  )
+  .position-relative.my-2
+    b-textarea(
+      ref="msgTextarea"
+      v-model="message"
+      debounce="200"
+      placeholder="... 訊息內容 ...",
+      size="sm"
+      rows="5"
+      no-resize
+      no-auto-shrink
+      autofocus
+      @keydown="onKeydown"
+      @blur="closeHistory"
+    )
+    .float-history(v-if="historyOpen && historyList.length" ref="floatHistory")
+      .small.text-muted.px-2.py-1.border-bottom.bg-light ⬆⬇ 選擇最近送出的訊息，Enter 填入，Esc 關閉
+      .history-list
+        .history-item(
+          v-for="(h, i) in historyList"
+          :key="`msg_history_${i}`"
+          :class="{ active: i === historyIndex }"
+          :title="h"
+          @mousedown.prevent="chooseHistory(i)"
+          @mouseenter="historyIndex = i"
+        ) {{ h }}
   
   .d-flex.align-items-center
     b-checkbox(v-model="realtime" switch v-if="!emoji") 預覽
@@ -132,6 +146,9 @@ export default {
     messageTitle: '',
     priority: 3,
     message: '',
+    historyOpen: false,
+    historyIndex: 0,
+    historyList: [],
     images: [],
     uploadFiles: [],
     priorityOpts: [
@@ -323,6 +340,109 @@ export default {
     removeUploadFile (idx) {
       this.uploadFiles.splice(idx, 1)
     },
+    loadInputHistory () {
+      try {
+        const arr = JSON.parse(window.localStorage.getItem('lah-messenger-input-history') || '[]')
+        return Array.isArray(arr) ? arr.filter(s => typeof s === 'string' && s.trim() !== '').slice(0, 10) : []
+      } catch (e) {
+        return []
+      }
+    },
+    pushHistory (text) {
+      const t = (text || '').trim()
+      if (!t || this.isAnnouncementChannel) {
+        return
+      }
+      const arr = this.loadInputHistory()
+      if (arr[0] === t) {
+        return
+      }
+      arr.unshift(t)
+      try {
+        window.localStorage.setItem('lah-messenger-input-history', JSON.stringify(arr.slice(0, 10)))
+      } catch (e) {
+        console.warn('儲存訊息歷史失敗', e)
+      }
+    },
+    closeHistory () {
+      this.historyOpen = false
+    },
+    openHistory () {
+      // 由舊到新排列，最新一筆在最下方（最靠近輸入框）
+      const list = this.loadInputHistory().reverse()
+      if (list.length === 0) {
+        return false
+      }
+      this.historyList = list
+      this.historyIndex = list.length - 1
+      this.historyOpen = true
+      return true
+    },
+    chooseHistory (idx) {
+      const text = this.historyList[idx]
+      this.historyOpen = false
+      if (text === undefined) {
+        return
+      }
+      this.message = text
+      this.$nextTick(() => {
+        const el = this.$refs.msgTextarea?.$el || this.$refs.msgTextarea
+        if (el && typeof el.focus === 'function') {
+          el.focus()
+          if (el.setSelectionRange) {
+            el.setSelectionRange(text.length, text.length)
+          }
+        }
+      })
+    },
+    onKeydown (e) {
+      if (e.isComposing || e.keyCode === 229) {
+        return
+      }
+      if (this.historyOpen) {
+        const len = this.historyList.length
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          this.historyIndex = Math.max(0, this.historyIndex - 1)
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          this.historyIndex = Math.min(len - 1, this.historyIndex + 1)
+        } else if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+          e.preventDefault()
+          this.chooseHistory(this.historyIndex)
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          // 避免 Esc 冒泡到 b-sidebar 造成整個側邊欄被關閉
+          e.stopPropagation()
+          this.historyOpen = false
+        } else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt') {
+          this.historyOpen = false
+        }
+        this.$nextTick(() => {
+          const box = this.$refs.floatHistory
+          const active = box && box.querySelector('.history-item.active')
+          active && active.scrollIntoView && active.scrollIntoView({ block: 'nearest' })
+        })
+        return
+      }
+      if (e.key !== 'ArrowUp' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
+        return
+      }
+      const ta = e.target
+      const onFirstLine = !ta || ta.selectionStart !== ta.selectionEnd
+        ? false
+        : ta.value.substring(0, ta.selectionStart).includes('\n') === false
+      if ((this.message || '') === '' || onFirstLine) {
+        if (this.openHistory()) {
+          e.preventDefault()
+          this.$nextTick(() => {
+            const box = this.$refs.floatHistory
+            const active = box && box.querySelector('.history-item.active')
+            active && active.scrollIntoView && active.scrollIntoView({ block: 'nearest' })
+          })
+        }
+      }
+    },
     send () {
       if (this.notValid) {
         return
@@ -331,6 +451,7 @@ export default {
         this.warning('WebSocket 尚未連線，無法發送訊息')
         return
       }
+      this.pushHistory(this.message)
       const targetChannel = this.targetChannel
       if (this.uploadFiles.length > 0) {
         const filesToUpload = [...this.uploadFiles]
@@ -399,5 +520,42 @@ export default {
   width: 90vw;
   height: 20vh;
   overflow: auto;
+}
+.float-history {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  z-index: 1060;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  .history-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .history-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid #f0f0f0;
+    &:last-child {
+      border-bottom: none;
+    }
+    &.active {
+      background: #007bff;
+      color: #fff;
+    }
+    &:hover:not(.active) {
+      background: #e9ecef;
+    }
+  }
 }
 </style>
