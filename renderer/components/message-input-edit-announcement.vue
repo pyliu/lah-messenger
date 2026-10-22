@@ -222,7 +222,7 @@ export default {
       if (!text) return '';
       return String(text)
         .replace(/(?<!`)(["'])(\\\\[a-zA-Z0-9_.-]+\\[^\r\n]+?|[a-zA-Z]:\\[^\r\n]+?)\1(?!`)/g, '`$2`')
-        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>]+|[a-zA-Z]:\\[^\s`<>]+)(?!`)/g, '`$1`');
+        .replace(/(?<!`)(\\\\[a-zA-Z0-9_.-]+\\[^\s`<>，。！？；：、）)」』》】\]},;!?]+|[a-zA-Z]:\\[^\s`<>，。！？；：、）)」』》】\]},;!?]+)(?!`)/g, '`$1`');
     },
     normalize (txt) {
       this.content = txt

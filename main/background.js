@@ -2,6 +2,7 @@
 
 import ActiveDirectory from 'activedirectory2';
 import axios from 'axios';
+import { spawn } from 'child_process';
 import { app, dialog, ipcMain, Menu, nativeImage, shell, Tray } from 'electron';
 import serve from 'electron-serve';
 import fs from 'fs/promises';
@@ -431,9 +432,65 @@ ipcMain.handle('ad-user-query', async (event, config) => {
   }
 });
 
-ipcMain.handle('open-explorer', (event, payload) => {
-  const targetPath = payload.path || payload;
-  shell.openPath(targetPath).catch(err => handleError(err, `Open Explorer: ${targetPath}`));
+ipcMain.handle('open-explorer', async (event, payload) => {
+  let targetPath = (payload?.path || payload || '').trim();
+  // 移除首尾常見的包覆字元（引號、反引號等）
+  targetPath = targetPath.replace(/^["'`<]+|["'`>]+$/g, '').trim();
+  if (!targetPath) return;
+
+  const openWithExplorer = (folderPath) => {
+    try {
+      const child = spawn('explorer.exe', [folderPath], {
+        detached: true,
+        stdio: 'ignore'
+      });
+      child.unref();
+    } catch (err) {
+      handleError(err, `Spawn Explorer: ${folderPath}`);
+    }
+  };
+
+  const hasExt = Boolean(path.extname(targetPath));
+
+  // 1. 若具有副檔名，優先嘗試檢查是否為現存檔案；若為現存檔案則以預設關聯軟體開啟
+  if (hasExt) {
+    try {
+      const stat = await fs.stat(targetPath);
+      if (stat.isFile()) {
+        const errorMsg = await shell.openPath(targetPath);
+        if (!errorMsg) return;
+      }
+    } catch (e) {
+      // 檔案不存在或無法存取，準備退回開啟所在目錄
+    }
+  }
+
+  // 2. 若為資料夾（無副檔名），或檔案不存在時，向上尋找最近一層確實存在的資料夾開啟
+  let current = targetPath;
+  if (hasExt) {
+    current = path.dirname(current);
+  }
+
+  while (current) {
+    try {
+      const stat = await fs.stat(current);
+      if (stat.isDirectory()) {
+        openWithExplorer(current);
+        return;
+      }
+    } catch (e) {
+      // 該層不存在，繼續向上尋找
+    }
+    const parent = path.dirname(current);
+    if (!parent || parent === current || parent === '.' || ['.', '\\', '/', ''].includes(parent)) {
+      break;
+    }
+    current = parent;
+  }
+
+  // 3. 若層層向上都無法確認（例如無法存取的網路共用），直接交由 explorer.exe 嘗試開啟
+  // explorer.exe 在 Windows 上具備內部路徑解析與容錯機制，且不會像 ShellExecuteEx 拋出阻塞式的系統網路錯誤對話框
+  openWithExplorer(targetPath);
 });
 
 ipcMain.handle('open-image', async (event, payload) => {

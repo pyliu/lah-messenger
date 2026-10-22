@@ -320,9 +320,20 @@ export default {
   },
   replaceFilepath(str) {
     const regex =
-      /(([c-z]:\\|\\\\)[^<>:"\/|?*\n\r\t]+(\\(.+\.[a-z]{1,4})?))/gim;
-    const subst = `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">$1</span>`;
-    return str?.replace(regex, subst);
+      /((?:[c-zC-Z]:\\|\\\\)(?:[^<>:"\/|?*\n\r\t]+?\\)*(?:[^<>:"\/|?*\n\r\t]+(?=<\/code>)|[^<>:"\/|?*\n\r\t\s，。！？；：、）)」』》】\]},;!?]+)?)/gim;
+
+    return str?.replace(regex, (match, p1) => {
+      let clean = p1;
+      let trailingDot = "";
+      if (!clean.endsWith('\\')) {
+        const dotMatch = clean.match(/[.]+$/);
+        if (dotMatch) {
+          trailingDot = dotMatch[0];
+          clean = clean.slice(0, -trailingDot.length);
+        }
+      }
+      return `<span class="open-os-explorer" title="滑鼠左鍵開啟路徑">${clean}</span>${trailingDot}`;
+    });
   },
   highlight(str, regex, css, title = "") {
     const chunks = highlightWords({
@@ -450,7 +461,7 @@ export default {
     });
 
     // 6. 保護 UNC 網路路徑與本機路徑
-    const pathRegex = /(([c-zC-Z]:\\|\\\\)[^<>:"\/|?*\n\r\t]+(\\(.+\.[a-zA-Z]{1,4})?)?)/gim;
+    const pathRegex = /((?:[c-zC-Z]:\\|\\\\)(?:[^<>:"\/|?*\n\r\t]+?\\)*(?:[^<>:"\/|?*\n\r\t]+(?=<\/code>)|[^<>:"\/|?*\n\r\t\s，。！？；：、）)」』》】\]},;!?]+)?)/gim;
     tmp = tmp.replace(pathRegex, (match) => {
       pathProtections.push(match);
       return `__PATH_PROTECT_${pathProtections.length - 1}__`;
