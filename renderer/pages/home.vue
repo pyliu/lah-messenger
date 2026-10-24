@@ -178,63 +178,109 @@ div: client-only
   //- 登入/驗證介面 (未連線狀態)
   //- =========================================================================
   .center.vh-100(v-else, v-cloak)
-    .w-75.mt-n5
-      .center.mb-5.logo
-        b-img(src="tyland.jpg", fluid, style="max-width: 96px")
-        H1 {{ $config.appName }}
-      .center: b-iconstack#main_logo_icon.iconstack(font-scale="6", v-cloak)
-        b-icon(icon="chat-dots", variant="success", flip-h, shift-h="10", shift-v="3", stacked)
-        b-icon(icon="chat-text", variant="info", shift-h="-10", shift-v="6", stacked)
+    .w-100.d-flex.flex-column.align-items-center.justify-content-center.px-3
+      //- 管理員手動登入模式
+      lah-transition(fade)
+        admin-manual-login(
+          v-if="manualLogin",
+          :def-id="adAccount",
+          :def-name="adName",
+          :def-dept="department",
+          @connect="handleAdminConnect",
+          @cancel="manualLogin = false"
+        )
 
-      //- 管理員手動登入選項
-      .d-flex.justify-content-end: b-checkbox(
-        v-if="authority.isAdmin",
-        v-model="manualLogin",
-        size="sm",
-        switch
-      ) 手動登入
-      
-      admin-manual-login(
-        v-if="manualLogin",
-        :def-id="adAccount",
-        :def-name="adName",
-        :def-dept="department",
-        @connect="handleAdminConnect"
+        //- 一般同仁智慧登入卡片
+        .login-card.p-4.border.rounded.shadow.bg-white(v-else)
+          //- 卡片頂部功能列：Logo + 標題 + 管理者入口
+          .d-flex.align-items-center.justify-content-between.mb-3
+            .d-flex.align-items-center(@click="onLogoClick", style="cursor: pointer;", title="桃園即時通 (連點5次開啟管理模式)")
+              b-img(src="tyland.jpg", fluid, style="width: 32px; height: 32px;", class="mr-2")
+              h5.font-weight-bold.mb-0.text-dark 桃園即時通
+            b-button(
+              size="sm",
+              variant="outline-secondary",
+              @click="triggerAdminLogin",
+              title="管理者手動模式",
+              class="border-0 px-2"
+            )
+              b-icon(icon="shield-lock", font-scale="1.2", :variant="authority.isAdmin ? 'success' : 'secondary'")
+
+          //- 身分呈現中央區
+          .text-center.my-3
+            .avatar-wrapper.mb-2
+              b-avatar(
+                size="4.5rem",
+                variant="primary",
+                :text="avatarText",
+                class="shadow-sm font-weight-bold"
+              )
+            h3.font-weight-bold.text-dark.mb-1 {{ adName || '使用者' }}
+            .text-muted.small.mb-2
+              b-icon.mr-1(icon="person-badge")
+              span {{ adAccount || '載入中...' }}
+            
+            //- 部門鎖定標籤 (防呆、不可亂選)
+            .my-2
+              b-badge.px-3.py-2.font-weight-normal(
+                variant="info",
+                style="font-size: 0.95rem; letter-spacing: 1px;",
+                v-b-tooltip.hover="'所屬課室由系統自動判定（鎖定保護）'"
+              )
+                b-icon.mr-1(icon="building")
+                span {{ deptName }}
+                b-icon.ml-2(icon="lock-fill", font-scale="0.85")
+
+          //- 伺服器狀態微縮標籤 (純狀態顯示、不干擾視覺)
+          .text-center.my-3
+            span.badge.badge-light.border.text-secondary.px-2.py-1(style="font-size: 0.8rem")
+              b-icon.mr-1(icon="hdd-network", :variant="validHost ? 'success' : 'warning'")
+              span 伺服器 {{ wsHost || '127.0.0.1' }}:{{ wsPort || '8081' }}
+
+          //- 主要操作按鈕
+          .mt-4
+            b-button(
+              v-if="connecting",
+              variant="primary",
+              disabled,
+              block,
+              pill,
+              size="lg"
+            )
+              b-spinner(small, class="mr-2")
+              span 連線登入中...
+            b-button(
+              v-else,
+              variant="primary",
+              :disabled="!validInformation",
+              @click="handleManualEnter",
+              block,
+              pill,
+              size="lg",
+              class="shadow-sm font-weight-bold"
+            )
+              b-icon(icon="box-arrow-in-right", class="mr-1")
+              span 進入即時通
+
+      //- 管理員通行碼輸入 Modal
+      b-modal#admin-auth-modal(
+        title="管理者身分認證",
+        centered,
+        hide-footer,
+        @shown="$refs.adminPwdInput && $refs.adminPwdInput.focus()"
       )
-      
-      //- 一般使用者連線設定
-      div(v-else)
-        b-input-group.my-3(prepend="伺服器")
-          b-input(
-            v-model="wsHost",
-            :state="validHost",
-            placeholder="... 即時通伺服器IP ...",
-            v-b-tooltip="'伺服器IP'",
-            trim
-          )
-          span.my-auto.mx-1 :
-          b-input(
-            v-model="wsPort",
-            type="number",
-            :state="validPort",
-            style="max-width: 100px",
-            v-b-tooltip="'通訊埠號'"
-          )
-        .d-flex-column.align-items-center: b-input-group.center(v-if="validHost && validPort")
-          b-button(
-            :variant="queryADVariant",
-            :disabled="connecting || !validInformation",
-            @click="connect",
-            title="連線",
-            pill
-          )
-            b-icon(icon="box-arrow-right" font-scale="1.25")
-            span.mx-1 {{ adName }}
-            b-badge(variant="light") {{ adAccount }} / {{ deptName }}
-          
-          //- 錯誤提示與狀態提示
-          h6.text-warning.mt-1(v-if="!validHost || !validPort") ⚠ 請完整填寫伺服器連線資訊
-          h6.text-danger.mt-1(v-if="!validAdAccount || !validAdName") ⚠ 等待使用者AD資料更新中 ... 
+        b-form(@submit.prevent="confirmAdminAuth")
+          b-form-group(label="請輸入管理者通行碼：", label-for="admin-pwd")
+            b-form-input#admin-pwd(
+              ref="adminPwdInput",
+              type="password",
+              v-model="adminPasswordInput",
+              placeholder="請輸入通行碼...",
+              required
+            )
+          .d-flex.justify-content-end.mt-3
+            b-button.mr-2(variant="secondary", @click="$bvModal.hide('admin-auth-modal')") 取消
+            b-button(variant="primary", type="submit") 驗證進入 
 
   //- 右下角狀態列
   status(:status-text="connectText")
@@ -272,6 +318,10 @@ export default {
     inputImages: [],
     uploadFiles: [],
     currentFontSize: 'normal', // 記錄當前字體大小設定
+    adminPasswordInput: '',
+    logoClickCount: 0,
+    autoConnectTimer: null,
+    autoConnectScheduled: false,
 
     // --- 狀態訊息佇列 (解決閃爍問題) ---
     connectText: "",
@@ -424,6 +474,15 @@ export default {
     showChatUnread() {
       return this.chatUnread > 0 || this.chatUnread === "99+";
     },
+    avatarText() {
+      if (!this.empty(this.adName)) {
+        return this.adName.slice(-2);
+      }
+      if (!this.empty(this.adAccount)) {
+        return this.adAccount.slice(0, 2).toUpperCase();
+      }
+      return "即";
+    },
     deptName() {
       return this.getDepartmentName(this.department);
     },
@@ -453,7 +512,7 @@ export default {
       return this.empty(this.adPassword) ? false : null;
     },
     validHost() {
-      return this.$utils.isIPv4(this.wsHost);
+      return this.$utils.isIPv4(this.wsHost) || this.wsHost === "localhost";
     },
     validPort() {
       const i = parseInt(trim(this.wsPort));
@@ -531,7 +590,16 @@ export default {
     },
 
     totalUnread(val) {
-      this.ipcRenderer.invoke("toggleUnreadTrayIcon", { unread: val });
+      const unreadCount = Number(val) || 0;
+      this.ipcRenderer.invoke("toggleUnreadTrayIcon", { unread: unreadCount });
+      if (unreadCount > 0) {
+        const isFocused = typeof document !== 'undefined' && document.hasFocus() && !document.hidden;
+        if (!isFocused) {
+          this.ipcRenderer.invoke("flash-frame", { flag: true });
+        }
+      } else {
+        this.ipcRenderer.invoke("flash-frame", { flag: false });
+      }
     },
 
     adAccount(val) {
@@ -563,7 +631,7 @@ export default {
 
     wsHost(val) {
       this.resetReconnectTimer();
-      if (this.$utils.isIPv4(val) || this.$utils.empty(val)) {
+      if (this.$utils.isIPv4(val) || val === "localhost" || this.$utils.empty(val)) {
         this.$localForage.setItem("wsHost", val);
         this.$store.commit("apiHost", val);
         this.$store.commit("wsHost", val);
@@ -701,6 +769,19 @@ export default {
       !this.inputImages.includes(base64) && this.inputImages.push(base64);
     },
 
+    onWindowPaste(event) {
+      const clipboardData = event?.clipboardData || event?.originalEvent?.clipboardData || (typeof window !== 'undefined' ? window.clipboardData : null);
+      if (!clipboardData) return;
+      const items = clipboardData.items || [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.indexOf('image') !== -1) {
+          event.preventDefault();
+          this.pasteImage(event, this.pasted);
+          break;
+        }
+      }
+    },
+
     removeInoutImage(base64data) {
       const index = this.inputImages.indexOf(base64data);
       if (index > -1) this.inputImages.splice(index, 1);
@@ -816,7 +897,7 @@ export default {
               this.$store.commit("apiUserinfo", data.info);
             }
           })
-          .catch((err) => this.alert(err.toString()));
+          .catch((err) => console.warn("載入 API 使用者資料失敗:", err.toString()));
       } else {
         this.timeout(this.loadApiUserData, 400);
       }
@@ -889,7 +970,7 @@ export default {
               this.setCache("userMap", data.data, this.userDataCacheDuration);
             }
           })
-          .catch((err) => this.alert(err.toString()));
+          .catch((err) => console.warn("載入使用者對照表失敗:", err.toString()));
       } else {
         this.timeout(this.loadUserMapData, 400);
       }
@@ -1316,32 +1397,46 @@ export default {
     },
 
     async triggerNotification(incoming) {
-      if (
-        (incoming.message?.id || incoming.id) >
-        (await this.getChannelLastReadId(incoming.channel))
-      ) {
-        this.ipcRenderer.invoke("unread", incoming.channel);
-        this.invokeNotification(incoming);
+      const sender = incoming.sender || incoming.message?.sender;
+      const isSelf = this.$utils.equal(sender, this.userid) || this.$utils.equal(sender, this.adAccount);
+      if (isSelf) return;
+
+      this.ipcRenderer.invoke("unread", incoming.channel);
+      this.invokeNotification(incoming);
+    },
+
+    // 🟢 訊息提醒與工作列閃爍控制
+    async invokeNotification(i) {
+      const sender = i.sender || i.message?.sender;
+      const isSelf = this.$utils.equal(sender, this.userid) || this.$utils.equal(sender, this.adAccount);
+      if (isSelf) return;
+
+      const temp = document.createElement("div");
+      temp.innerHTML = i.message?.title || i.message?.message || i.message || "";
+      const fullText = temp.textContent || temp.innerText || "";
+      this.setCache(`${i.channel}_last_id`, i.message?.id || i.id);
+
+      const senderName = this.userMap[sender] || sender || "同事";
+      this.setConnectText(`💬 來自 ${senderName}: ${fullText}`);
+
+      // 檢查視窗是否處於前景活動中
+      const isFocused = typeof document !== 'undefined' && document.hasFocus() && !document.hidden;
+
+      // 依規格：視窗非前景狀態（最小化、置於背景、或在操作其他視窗時）收到訊息，工作列圖示持續橘色閃爍！
+      if (!isFocused) {
+        this.ipcRenderer.invoke("flash-frame", { flag: true });
       }
     },
 
-    // 🟢 [修改重點] 取消字串 18 字硬截斷，保留原始完整訊息傳遞
-    async invokeNotification(i) {
-      const temp = document.createElement("div");
-      temp.innerHTML = i.message.title || i.message;
-      const fullText = temp.textContent || temp.innerText || "";
-      this.setCache(`${i.channel}_last_id`, i.message.id || i.id);
-      
-      if (i.sender !== this.adAccount && this.notifyChannels.includes(i.channel)) {
-        this.ipcRenderer.invoke("notification", {
-          message: fullText,
-          showMainWindow: true
-        });
-      }
-      
-      if (i.sender !== this.adAccount) {
-        const senderName = this.userMap[i.sender] || i.sender;
-        this.setConnectText(`💬 來自 ${senderName}: ${fullText}`);
+    onWindowFocus() {
+      // 點入視窗取得焦點時，立即熄滅停止工作列閃爍與退避計時
+      this.ipcRenderer.invoke("flash-frame", { flag: false });
+    },
+
+    onWindowBlur() {
+      // 視窗離開焦點時，若尚有未讀訊息，啟動退避閃爍排程
+      if (this.totalUnread > 0) {
+        this.ipcRenderer.invoke("flash-frame", { flag: true });
       }
     },
 
@@ -1383,7 +1478,13 @@ export default {
     },
 
     visibilityChange() {
-      this.$store.commit("windowVisible", !document.hidden);
+      const isVisible = !document.hidden;
+      this.$store.commit("windowVisible", isVisible);
+      if (isVisible && document.hasFocus()) {
+        this.ipcRenderer.invoke("flash-frame", { flag: false });
+      } else if (!isVisible && this.totalUnread > 0) {
+        this.ipcRenderer.invoke("flash-frame", { flag: true });
+      }
     },
 
     watchModal(e, id) {
@@ -1528,24 +1629,116 @@ export default {
     },
 
     queryUserInfo() {
-      this.$localForage.getItem("userinfo").then((u) => {
-        if (u) this.setUserInfo(u);
-        else this.ipcRenderer.invoke("userinfo").then((u) => this.setUserInfo(u));
+      this.ipcRenderer.invoke("userinfo").then((u) => {
+        if (u) {
+          this.setUserInfo(u);
+        } else {
+          this.$localForage.getItem("userinfo").then((cached) => {
+            if (cached) this.setUserInfo(cached);
+          });
+        }
+      }).catch((err) => {
+        console.warn("無法取得本機 userinfo:", err);
+        this.$localForage.getItem("userinfo").then((cached) => {
+          if (cached) this.setUserInfo(cached);
+        });
       });
     },
 
     async setUserInfo(u) {
-      if (this.empty(u?.userid)) u.userid = this.adAccount;
+      if (!u) return;
+      if (!this.empty(u.userid)) {
+        this.adAccount = u.userid;
+      }
+      
+      // 智慧姓名解析：優先 Windows realname -> 員工對照表 -> 現有姓名/帳號
+      if (!this.empty(u.realname) && /[\u4e00-\u9fa5]/.test(u.realname)) {
+        this.adName = u.realname;
+      } else if (this.userMap && this.userMap[this.adAccount]) {
+        this.adName = this.userMap[this.adAccount];
+      } else if (this.empty(this.adName) || this.adName === "請更新") {
+        this.adName = u.realname || this.adAccount;
+      }
+
+      this.$store.commit("userid", this.adAccount);
+      this.$store.commit("username", this.adName);
       this.$store.commit("userinfo", u);
       this.$localForage.setItem("userinfo", u);
+      this.$localForage.setItem("adAccount", this.adAccount);
+      this.$localForage.setItem("adName", this.adName);
+
       if (!this.$utils.isIPv4(this.adHost)) this.adHost = this.getFirstDNSIp();
       this.updateWindowTitle();
       this.register();
       this.ipcRenderer.invoke("injectUserinfo", { ...u, userdept: this.userdept });
+
+      // 非同步向後端 API 查詢部門與補充姓名
+      this.loadApiADUserData();
+
+      // 排程智慧自動登入
+      this.triggerAutoConnect();
+    },
+
+    triggerAutoConnect() {
+      if (this.manualLogin) return;
+      if (this.connected || this.connecting) return;
+      if (!this.validInformation) return;
+      if (this.autoConnectScheduled) return;
+
+      this.autoConnectScheduled = true;
+      this.autoConnectTimer = setTimeout(() => {
+        if (!this.connected && !this.connecting && this.validInformation && !this.manualLogin) {
+          this.log(this.time(), "自動登入中...");
+          this.connect();
+        }
+      }, 1200);
+    },
+
+    handleManualEnter() {
+      if (this.autoConnectTimer) {
+        clearTimeout(this.autoConnectTimer);
+        this.autoConnectTimer = null;
+      }
+      this.connect();
+    },
+
+    triggerAdminLogin() {
+      if (this.authority.isAdmin) {
+        this.manualLogin = true;
+      } else {
+        this.adminPasswordInput = "";
+        this.$bvModal.show("admin-auth-modal");
+      }
+    },
+
+    confirmAdminAuth() {
+      if (this.adminPasswordInput === "033695588") {
+        this.$store.commit("authority", { isAdmin: true });
+        this.$bvModal.hide("admin-auth-modal");
+        this.manualLogin = true;
+        this.notify("已通過管理員身分認證", { variant: "success", title: "管理者登入" });
+      } else {
+        this.alert("通行碼錯誤，無法進入管理員模式！", { variant: "danger" });
+      }
+    },
+
+    onLogoClick() {
+      this.logoClickCount = (this.logoClickCount || 0) + 1;
+      if (this.logoClickCount >= 5) {
+        this.logoClickCount = 0;
+        this.$store.commit("authority", { isAdmin: true });
+        this.manualLogin = true;
+        this.notify("🔓 已觸發管理員模式", { variant: "success", title: "隱藏彩蛋" });
+      }
     },
 
     async restoreSettings() {
-      this.wsHost   = (await this.$localForage.getItem("wsHost")) || "";
+      let savedWsHost = await this.$localForage.getItem("wsHost");
+      if (process.env.isDev && savedWsHost && savedWsHost.startsWith("220.1.")) {
+        savedWsHost = (process.env.API_HOST === "localhost" ? "127.0.0.1" : process.env.API_HOST) || "127.0.0.1";
+        await this.$localForage.setItem("wsHost", savedWsHost);
+      }
+      this.wsHost   = savedWsHost || (process.env.isDev ? "127.0.0.1" : "");
       this.wsPort   = (await this.$localForage.getItem("wsPort")) || 8081;
       const wsHttpPort = (await this.$localForage.getItem("wsHttpPort")) || 8082;
       this.$store.commit("wsHost", this.wsHost);
@@ -1614,6 +1807,9 @@ export default {
     });
 
     window.addEventListener("keydown", this.keydown);
+    window.addEventListener("paste", this.onWindowPaste);
+    window.addEventListener("focus", this.onWindowFocus);
+    window.addEventListener("blur", this.onWindowBlur);
     document.addEventListener("visibilitychange", this.visibilityChange);
     this.$root.$on("bv::modal::shown", this.watchModal);
     this.$root.$on("bv::modal::hidden", this.watchModal);
@@ -1624,6 +1820,9 @@ export default {
     this.closeWebsocket();
     clearTimeout(this.checkUnreadTimer);
     window.removeEventListener("keydown", this.keydown);
+    window.removeEventListener("paste", this.onWindowPaste);
+    window.removeEventListener("focus", this.onWindowFocus);
+    window.removeEventListener("blur", this.onWindowBlur);
     document.removeEventListener("visibilitychange", this.visibilityChange);
     this.$root.$off("bv::modal::shown", this.watchModal);
     this.$root.$off("bv::modal::hidden", this.watchModal);
@@ -1632,6 +1831,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
 /* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
   /* 🟢 將底部留白從 2.85rem 縮減至 1.85rem，消除過大的間隔 */

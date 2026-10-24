@@ -16,10 +16,39 @@ marked.setOptions({
 import highlightWords from "highlight-words";
 
 export default {
+  fileToBase64(file, maxWidth = 1920, maxHeight = 1080, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      if (!file) return reject(new Error("未提供檔案物件"));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxWidth || h > maxHeight) {
+            const ratio = Math.min(maxWidth / w, maxHeight / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const mime = file.type || "image/jpeg";
+          const dataUrl = canvas.toDataURL(mime, quality);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error("圖片載入失敗"));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error("讀取檔案失敗"));
+      reader.readAsDataURL(file);
+    });
+  },
   getUploadAxios() {
     const axios = require("axios");
-    axios.defaults.headers.post["Content-Type"] = "multipart/form-data";
-    return axios;
+    return axios.create();
   },
   /**
    * 檢查物件是否為空

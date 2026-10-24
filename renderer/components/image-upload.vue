@@ -86,30 +86,11 @@ export default {
     pasted (base64) { this.encoded = base64 },
     upload () {
       const type = this.uploadFile?.type
-      if (this.supportTypes.includes(type)) {
-        this.isBusy = true
+      if (this.supportTypes.includes(type) || !type) {
         this.encoded = ''
-        const formData = new FormData()
-        formData.append('file', this.uploadFile)
-        formData.append('width', 1920)
-        formData.append('height', 1080)
-        formData.append('quality', 80)
-        this.$utils.getUploadAxios().post(this.uploadUrl, formData).then(({ data }) => {
-          if (!this.empty(data.encoded) && !this.empty(data.uri)) {
-            this.encoded = `${data.uri}${data.encoded}`
-            this.$store.commit('addImageMemento', this.encoded)
-            if (this.$utils.statusCheck(data.status)) {
-              this.rightaway && this.sendImage(this.encoded, `給${this.name}`, this.to)
-            } else {
-              this.warning(data.message, { title: '上傳圖檔結果' })
-            }
-          } else {
-            this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
-          }
-        }).catch((err) => {
-          this.err(err)
-        }).finally(() => {
-          this.isBusy = false
+        this.uploadImage(this.uploadFile, (base64) => {
+          this.encoded = base64
+          this.rightaway && this.sendImage(this.encoded, `給${this.name}`, this.to)
         })
       } else {
         this.warning('僅支援 JPG/PNG/GIF/BMP 圖檔上傳')

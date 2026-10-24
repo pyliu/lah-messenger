@@ -7,3 +7,5 @@ dist
 tmp.jpg
 *.lock
 package-lock.json
+src-tauri/target
+

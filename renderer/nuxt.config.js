@@ -12,12 +12,14 @@ export default {
   modulesDir: [
     path.resolve(rootDir, 'node_modules')
   ],
+  target: 'static',
   generate: {
-    dir: path.resolve(rendererDir, 'dist')
+    dir: path.resolve(rendererDir, 'dist'),
+    fallback: 'index.html'
   },
   ssr: false,
   head: {
-    title: process.env.APP,
+    title: process.env.APP || '桃園即時通',
     meta: [{
       charset: 'utf-8'
     },
@@ -45,15 +47,34 @@ export default {
      ** You can extend webpack config here
      */
     extend (config, ctx) {
-      config.target = 'electron-renderer';
       // 確保在任何路徑或 Symlink 下 Webpack 都能從根目錄正確解析依賴
       config.resolve.modules = [
         path.resolve(rootDir, 'node_modules'),
         'node_modules'
       ];
       config.resolve.symlinks = true;
+      // 注入 Electron Shim 讓元件透明對接 Tauri IPC (在 Webpack 預設 web 目標下正常打包)
+      config.resolve.alias = config.resolve.alias || {};
+      config.resolve.alias['electron'] = path.resolve(rendererDir, 'plugins/electron-shim.js');
+      config.node = {
+        fs: 'empty',
+        net: 'empty',
+        tls: 'empty',
+        child_process: 'empty'
+      };
     },
-    babel: { compact: true }
+    babel: { compact: true },
+    watchOptions: {
+      ignored: ['**/src-tauri/**', '**/target/**', '**/node_modules/**']
+    }
+  },
+  watchers: {
+    webpack: {
+      ignored: ['**/src-tauri/**', '**/target/**', '**/node_modules/**']
+    },
+    chokidar: {
+      ignored: ['**/src-tauri/**', '**/target/**', '**/node_modules/**']
+    }
   },
   /*
    ** Customize the progress-bar color
@@ -77,6 +98,7 @@ export default {
   },
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
+    { src: '~/plugins/electron-shim.js' },
     { src: '~/plugins/app-inject.js' },
     { src: '~/plugins/global-vue-mixin.js'},
     // { src: '~/plugins/axios.js'},
@@ -103,6 +125,14 @@ export default {
     config: {
       // Custom config options here
     }
+  },
+  env: {
+    API_HOST: process.env.API_HOST || '127.0.0.1',
+    API_PORT: process.env.API_PORT || '80',
+    WS_HOST: process.env.WS_HOST || '',
+    WS_PORT: process.env.WS_PORT || '8081',
+    WS_HTTP_PORT: process.env.WS_HTTP_PORT || '8082',
+    isDev: process.env.NODE_ENV !== 'production'
   },
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
