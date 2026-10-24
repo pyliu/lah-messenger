@@ -136,38 +136,17 @@ export default {
       }
       else if (this.currentChannel.startsWith('announcement') || this.currentChannel === this.userid) {
         this.warning('非聊天室不支援JPEG直接上傳')
-      } else if (this.dropImage?.type === 'image/jpeg') {
-        this.isBusy = true
+      } else if (/^image\/(jpeg|png|gif|webp)/i.test(this.dropImage?.type || '')) {
         this.pickedEncodingData = ''
         const filename = this.dropImage.name
-        const formData = new FormData()
-        formData.append('file', this.dropImage)
-        formData.append('width', 1920)
-        formData.append('height', 1080)
-        formData.append('quality', 80)
-        this.$utils.getUploadAxios().post(this.uploadUrl, formData).then(({ data }) => {
-          if (!this.$utils.empty(data.encoded) && !this.$utils.empty(data.uri)) {
-            this.pickedEncodingData = `${data.uri}${data.encoded}`
-            this.$store.commit('addImageMemento', this.pickedEncodingData)
-            this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
-              this.err('快取上傳圖檔失敗', err);
-            })
-            if (this.$utils.statusCheck(data.status)) {
-              if (directly) {
-                // send the image right away
-                this.sendImage(this.pickedEncodingData, filename, this.currentChannel)
-              }
-            } else {
-              this.warning(data.message, { title: '上傳圖檔結果' })
-            }
-          } else {
-            this.warning('回傳的影像編碼有誤', { title: '上傳圖檔結果' })
+        this.uploadImage(this.dropImage, (encoded) => {
+          this.pickedEncodingData = encoded
+          this.$localForage.setItem(this.imageMementoCacheKey, this.imageMemento).catch((err) => {
+            this.err('快取上傳圖檔失敗', err);
+          })
+          if (directly) {
+            this.sendImage(this.pickedEncodingData, filename, this.currentChannel)
           }
-        }).catch((err) => {
-          this.err(err)
-        }).finally(() => {
-          this.isBusy = false
-          // this.dropImage = undefined
         })
       } else {
         this.warning('僅支援 JPG/PNG/GIF 圖檔上傳')

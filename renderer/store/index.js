@@ -66,8 +66,8 @@ const state = () => ({
     dns: []
   },
   ad: '',
-  apiHost: '220.1.34.75',
-  apiPort: '80',
+  apiHost: (process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST) || '127.0.0.1',
+  apiPort: process.env.API_PORT || '80',
   fePort: '8080',
   password: '',
   username: '',
@@ -145,13 +145,14 @@ const getters = {
   unread: state => state.unread,
   totalUnread: state => {
     try {
-      // Object.values(state.unread).reduce((a, b) => a + b)
-      return state.unread['lds']  // 全所聊天室
-             + state.unread['announcement'] // 公告
-             + state.unread[state.userinfo.userid?.toUpperCase()] // 私訊
-             + state.unread[state.userdept] // 部門聊天室
+      const lds = Number(state.unread['lds']) || 0;
+      const ann = Number(state.unread['announcement']) || 0;
+      const myId = (state.userinfo.userid || '').toUpperCase();
+      const priv = (myId && Number(state.unread[myId])) || 0;
+      const dept = (state.userdept && Number(state.unread[state.userdept])) || 0;
+      return lds + ann + priv + dept;
     } catch {
-      return 0
+      return 0;
     }
   },
   userMap: state => state.userMap,

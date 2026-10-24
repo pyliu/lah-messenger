@@ -11,7 +11,12 @@
     "build:win": "nuxtron build --win --ia32 --x64",
     "build:x86": "nuxtron build --win --ia32",
     "build:x64": "nuxtron build --win --x64",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "dev:nuxt": "nuxt dev renderer -p 8888",
+    "generate:nuxt": "nuxt generate renderer",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@nuxt/components": "^2.1.2",
@@ -44,10 +49,11 @@
     "@babel/preset-typescript": "^7.13.0",
     "electron": "39.8.10",
     "electron-builder": "^22.14.13",
-    "node-sass": "5.0.0",
     "nuxtron": "^0.3.1",
     "pug": "^3.0.2",
     "pug-plain-loader": "^1.1.0",
-    "sass-loader": "10.1.1"
+    "sass-loader": "10.1.1",
+    "@tauri-apps/cli": "^2.0.0",
+    "sass": "~1.32.13"
   }
 }

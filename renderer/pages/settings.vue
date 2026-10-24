@@ -195,7 +195,7 @@ export default {
     },
     validAdInfo() { return !this.empty(this.adPassword) && this.$utils.isIPv4(this.adHost) },
     validAdHost() { return this.$utils.isIPv4(this.adHost) === false ? false : null },
-    validHost() { return this.$utils.isIPv4(this.wsHost) === false ? false : null },
+    validHost() { return (this.$utils.isIPv4(this.wsHost) || this.wsHost === 'localhost') ? null : (this.$utils.empty(this.wsHost) ? null : false) },
     validPort() {
       const i = parseInt(trim(this.wsPort))
       return (i > 1024 && i < 65536) === false ? false : null
@@ -328,7 +328,12 @@ export default {
       this.department = await this.$localForage.getItem('department')
       this.adHost = await this.$localForage.getItem('adHost')
       this.adPassword = await this.$localForage.getItem('adPassword')
-      this.wsHost = await this.$localForage.getItem('wsHost') || this.defaultSvrIp
+      let savedWsHost = await this.$localForage.getItem('wsHost')
+      if (process.env.isDev && savedWsHost && savedWsHost.startsWith('220.1.')) {
+        savedWsHost = (process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST) || '127.0.0.1'
+        await this.$localForage.setItem('wsHost', savedWsHost)
+      }
+      this.wsHost = savedWsHost || this.defaultSvrIp
       this.wsPort = await this.$localForage.getItem('wsPort') || 8081
       this.effectVal = await this.$localForage.getItem('effect') || 'headShake'
       this.historyCount = await this.$localForage.getItem('history') || 10

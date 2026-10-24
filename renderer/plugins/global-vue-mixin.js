@@ -138,6 +138,9 @@ Vue.mixin({
       return ''
     },
     defaultSvrIp () {
+      if (process.env.API_HOST) {
+        return process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST
+      }
       return this.tySvrIp.get(this.site)
     }
   },
@@ -264,39 +267,54 @@ Vue.mixin({
       }
     },
     pasteImage (pasteEvent, callback) {
-      const items = (pasteEvent.clipboardData || pasteEvent.originalEvent.clipboardData).items
+      const clipboardData = pasteEvent?.clipboardData || pasteEvent?.originalEvent?.clipboardData || (typeof window !== 'undefined' ? window.clipboardData : null)
+      if (!clipboardData) return
+      const items = clipboardData.items || []
       for (var i = 0 ; i < items.length ; i++) {
         const item = items[i]
-        if (item.type.indexOf("image") !== -1) {
-          this.log('剪貼版發現影像資料，準備直接轉換成base64影像資料 ... ')
+        if (item.type && item.type.indexOf("image") !== -1) {
+          pasteEvent.preventDefault && pasteEvent.preventDefault()
+          this.log('剪貼簿發現影像資料，準備直接轉換成 base64 影像資料 ...')
           const file = item.getAsFile()
-          this.uploadImage(file, callback)
+          if (file) {
+            this.uploadImage(file, callback)
+          }
         }
       }
     },
-    uploadImage (file, callback) {
+    async uploadImage (file, callback) {
+      if (!file) return
       this.isBusy = true
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('width', 1920)
-      formData.append('height', 1080)
-      formData.append('quality', 80)
-      this.$utils.getUploadAxios().post(this.uploadUrl, formData).then(({ data }) => {
-        if (!this.empty(data.encoded) && !this.empty(data.uri)) {
-          const encoded = `${data.uri}${data.encoded}`
-          this.$store.commit('addImageMemento', encoded)
-          callback && callback(encoded)
-          if (!this.$utils.statusCheck(data.status)) {
-            this.warning(data.message, { title: '⚠️上傳圖檔結果' })
+      try {
+        // 優先使用本機 Canvas 轉換與縮放（零網路延遲、離線可用、避免後端 GD 缺少問題）
+        const base64 = await this.$utils.fileToBase64(file, 1920, 1080, 0.8)
+        this.$store.commit('addImageMemento', base64)
+        callback && callback(base64)
+      } catch (clientErr) {
+        console.warn('本機 Canvas 轉換影像失敗，嘗試遠端 API 處理:', clientErr)
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('width', 1920)
+          formData.append('height', 1080)
+          formData.append('quality', 80)
+          const { data } = await this.$utils.getUploadAxios().post(this.uploadUrl, formData)
+          if (!this.empty(data.encoded) && !this.empty(data.uri)) {
+            const encoded = `${data.uri}${data.encoded}`
+            this.$store.commit('addImageMemento', encoded)
+            callback && callback(encoded)
+            if (!this.$utils.statusCheck(data.status)) {
+              this.warning(data.message, { title: '⚠️上傳圖檔結果' })
+            }
+          } else {
+            this.warning('回傳的影像編碼有誤', { title: '⚠️貼上的影像處理問題' })
           }
-        } else {
-          this.warning('回傳的影像編碼有誤', { title: '⚠️貼上的影像處理問題' })
+        } catch (err) {
+          this.err(err)
         }
-      }).catch((err) => {
-        this.err(err)
-      }).finally(() => {
+      } finally {
         this.isBusy = false
-      })
+      }
     },
     getChannelName(channelId) {
       switch (channelId) {
@@ -682,9 +700,13 @@ Vue.mixin({
       if (!channel || !messageId || !filename) return
       const url = `${this.wsHttpUrl}/api/download/${channel}/${messageId}/${encodeURIComponent(filename)}`
       try {
-        const { shell } = require('electron')
+        const { shell, ipcRenderer } = require('electron')
         if (shell && shell.openExternal) {
           shell.openExternal(url)
+          return
+        }
+        if (ipcRenderer && ipcRenderer.invoke) {
+          ipcRenderer.invoke('open-explorer', { path: url })
           return
         }
       } catch (e) {

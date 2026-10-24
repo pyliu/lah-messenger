@@ -1,0 +1,53 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
+  "productName": "桃園地政信差服務即時通",
+  "version": "1.6.0",
+  "identifier": "tw.gov.tyland.messenger",
+  "build": {
+    "beforeDevCommand": "npm run dev:nuxt",
+    "devUrl": "http://localhost:8888/home",
+    "beforeBuildCommand": "npm run generate:nuxt",
+    "frontendDist": "../renderer/dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "桃園即時通",
+        "width": 490,
+        "height": 740,
+        "minWidth": 490,
+        "maxWidth": 490,
+        "minHeight": 740,
+        "maxHeight": 740,
+        "resizable": false,
+        "maximizable": false,
+        "fullscreen": false,
+        "center": true,
+        "visible": true,
+        "decorations": true,
+        "contentProtected": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "hooks.nsh"
+      }
+    }
+  }
+}
