@@ -61,10 +61,9 @@ npm run tauri:build
 yarn tauri:build
 ```
 
-- 打包輸出目錄位於：`src-tauri/target/release/bundle/nsis/` 與 `src-tauri/target/release/`
-- 同時產出：
-  1. **標準 NSIS 安裝包**：`桃園地政信差服務即時通_1.6.0_x64-setup.exe`
-  2. **可攜獨立執行檔**：`lah-messenger.exe`（直接覆蓋更新或綠色執行）
+- 打包完成後，發布產物會自動提取並清理置放於專案根目錄的 **`dist/`**：
+  1. **標準 NSIS 安裝包**：`dist/桃園地政信差服務即時通_1.6.0_x64-setup.exe`（支援雙擊全自動安裝到底，免手動點擊下一步）
+  2. **可攜獨立執行檔**（Rust 目錄備援）：`src-tauri/target/release/lah-messenger.exe`（直接覆蓋更新或綠色執行）
 
 ---
 
@@ -148,3 +147,9 @@ lah-messenger/
    原生與 Windows AD Domain Controller 進行 Simple Bind 與組織群組比對，不需依賴外部 Node 原生模組。
 3. **作業系統視窗約束**：  
    嚴格鎖定主視窗 490×740 固定尺寸，關閉視窗自動退回系統匣（Tray）維持常駐，支援 Windows 工作列通知閃爍與未讀訊息提示。
+
+---
+
+## 版本修改歷程 (Changelog)
+
+詳細版本歷程與各項更新說明請參閱 [CHANGELOG.md](CHANGELOG.md)。
