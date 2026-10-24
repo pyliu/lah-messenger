@@ -16,7 +16,7 @@
     "generate:nuxt": "nuxt generate renderer && node -e \"const fs=require('fs'); if(!fs.existsSync('renderer/dist/index.html')&&fs.existsSync('renderer/dist/home/index.html')) fs.copyFileSync('renderer/dist/home/index.html', 'renderer/dist/index.html');\"",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build && node scripts/copy-dist.js"
   },
   "dependencies": {
     "@nuxt/components": "^2.1.2",
