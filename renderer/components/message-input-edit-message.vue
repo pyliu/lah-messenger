@@ -38,15 +38,18 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         ref="fileInput"
         type="file"
         multiple
+        :accept="attachmentAcceptAttr"
         style="display: none"
         @change="handleFileChange"
       )
       b-button.mr-1(
         @click="send"
-        :disabled="notValid"
-        :variant="notValid ? 'outline-primary' : 'primary'"
+        :disabled="notValid || isUploading"
+        :variant="notValid || isUploading ? 'outline-primary' : 'primary'"
         title="送出"
-      ): b-icon(icon="cursor" rotate="45")
+      )
+        b-spinner(v-if="isUploading" small)
+        b-icon(v-else icon="cursor" rotate="45")
       b-button(
         @click="help"
         variant="success"
@@ -134,6 +137,7 @@ export default {
     message: '',
     images: [],
     uploadFiles: [],
+    isUploading: false,
     replyHeader: '',
     cascade: null
   }),
@@ -283,13 +287,21 @@ export default {
     },
     handleFileChange (e) {
       const files = Array.from(e.target.files || [])
-      files.forEach(f => this.uploadFiles.push(f))
       e.target.value = ''
+      for (const f of files) {
+        const check = this.validateAttachmentFile(f)
+        if (!check.valid) {
+          this.showAttachmentError(f.name, check.message)
+          return
+        }
+        this.uploadFiles.push(f)
+      }
     },
     removeUploadFile (idx) {
       this.uploadFiles.splice(idx, 1)
     },
-    send () {
+    async send () {
+      if (this.isUploading) return
       const json = {
         type: "command",
         sender: this.userid,
@@ -308,19 +320,32 @@ export default {
       }
       this.websocket?.send(JSON.stringify(json))
       if (this.uploadFiles.length > 0) {
-        const filesToUpload = [...this.uploadFiles]
-        this.uploadFiles = []
+        this.isUploading = true
         const uploadChannel = this.cascade?.to || this.to
         const uploadMsgId = this.cascade?.id || this.id
-        filesToUpload.forEach(async (file) => {
+        const filesToUpload = [...this.uploadFiles]
+        const failedFiles = []
+
+        for (const file of filesToUpload) {
           try {
             await this.uploadAttachment(uploadChannel, uploadMsgId, file)
             this.notify(`訊息 #${uploadMsgId} 附件 ${file.name} 上傳成功`, { type: 'success' })
+            const idx = this.uploadFiles.indexOf(file)
+            if (idx !== -1) {
+              this.uploadFiles.splice(idx, 1)
+            }
           } catch (err) {
             this.err(`上傳 ${file.name} 失敗`, err)
-            this.notify(`訊息 #${uploadMsgId} 附件 ${file.name} 上傳失敗`, { type: 'danger' })
+            failedFiles.push({ file, err })
           }
-        })
+        }
+        this.isUploading = false
+
+        if (failedFiles.length > 0) {
+          const firstErr = failedFiles[0]
+          this.showAttachmentError(firstErr.file.name, firstErr.err.message || '後端伺服器拒絕上傳或連線逾時')
+          return
+        }
       }
       this.$emit('sent', {...this.raw, message: this.message})
     },

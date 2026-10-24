@@ -65,6 +65,7 @@ div(style="position:relative" @paste="pasteImage($event, pasted)")
         ref="fileInput"
         type="file"
         multiple
+        :accept="attachmentAcceptAttr"
         style="display: none"
         @change="handleFileChange"
       )
@@ -334,7 +335,14 @@ export default {
     },
     handleFileChange (e) {
       const files = Array.from(e.target.files || [])
-      files.forEach(f => this.uploadFiles.push(f))
+      for (const f of files) {
+        const check = this.validateAttachmentFile(f)
+        if (!check.valid) {
+          this.showAttachmentError(f.name, check.message)
+          return
+        }
+        this.uploadFiles.push(f)
+      }
       e.target.value = ''
     },
     removeUploadFile (idx) {

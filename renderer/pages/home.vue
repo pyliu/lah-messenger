@@ -136,6 +136,7 @@ div: client-only
         ref="fileInput",
         type="file",
         multiple,
+        :accept="attachmentAcceptAttr",
         style="display: none",
         @change="handleFileChange"
       )
@@ -757,7 +758,14 @@ export default {
 
     handleFileChange(e) {
       const files = Array.from(e.target.files || []);
-      files.forEach((f) => this.uploadFiles.push(f));
+      for (const f of files) {
+        const check = this.validateAttachmentFile(f);
+        if (!check.valid) {
+          this.showAttachmentError(f.name, check.message);
+          return;
+        }
+        this.uploadFiles.push(f);
+      }
       e.target.value = "";
     },
 
@@ -1290,9 +1298,7 @@ export default {
             });
           } catch (err) {
             this.err(`附件 ${file.name} 上傳失敗`, err);
-            this.notify(`訊息 #${messageId} 附件 ${file.name} 上傳失敗`, {
-              type: "danger"
-            });
+            this.showAttachmentError(file.name, err.message || '後端伺服器拒絕上傳或連線異常');
           }
         }
       }
