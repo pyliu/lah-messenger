@@ -12,8 +12,10 @@ export default {
   modulesDir: [
     path.resolve(rootDir, 'node_modules')
   ],
+  target: 'static',
   generate: {
-    dir: path.resolve(rendererDir, 'dist')
+    dir: path.resolve(rendererDir, 'dist'),
+    fallback: 'index.html'
   },
   ssr: false,
   head: {
