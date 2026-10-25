@@ -9,6 +9,7 @@ const isProd = process.env.NODE_ENV === 'production'
 export default {
   data: () => ({
     manualLogin: false,
+    adAvailable: true,
     adHost: '',
     adAccount: '',
     adName: '',
@@ -150,6 +151,10 @@ export default {
     },
 
     invokeADQuery () {
+      if (!this.adAvailable) {
+        this.alert('AD 伺服器離線或尚未設定，無法進行網域查詢驗證！', { variant: 'warning' })
+        return
+      }
       this.asking = true
       this.ipcRenderer
         .invoke('auth', {
@@ -179,6 +184,9 @@ export default {
           .post(this.userQueryStr, { type: 'authentication', ip: this.ip })
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
+              if (data.ad_available !== undefined) {
+                this.adAvailable = Boolean(data.ad_available)
+              }
               this.setCache(
                 'userAuthority',
                 data.authority,
@@ -201,6 +209,10 @@ export default {
 
     loadApiADUserData () {
       if (this.adQuerying) return
+      if (!this.adAvailable) {
+        if (!isProd) console.log('[loadApiADUserData] AD 伺服器離線或未啟用，略過 AD 查詢')
+        return
+      }
 
       if (this.validHost && this.validAdAccount) {
         this.adQuerying = true

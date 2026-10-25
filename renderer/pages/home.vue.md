@@ -145,7 +145,7 @@ flowchart TD
 ### 4.4 身分認證與 API 同步：[home-auth.js](file:///c:/Temp/DEV/LAH-Workspace/lah-messenger/renderer/mixins/home-auth.js) (約 390 行)
 - **職責**：Active Directory 認證查詢、後端 RESTful API 使用者快取同步、課室鎖定規則判斷與智慧自動登入排程。
 - **狀態與計算屬性**：
-  - `adHost`, `adAccount`, `adName`, `adPassword`, `department`, `departmentOpts`, `manualLogin`, `autoConnectTimer`, `adQuerying`。
+  - `adAvailable`, `adHost`, `adAccount`, `adName`, `adPassword`, `department`, `departmentOpts`, `manualLogin`, `autoConnectTimer`, `adQuerying`。
   - `avatarText`, `deptName`, `userQueryStr`, `validAdHost`, `validAdAccount`, `validAdName`, `validAdPassword`, `validDepartment`, `validInformation`, `disabledAdLoginBtn`, `queryADVariant`。
 - **核心方法**：
   - `queryUserInfo()`: 自本機原生獲取登入者環境資訊 (`ipcRenderer.invoke('userinfo')`)。

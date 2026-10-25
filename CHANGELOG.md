@@ -6,6 +6,11 @@
 
 ## [v1.6.0] - 2026-10-24
 
+### 🛡️ AD 主機離線智慧身分平滑降級
+- **動態狀態響應**：自後端 API（`authentication`）讀取 `ad_available` 狀態，當 AD 離線或未啟用時，自動跳過發送遠端 `ad_user_info` 請求，改由本機員工對照表（`userMap`）與 Windows 帳號解析姓名與課室。
+- **免等待一鍵登入**：徹底消除在無 AD 環境下的 LDAP 連線逾時與 API 錯誤記錄，確保即時通一鍵登入維持即時、順暢。
+- **安全防護**：管理模式下點擊 AD 網域驗證時，若 AD 離線則即時防呆提示，避免前端無回應。
+
 ### 🧩 首頁模組化重構與架構精煉
 - **模組化拆分**：將原逾 1,800 行之 `renderer/pages/home.vue` 主頁面精煉拆分為組裝容器（約 540 行）、獨立登入子元件 `renderer/components/home-login.vue` 與 5 大專責 Mixins（`home-ws.js`、`home-auth.js`、`home-desktop.js`、`home-input.js`、`home-status-queue.js`），大幅降低維護者的心智負擔。
 - **介面與行為 100% 相容**：保留既有 Flexbox 佈局約束、輸入框 autofocus、按鍵歷史快顯、浮動即時預覽與工作列橘色閃爍，並經由 `yarn generate:nuxt` 驗證靜態建置與打包完全無誤。
