@@ -1,7 +1,7 @@
 # AGENTS.md — Rust + Tauri v2 & Nuxt 2 (Renderer) 專案規範
 
-> 適用分支：`rust-migration`  
-> 專案角色：桃園即時通桌面客戶端（底層已遷移至 Rust + Tauri v2，前端沿用 Nuxt 2 / Vue 2 / BootstrapVue v2）
+> 適用分支：`main`  
+> 專案角色：桃園即時通桌面客戶端（底層已遷移至 Rust + Tauri v2 並合併回主線，前端沿用 Nuxt 2 / Vue 2 / BootstrapVue v2）
 
 ---
 
@@ -19,6 +19,10 @@
   - 職責：視窗生命週期、單一執行個體、系統匣 (Tray)、AD 網域驗證、檔案開啟與本機資訊獲取。
 - **前端渲染層（Renderer Layer）**：`renderer/`
   - 框架與 UI：**Nuxt.js 2.15.8** (Vue 2.x), **BootstrapVue 2.18.1**, Vuex
+  - 模組化架構：
+    - `pages/home.vue`：主頁面組裝容器，管理全域佈局約束、快捷鍵與生命週期。
+    - `components/`：即時通 Vue 元件群（含獨立登入子元件 `home-login.vue`、`chat-board`、`message-board` 等 19 個元件）。
+    - `mixins/`：專責業務邏輯 Mixins（`home-ws.js`、`home-auth.js`、`home-desktop.js`、`home-input.js`、`home-status-queue.js` 與 `input-history.js`）。
   - 職責：使用者互動、聊天室、歷史記錄、公告卡片與個人設定。
 - **IPC 橋接層（Shim Layer）**：`renderer/plugins/electron-shim.js`
   - 職責：在前端提供與既有 `ipcRenderer.invoke` 及 `ipcRenderer.on` 100% 相容的 API，透明映射至 Tauri v2 的 `invoke` 與 `listen`，確保 Vue 元件免改動。
@@ -30,7 +34,8 @@
 ## 3. 核心設計原則
 
 ### 3.1 最小必要變更 (Minimal Change)
-- 保持前端現有 18+ 個 Vue 元件的既有邏輯與命名。
+- 保持前端現有 Vue 元件的既有邏輯、事件與命名契約。
+- 首頁採用「高層容器 + 獨立子元件 + 專責 Mixin」模式模組化，避免任何單一頁面檔案過度膨脹（維持在 600 行以內）。
 - 嚴禁無必要地重構 Vue 2 / BootstrapVue UI 為 Vue 3 或 Vite。
 - 任何底層原生變更應透過 IPC Commands 解決，不改動元件端呼叫習慣。
 

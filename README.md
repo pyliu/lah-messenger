@@ -3,7 +3,7 @@
 <div class="text-center"><img src="snap.jpg" class="img-thumbnail" alt="桃園即時通畫面快照"></div>
 
 本專案為桃園市各地政事務所內部公務即時通訊桌面客戶端。  
-目前位於 **`rust-migration`** 分支，正在進行底層自 Electron 遷移至 **Rust + Tauri v2** 的工程，在大幅減少記憶體占用、縮減安裝體積與提升啟動速度的同時，維持既有 Nuxt 2 (Vue 2 + BootstrapVue) 介面與功能 100% 相容。
+底層已自 Electron 完整遷移至 **Rust + Tauri v2** 並合併回 **`main`** 主線，在大幅減少記憶體占用、縮減安裝體積與提升啟動速度的同時，維持既有 Nuxt 2 (Vue 2 + BootstrapVue) 介面與功能 100% 相容。
 
 ---
 
@@ -130,7 +130,8 @@ lah-messenger/
 ├── renderer/                   # Nuxt 2 (Vue 2 + BootstrapVue) 前端渲染層
 │   ├── plugins/
 │   │   └── electron-shim.js    # [新增] IPC 橋接層：透明將 ipcRenderer 轉接至 Tauri
-│   ├── components/             # 即時通 Vue 元件群 (chat-board, message, user-card 等)
+│   ├── mixins/                 # [新增] 首頁與共用功能模組 (home-ws, home-auth, home-input 等)
+│   ├── components/             # 即時通 Vue 元件群 (home-login, chat-board, message 等)
 │   ├── pages/                  # 頁面 (home.vue, settings.vue)
 │   └── nuxt.config.js          # Webpack Alias 配置，將 'electron' 指向 electron-shim
 ├── main/                       # (原 Electron 主進程，保留作為對照與平滑相容備用)

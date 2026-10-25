@@ -6,6 +6,16 @@
 
 ## [v1.6.0] - 2026-10-24
 
+### 🧩 首頁模組化重構與架構精煉
+- **模組化拆分**：將原逾 1,800 行之 `renderer/pages/home.vue` 主頁面精煉拆分為組裝容器（約 540 行）、獨立登入子元件 `renderer/components/home-login.vue` 與 5 大專責 Mixins（`home-ws.js`、`home-auth.js`、`home-desktop.js`、`home-input.js`、`home-status-queue.js`），大幅降低維護者的心智負擔。
+- **介面與行為 100% 相容**：保留既有 Flexbox 佈局約束、輸入框 autofocus、按鍵歷史快顯、浮動即時預覽與工作列橘色閃爍，並經由 `yarn generate:nuxt` 驗證靜態建置與打包完全無誤。
+- **技術文件規格更新**：全新改寫 `renderer/pages/home.vue.md` 為完整系統架構地圖規格書（包含 Mermaid 拓撲圖與各模組 API 規格），並同步更新 `AGENTS.md` 與 `README.md`。
+
+### 🛡️ 附件上傳防呆驗證與錯誤回報強化
+- **前置格式與大小檢驗**：定義 43 種公務副檔名白名單與單檔 10MB 大小上限，選檔時立即進行前置防呆，有效防禦 `.gitignore`、`.gitconfig` 等無副檔名或特殊隱藏檔案。
+- **結構化錯誤引導彈窗**：新增 `showAttachmentError` 方法，當選取不支援格式或伺服器拒絕上傳時，彈出清楚列出允許格式清單與大小上限的結構化對話框，並發出 10 秒長效通知。
+- **編輯對話框非同步等待**：改造訊息與公告編輯視窗中之附件上傳流程為循序非同步等待（`await`），上傳期間按鈕呈現 Spinner 載入狀態，上傳失敗時保留視窗與未成功檔案供使用者修正重試。
+
 ### 🚀 重大架構升級 (Rust + Tauri v2)
 - **架構遷移**：底層自 Electron 完整遷移至 **Rust + Tauri v2** 原生架構，大幅降低記憶體占用至約 40MB，安裝包體積縮減至約 4.8MB，提升冷啟動速度。
 - **透明 IPC 橋接**：實作 `renderer/plugins/electron-shim.js`，將前端 Vue 元件中既有的 `ipcRenderer` 呼叫透明轉發至 Tauri 原生命令（Commands），既有業務畫面與邏輯零改動無縫相容。
