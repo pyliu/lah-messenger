@@ -6,6 +6,14 @@
 
 ## [未發布]
 
+### 🚀 開機自動啟動全域支援與舊版殘留清理
+- **跨安裝格式自啟動支援**：
+  - `src-tauri/Cargo.toml`: 引入 `tauri-plugin-autostart = "2"` 外掛。
+  - `src-tauri/src/main.rs`: 註冊 autostart 外掛並於啟動時主動偵測及啟用開機自動啟動（寫入 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`），使 NSIS 與 MSI 安裝包均具備一致的開機自啟動能力。
+  - `src-tauri/capabilities/default.json`: 加入 `autostart:default` 權限宣告。
+- **安裝與解除安裝腳本清理**：
+  - `src-tauri/hooks.nsh`: 安裝前主動清理舊版 Electron 遺留的登錄檔啟動項目（`electron.app.*`）；安裝後移除舊版 `$SMSTARTUP` 啟動資料夾捷徑，改由登錄檔統一管理以防重複啟動。
+
 ### 📦 打包發布配置升級 (支援 MSI 並拔除 WebView2 內嵌安裝)
 - **多格式安裝包支援**：
   - `src-tauri/tauri.conf.json`: `bundle.targets` 加入 `"msi"`，配置 WiX 繁體中文語系（`zh-TW`），並將 `webviewInstallMode` 設為 `skip`，安裝包不再內嵌約 130MB 的 WebView2 離線安裝程式，以維持安裝檔精簡。

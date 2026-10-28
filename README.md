@@ -146,8 +146,8 @@ lah-messenger/
    透過 `renderer/plugins/electron-shim.js`，現有 18+ 個 Vue 元件中使用之 `const { ipcRenderer } = require('electron')` 與 `ipcRenderer.invoke(...)` 完全不需改寫，由 Webpack Alias 攔截並轉發至 Tauri 的 `invoke` 與 `listen`。
 2. **純 Rust 非同步 LDAP (`ldap3`)**：  
    原生與 Windows AD Domain Controller 進行 Simple Bind 與組織群組比對，不需依賴外部 Node 原生模組。
-3. **作業系統視窗約束**：  
-   嚴格鎖定主視窗 490×740 固定尺寸，關閉視窗自動退回系統匣（Tray）維持常駐，支援 Windows 工作列通知閃爍與未讀訊息提示。
+3. **作業系統視窗約束與開機自動啟動**：  
+   嚴格鎖定主視窗 490×740 固定尺寸，關閉視窗自動退回系統匣（Tray）維持常駐，支援 Windows 工作列通知閃爍與未讀訊息提示。底層透過 `tauri-plugin-autostart` 於程式啟動時自動註冊開機啟動（寫入 Windows Run 註冊表），NSIS 與 MSI 兩種安裝格式皆具備一致的開機自啟動行為，並主動防範多重啟動衝突。
 
 ---
 

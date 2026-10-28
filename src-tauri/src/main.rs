@@ -5,6 +5,7 @@ mod commands;
 mod tray;
 
 use tauri::{Emitter, Manager, WindowEvent};
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 fn main() {
     tauri::Builder::default()
@@ -19,7 +20,13 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .setup(|app| {
+            // 確保開機自動啟動（NSIS 與 MSI 皆適用），失敗不影響主程式啟動
+            let autolaunch = app.autolaunch();
+            if !autolaunch.is_enabled().unwrap_or(false) {
+                let _ = autolaunch.enable();
+            }
             // 初始化系統匣 (Tray)
             let _ = tray::create_tray(app.handle())?;
 
