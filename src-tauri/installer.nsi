@@ -634,6 +634,10 @@ Section WebView2
         Goto install_webview2
       !endif
 
+      !if "${INSTALLWEBVIEW2MODE}" == "skip"
+        MessageBox MB_ICONINFORMATION|MB_OK "偵測到本機尚未安裝 Microsoft Edge WebView2 Runtime。$\r$\n$\r$\n本安裝檔不內含 WebView2，程式需要它才能正常開啟。$\r$\n請先執行管理單位另行提供的 WebView2 安裝檔（Evergreen Runtime，依系統選擇 x64 或 x86）完成安裝後，再啟動即時通。" /SD IDOK
+      !endif
+
       Goto webview2_done
 
       install_webview2:

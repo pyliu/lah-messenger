@@ -21,7 +21,7 @@
 - **Node.js**：推薦 Node.js 18.x ~ 22.x（本機支援）
 - **Rust 工具鏈**：需安裝 Rustup (`stable-x86_64-pc-windows-msvc`)，可至 [rustup.rs](https://rustup.rs/) 下載安裝
 - **C++ 建置工具**：需具備 Visual Studio C++ Build Tools (MSVC)
-- **WebView2 Runtime**：Windows 10 / 11 系統預設皆已內建
+- **WebView2 Runtime**：安裝包不內嵌 WebView2（`webviewInstallMode: skip`）。Windows 10 / 11 通常已內建；若目標機器缺少，請先安裝管理單位另行提供的 Evergreen Runtime，安裝精靈偵測不到時會顯示提示
 
 ---
 

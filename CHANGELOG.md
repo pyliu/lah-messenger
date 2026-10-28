@@ -6,9 +6,10 @@
 
 ## [未發布]
 
-### 📦 打包發布配置升級 (支援 MSI 與離線 WebView2)
+### 📦 打包發布配置升級 (支援 MSI 並拔除 WebView2 內嵌安裝)
 - **多格式安裝包支援**：
-  - `src-tauri/tauri.conf.json`: `bundle.targets` 加入 `"msi"`，配置 WiX 繁體中文語系（`zh-TW`），並啟用離線 WebView2 靜默安裝模式（`offlineInstaller`）。
+  - `src-tauri/tauri.conf.json`: `bundle.targets` 加入 `"msi"`，配置 WiX 繁體中文語系（`zh-TW`），並將 `webviewInstallMode` 設為 `skip`，安裝包不再內嵌約 130MB 的 WebView2 離線安裝程式，以維持安裝檔精簡。
+  - `src-tauri/installer.nsi`: 於 `skip` 模式且本機未偵測到 WebView2 時，顯示不中斷安裝的安裝說明提示（靜默安裝自動略過、更新模式不顯示）。WebView2 安裝檔由管理單位另行提供。
 - **發布產物複製腳本擴充**：
   - `scripts/copy-dist.js`: 支援同時掃描並複製 NSIS (`.exe`) 與 WiX (`.msi`) 安裝檔至專案根目錄 `dist/`，並自動清理舊版本同類型安裝包。
 
