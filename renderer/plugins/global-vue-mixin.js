@@ -124,6 +124,12 @@ Vue.mixin({
     feQueryUrl () { return `http://${this.apiHost}:${this.fePort}` },
     uploadUrl () { return `${this.apiQueryUrl}${this.$consts.API.FILE.BASE64}`},
     site () {
+      // 1. 優先依同仁公務帳號前綴判定轄區 (如 HA10013859 -> HA)
+      const accountPrefix = (this.adAccount || this.userid || '').slice(0, 2).toUpperCase()
+      if (/^H[0-9A-H]$/.test(accountPrefix)) {
+        return accountPrefix
+      }
+      // 2. 次依連線 IP 網段判定轄區
       if (/^192\.168\.[1-9]\./gm.test(this.ip) || /^220\.1\.33\./gm.test(this.ip)) {
         return 'H0'
       }
@@ -151,13 +157,37 @@ Vue.mixin({
       if (/^192\.168\.8[1-9]\./gm.test(this.ip) || /^220\.1\.41\./gm.test(this.ip)) {
         return 'HH'
       }
-      return ''
+      return 'HA'
     },
     defaultSvrIp () {
       if (process.env.API_HOST) {
         return process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST
       }
-      return this.tySvrIp.get(this.site)
+      const raw = this.tySvrIp.get(this.site)
+      if (Array.isArray(raw)) {
+        return raw[0] || '220.1.34.18'
+      }
+      return raw || '220.1.34.18'
+    },
+    candidateSvrIps () {
+      if (process.env.API_HOST) {
+        const devHost = process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST
+        return [devHost]
+      }
+      const raw = this.tySvrIp.get(this.site)
+      let list = []
+      if (Array.isArray(raw)) {
+        list = [...raw]
+      } else if (raw) {
+        list = [raw]
+      } else {
+        list = ['220.1.34.18', '220.1.34.75']
+      }
+      // 若目前自訂的 wsHost 不在候選名單中，優先排在第一順位嘗試
+      if (this.wsHost && !list.includes(this.wsHost)) {
+        return [this.wsHost, ...list]
+      }
+      return list
     }
   },
   methods: {

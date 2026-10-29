@@ -13,7 +13,10 @@ export default {
     syncDepartmentTimer: null,
     checkUnreadTimer: null,
     checkUreadDuration: 3 * 60 * 60 * 1000,
-    asking: false
+    asking: false,
+    autoProbeTimer: null,
+    probeAttemptedIps: [],
+    allCandidatesFailed: false
   }),
 
   computed: {
@@ -28,6 +31,10 @@ export default {
     validPort () {
       const i = parseInt(trim(this.wsPort))
       return i > 1024 && i < 65535
+    },
+
+    candidateIpsStr () {
+      return (this.candidateSvrIps || []).join(', ')
     },
 
     showUnreadChannels () {
@@ -93,6 +100,64 @@ export default {
   },
 
   methods: {
+    clearProbeTimer () {
+      if (this.autoProbeTimer) {
+        clearTimeout(this.autoProbeTimer)
+        this.autoProbeTimer = null
+      }
+    },
+
+    handleConnectionFailure () {
+      this.clearProbeTimer()
+      if (this.connected) return
+
+      // 將當前失敗的 IP 記錄至已嘗試名單
+      if (this.wsHost && !this.probeAttemptedIps.includes(this.wsHost)) {
+        this.probeAttemptedIps.push(this.wsHost)
+      }
+
+      // 取得該所所有候選 IP
+      const candidates = this.candidateSvrIps || []
+
+      // 找出尚未嘗試過的下一個候選 IP
+      const nextIp = candidates.find(ip => !this.probeAttemptedIps.includes(ip))
+
+      if (nextIp) {
+        this.log(this.time(), `[伺服器容錯切換] 原伺服器 (${this.wsHost}) 無法連線，自動嘗試下一個備援主機: ${nextIp}`)
+        this.wsHost = nextIp
+        this.$store.commit('wsHost', nextIp)
+        this.$store.commit('apiHost', nextIp)
+        // 延遲 300ms 進行下一個目標的連線探測
+        this.timeout(() => {
+          this.connect()
+        }, 300)
+      } else {
+        // 所有候選 IP 均已嘗試失敗
+        this.allCandidatesFailed = true
+        this.connecting = false
+        this.setConnectText(`伺服器連線失敗 (已嘗試 ${this.probeAttemptedIps.join(', ')})`)
+        this.log(this.time(), '[伺服器容錯] 本所所有候選伺服器皆無法連線:', this.probeAttemptedIps)
+      }
+    },
+
+    handleManualSetServer (host, port) {
+      this.allCandidatesFailed = false
+      this.probeAttemptedIps = []
+      if (host) {
+        this.wsHost = host
+        this.$store.commit('wsHost', host)
+        this.$store.commit('apiHost', host)
+        this.$localForage.setItem('wsHost', host)
+      }
+      if (port) {
+        this.wsPort = port
+        this.$store.commit('wsPort', port)
+        this.$localForage.setItem('wsPort', port)
+      }
+      this.log(this.time(), `[手動設定伺服器] 已更新伺服器為 ${this.wsHost}:${this.wsPort}，重新嘗試連線...`)
+      this.connect()
+    },
+
     connect () {
       if (this.connected && this.websocket?.readyState === 1) {
         this.resetReconnectTimer()
@@ -107,12 +172,33 @@ export default {
             this.websocket.close()
           }
 
-          this.setConnectText('連線中')
+          this.clearProbeTimer()
+          this.setConnectText(`連線中 (${this.wsHost})`)
           const ws = new WebSocket(this.wsConnStr)
 
+          // 啟動 3.5 秒快速探活與連線逾時監控
+          this.autoProbeTimer = setTimeout(() => {
+            if (!this.connected && this.connecting) {
+              this.log(this.time(), `伺服器 ${this.wsHost} 連線逾時 (3.5s)，啟動備援容錯切換...`)
+              try {
+                ws.onopen = null
+                ws.onerror = null
+                ws.onclose = null
+                ws.close()
+              } catch (e) {}
+              this.handleConnectionFailure()
+            }
+          }, 3500)
+
           ws.onopen = () => {
+            this.clearProbeTimer()
             this.$store.commit('websocket', ws)
-            this.log(this.time(), '已連線')
+            this.log(this.time(), `已成功連線至伺服器 ${this.wsHost}`)
+            this.allCandidatesFailed = false
+            this.probeAttemptedIps = []
+            this.$localForage.setItem('wsHost', this.wsHost)
+            this.$store.commit('wsHost', this.wsHost)
+            this.$store.commit('apiHost', this.wsHost)
             this.register()
             this.list.length = 0
             this.delayLatestMessage()
@@ -121,21 +207,26 @@ export default {
           }
 
           ws.onclose = () => {
+            this.clearProbeTimer()
             this.$store.commit('websocket', undefined)
             this.setConnectText('連線已斷開')
             this.connecting = false
           }
 
           ws.onerror = (e) => {
+            this.clearProbeTimer()
             this.$store.commit('websocket', undefined)
-            this.setConnectText('WS伺服器連線出錯')
+            this.setConnectText(`WS伺服器 (${this.wsHost}) 連線失敗`)
             this.connecting = false
+            this.handleConnectionFailure()
           }
 
           ws.onmessage = async (e) => this.handleWebSocketMessage(e)
         } catch (e) {
+          this.clearProbeTimer()
           this.setConnectText('連線初始化失敗')
           this.closeWebsocket()
+          this.handleConnectionFailure()
         }
       }
     },
@@ -455,7 +546,11 @@ export default {
       if (this.timer === null && this.$route.name === 'home') {
         this.$store.commit(
           'timer',
-          setInterval(() => this.connect(), this.reconnectMs)
+          setInterval(() => {
+            if (!this.allCandidatesFailed) {
+              this.connect()
+            }
+          }, this.reconnectMs)
         )
       }
     },

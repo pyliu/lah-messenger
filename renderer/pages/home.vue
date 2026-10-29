@@ -192,8 +192,11 @@ div: client-only
     :connecting="connecting",
     :valid-information="validInformation",
     :valid-ad-account="validAdAccount",
+    :all-candidates-failed="allCandidatesFailed",
+    :candidate-ips="candidateSvrIps",
     :is-admin="authority.isAdmin",
     @admin-connect="handleAdminConnect",
+    @save-server="onSaveManualServer",
     @enter="handleManualEnter"
   )
 
@@ -361,6 +364,9 @@ export default {
   // Methods: 方法定義
   // ==========================================================================
   methods: {
+    onSaveManualServer (data) {
+      this.handleManualSetServer(data.host, data.port)
+    },
     keydown(e) {
       if (e.keyCode >= 37 && e.keyCode <= 40)
         this.setConnectText(["←", "↑", "→", "↓"][e.keyCode - 37]);

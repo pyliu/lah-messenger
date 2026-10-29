@@ -471,7 +471,7 @@ export default {
         savedWsHost = (process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST) || '127.0.0.1'
         await this.$localForage.setItem('wsHost', savedWsHost)
       }
-      this.wsHost = savedWsHost || (process.env.isDev ? '127.0.0.1' : '')
+      this.wsHost = savedWsHost || this.defaultSvrIp || (process.env.isDev ? '127.0.0.1' : '220.1.34.18')
       this.wsPort = (await this.$localForage.getItem('wsPort')) || 8081
       const wsHttpPort = (await this.$localForage.getItem('wsHttpPort')) || 8082
       this.$store.commit('wsHost', this.wsHost)

@@ -67,6 +67,20 @@
             b-icon.mr-1(icon="hdd-network", :variant="validHost ? 'success' : 'warning'")
             span 伺服器 {{ wsHost || '127.0.0.1' }}:{{ wsPort || '8081' }}
 
+        //- 候選伺服器全數斷線警告與手動設定入口
+        .alert.alert-danger.py-2.px-3.my-2.small.text-left(v-if="allCandidatesFailed")
+          .d-flex.align-items-center.justify-content-between
+            div
+              b-icon.mr-1(icon="exclamation-octagon-fill", variant="danger")
+              span.font-weight-bold 無法連線伺服器
+              span.text-muted.ml-1(v-if="candidateIpsStr") (已嘗試 {{ candidateIpsStr }})
+            b-button(
+              size="sm",
+              variant="danger",
+              @click="openManualServerModal",
+              class="ml-2 py-0 px-2 font-weight-bold"
+            ) 手動設定
+
         //- 主要操作按鈕
         .mt-4
           b-button(
@@ -134,12 +148,22 @@ export default {
     connecting: { type: Boolean, default: false },
     validInformation: { type: Boolean, default: false },
     validAdAccount: { type: Boolean, default: false },
+    allCandidatesFailed: { type: Boolean, default: false },
+    candidateIps: { type: Array, default: () => [] },
     isAdmin: { type: Boolean, default: false }
   },
   data: () => ({
     adminPasswordInput: '',
-    logoClickCount: 0
+    logoClickCount: 0,
+    showManualServerModal: false,
+    customWsHost: '',
+    customWsPort: 8081
   }),
+  computed: {
+    candidateIpsStr () {
+      return (this.candidateIps || []).join(', ')
+    }
+  },
   methods: {
     onAdminConnect (info) {
       this.$emit('admin-connect', info)
@@ -164,6 +188,18 @@ export default {
       } else {
         this.alert('通行碼錯誤，無法進入管理員模式！', { variant: 'danger' })
       }
+    },
+    openManualServerModal () {
+      this.customWsHost = this.wsHost || '220.1.34.18'
+      this.customWsPort = this.wsPort || 8081
+      this.showManualServerModal = true
+    },
+    handleSaveManualServer () {
+      if (this.empty(this.customWsHost)) {
+        this.alert('請輸入有效的伺服器 IP 或網域名稱', { variant: 'warning' })
+        return
+      }
+      this.$emit('save-server', { host: this.customWsHost, port: this.customWsPort })
     },
     handleLogoClick () {
       this.logoClickCount = (this.logoClickCount || 0) + 1
