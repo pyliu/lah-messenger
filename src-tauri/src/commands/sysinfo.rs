@@ -16,14 +16,33 @@ pub struct UserInfo {
 #[tauri::command]
 pub fn get_userinfo() -> Result<UserInfo, String> {
     let hostname = whoami::fallible::hostname().unwrap_or_else(|_| "localhost".to_string());
-    let username = whoami::username();
-    let realname = whoami::realname();
-
-    // 檢查是否符合地政局 H[A-H] 帳號慣例
-    let target_userid = if username.to_uppercase().starts_with('H') && username.len() >= 6 {
-        username.clone()
+    let raw_username = whoami::username();
+    let clean_username = if let Some(pos) = raw_username.rfind('\\') {
+        &raw_username[pos + 1..]
     } else {
-        username.clone()
+        &raw_username[..]
+    };
+
+    // 檢查是否符合地政局八所 H[A-H] 開頭搭配數字帳號慣例 (例如 HA10013859, HA060033, HA0541, HB0541 等)
+    let is_formal_account = {
+        let upper = clean_username.to_ascii_uppercase();
+        let bytes = upper.as_bytes();
+        bytes.len() >= 3
+            && bytes[0] == b'H'
+            && (b'A'..=b'H').contains(&bytes[1])
+            && bytes[2..].iter().all(|b| b.is_ascii_digit())
+    };
+
+    let target_userid = if is_formal_account {
+        clean_username.to_ascii_uppercase()
+    } else {
+        String::new()
+    };
+
+    let realname = if is_formal_account {
+        whoami::realname()
+    } else {
+        String::new()
     };
 
     let os_str = format!("{} {}", whoami::platform(), whoami::distro());

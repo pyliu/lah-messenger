@@ -425,6 +425,10 @@ export default {
           })
         )
       } else {
+        if (!this.validAdAccount) {
+          console.warn('[register] 非八所正式公務帳號 (需為 H[A-H] 開頭搭配數字)，取消 WebSocket 註冊')
+          return
+        }
         this.timeout(this.register, 400)
       }
     },

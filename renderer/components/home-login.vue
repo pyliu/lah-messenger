@@ -40,8 +40,16 @@
           h3.font-weight-bold.text-dark.mb-1 {{ adName || '使用者' }}
           .text-muted.small.mb-2
             b-icon.mr-1(icon="person-badge")
-            span {{ adAccount || '載入中...' }}
-          
+            span {{ adAccount || '未登入公務帳號' }}
+
+          //- 帳號非正式警示或提示
+          .alert.alert-warning.py-2.px-3.my-2.small.text-left(v-if="!validAdAccount && !empty(adAccount)")
+            b-icon.mr-1(icon="exclamation-triangle-fill", variant="warning")
+            span 非正式公務帳號 (需為八所 H[A-H] 格式)
+          .alert.alert-secondary.py-2.px-3.my-2.small.text-left(v-else-if="empty(adAccount)")
+            b-icon.mr-1(icon="info-circle-fill", variant="secondary")
+            span 未偵測到 Windows 公務帳號，請以公務身分登入
+
           //- 部門鎖定標籤 (防呆、不可亂選)
           .my-2
             b-badge.px-3.py-2.font-weight-normal(
@@ -125,6 +133,7 @@ export default {
     wsPort: { type: [String, Number], default: 8081 },
     connecting: { type: Boolean, default: false },
     validInformation: { type: Boolean, default: false },
+    validAdAccount: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false }
   },
   data: () => ({

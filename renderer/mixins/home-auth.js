@@ -5,10 +5,12 @@
 import trim from 'lodash/trim'
 
 const isProd = process.env.NODE_ENV === 'production'
+const FORMAL_ACCOUNT_REGEX = /^H[A-H]\d+$/i
 
 export default {
   data: () => ({
     manualLogin: false,
+    isAdminLogin: false,
     adAvailable: true,
     adHost: '',
     adAccount: '',
@@ -54,7 +56,10 @@ export default {
     },
 
     validAdAccount () {
-      return !this.empty(this.adAccount)
+      if (this.manualLogin || this.isAdminLogin) {
+        return !this.empty(this.adAccount)
+      }
+      return !this.empty(this.adAccount) && FORMAL_ACCOUNT_REGEX.test(this.adAccount)
     },
 
     validAdName () {
@@ -111,6 +116,9 @@ export default {
     },
 
     manualLogin (flag) {
+      if (!flag && !this.connected) {
+        this.isAdminLogin = false
+      }
       flag ? this.clearReconnectTimer() : this.resetReconnectTimer()
     },
 
@@ -351,6 +359,7 @@ export default {
       this.adAccount = info.id
       this.adName = info.name
       this.department = info.dept
+      this.isAdminLogin = true
       this.manualLogin = false
       this.connect()
     },
@@ -378,32 +387,41 @@ export default {
         this.adAccount = u.userid
       }
 
-      // 智慧姓名解析：優先 Windows realname -> 員工對照表 -> 現有姓名/帳號
-      if (!this.empty(u.realname) && /[\u4e00-\u9fa5]/.test(u.realname)) {
+      // 智慧姓名解析：過濾 Windows 內建管理員描述 -> 員工對照表 -> 現有姓名/帳號
+      const isSystemDesc = u.realname && (u.realname.includes('管理電腦') || u.realname.toLowerCase().includes('admin'))
+      if (!this.empty(u.realname) && /[\u4e00-\u9fa5]/.test(u.realname) && !isSystemDesc) {
         this.adName = u.realname
       } else if (this.userMap && this.userMap[this.adAccount]) {
         this.adName = this.userMap[this.adAccount]
       } else if (this.empty(this.adName) || this.adName === '請更新') {
-        this.adName = u.realname || this.adAccount
+        this.adName = !isSystemDesc ? (u.realname || this.adAccount) : '請更新'
       }
 
       this.$store.commit('userid', this.adAccount)
       this.$store.commit('username', this.adName)
       this.$store.commit('userinfo', u)
       this.$localForage.setItem('userinfo', u)
-      this.$localForage.setItem('adAccount', this.adAccount)
-      this.$localForage.setItem('adName', this.adName)
+
+      if (this.validAdAccount) {
+        this.$localForage.setItem('adAccount', this.adAccount)
+        this.$localForage.setItem('adName', this.adName)
+      }
 
       if (!this.$utils.isIPv4(this.adHost)) this.adHost = this.getFirstDNSIp()
       this.updateWindowTitle()
-      this.register()
-      this.ipcRenderer.invoke('injectUserinfo', { ...u, userdept: this.userdept })
 
-      // 非同步向後端 API 查詢部門與補充姓名
-      this.loadApiADUserData()
+      if (this.validAdAccount) {
+        this.register()
+        this.ipcRenderer.invoke('injectUserinfo', { ...u, userdept: this.userdept })
 
-      // 排程智慧自動登入
-      this.triggerAutoConnect()
+        // 非同步向後端 API 查詢部門與補充姓名
+        this.loadApiADUserData()
+
+        // 排程智慧自動登入
+        this.triggerAutoConnect()
+      } else {
+        console.warn('[setUserInfo] 檢測到非八所正式公務帳號 (需為 H[A-H] 開頭搭配數字)，阻擋自動註冊與連線:', this.adAccount)
+      }
     },
 
     triggerAutoConnect () {
@@ -471,7 +489,8 @@ export default {
       }
 
       const savedName = await this.$localForage.getItem('adName')
-      if (!this.$utils.empty(savedName)) {
+      const isSystemName = savedName && (savedName.includes('管理電腦') || savedName.toLowerCase().includes('admin'))
+      if (!this.$utils.empty(savedName) && !isSystemName) {
         this.adName = savedName
       } else if (this.$utils.empty(this.adName)) {
         this.adName = '請更新'
@@ -479,7 +498,12 @@ export default {
 
       const savedAccount = await this.$localForage.getItem('adAccount')
       if (!this.$utils.empty(savedAccount)) {
-        this.adAccount = savedAccount
+        if (FORMAL_ACCOUNT_REGEX.test(savedAccount)) {
+          this.adAccount = savedAccount
+        } else {
+          console.warn('[restoreSettings] 忽略並清除快取中的非正式帳號:', savedAccount)
+          await this.$localForage.removeItem('adAccount')
+        }
       }
 
       // 同步讀取本機儲存的字體大小並套用

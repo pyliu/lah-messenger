@@ -191,6 +191,7 @@ div: client-only
     :ws-port="wsPort",
     :connecting="connecting",
     :valid-information="validInformation",
+    :valid-ad-account="validAdAccount",
     :is-admin="authority.isAdmin",
     @admin-connect="handleAdminConnect",
     @enter="handleManualEnter"

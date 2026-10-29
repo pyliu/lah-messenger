@@ -4,7 +4,29 @@
 
 ---
 
-## [未發布]
+## [v1.6.1] - 2026-10-29
+
+### 🛡️ 地政八所正式公務帳號嚴格限制與非正式登入阻擋 (H[A-H] 開頭搭配數字)
+- **Rust 系統層帳號探測限制**：
+  - `src-tauri/src/commands/sysinfo.rs`: 重構 `get_userinfo`，自動過濾 Windows 網域前綴，嚴格校驗帳號是否符合桃園地政八所公務帳號慣例（以 `H[A-H]` 開頭且後續全為數字，例如 `HA10013859`, `HA060033`, `HA0541`, `HB0541` 等）。若為非正式帳號（如安裝維護常見之內建 `ADMINISTRATOR`、管理者 `ha-admin`、系統或訪客帳號），原生層清空 `target_userid` 與 `realname`，防止底層帶入無效身分。
+- **前端驗證與自動連線全面防護**：
+  - `renderer/mixins/home-auth.js`:
+    - `validAdAccount`: 導入正規表達式 `/^H[A-H]\d+$/i` 檢驗，非八所正式帳號判定為無效；若經管理員手動模式登入（`manualLogin` / `isAdminLogin`）則予以放行以利除錯。
+    - `setUserInfo`: 遇到非正式帳號時，阻斷寫入 localForage 快取、阻斷 WebSocket 自動註冊 (`register()`)、阻斷後端 AD 課室查詢，並中止排程自動連線 (`triggerAutoConnect()`)；同時過濾 Windows 原生內建管理員描述（如「管理電腦/網域的內建帳戶」）。
+    - `restoreSettings`: 啟動時主動校驗並清除本機快取中殘留的非正式帳號與系統描述，防止舊安裝快取污染。
+- **WebSocket 註冊迴圈防護**：
+  - `renderer/mixins/home-ws.js`: 於 `register()` 加入身分防呆，非正式帳號直接中止註冊，避免每 400ms 重試造成無效迴圈。
+- **登入畫面即時視覺警示與防呆**：
+  - `renderer/components/home-login.vue`: 登入卡片新增非正式帳號警告提示（黃色警示）與未偵測到公務帳號提示（灰色資訊）；非正式帳號時「進入即時通」按鈕自動鎖定禁用。
+  - `renderer/pages/home.vue`: 串接傳遞 `:valid-ad-account="validAdAccount"` 狀態至登入元件。
+
+### 🧹 NSIS 安裝流程整合舊版 Electron 混合優雅卸載與全面清理
+- **混合優雅卸載舊版**：
+  - `src-tauri/hooks.nsh`: 於 `NSIS_HOOK_PREINSTALL` 新增舊版 Electron (`lah-messenger`) 靜默卸載機制。優先讀取 HKCU 登錄檔之 `UninstallString` 執行靜默卸載 (`/S`)；若登錄機碼遺失但實體卸載執行檔存在，自動呼叫 `%LOCALAPPDATA%\Programs\lah-messenger\Uninstall lah-messenger.exe` 卸載。
+- **主程式殘留與無效捷徑深度清理**：
+  - `src-tauri/hooks.nsh`: 自動清除 `%LOCALAPPDATA%\Programs\lah-messenger` 舊程式目錄（嚴格保留 `%APPDATA%\lah-messenger` 與 LocalForage 之通訊歷史與個人設定）；清理使用者桌面殘留之 `$DESKTOP\lah-messenger.lnk`、開始功能表舊捷徑與資料夾、以及各項開機啟動登錄項。
+- **卸載流程對齊清理**：
+  - `src-tauri/hooks.nsh`: 於 `NSIS_HOOK_POSTUNINSTALL` 補充移除 `$DESKTOP\lah-messenger.lnk` 與舊版 Run 登錄機碼，確保系統卸載乾淨不留痕跡。
 
 ### 🐛 全新安裝或腳本重裝同仁姓名智慧解析修復
 - **修復 API 響應結構欄位讀取**：

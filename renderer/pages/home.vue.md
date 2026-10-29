@@ -1,7 +1,7 @@
 # 首頁架構與模組設計規格書 (`home.vue`)
 
 > **檔案位置**：`lah-messenger/renderer/pages/home.vue`  
-> **適用版本**：v1.6.0+（Rust + Tauri v2 & Nuxt 2 模組化重構架構）  
+> **適用版本**：v1.6.1+（Rust + Tauri v2 & Nuxt 2 模組化重構架構）  
 > **最後更新**：2026-10-25
 
 ---

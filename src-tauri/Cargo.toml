@@ -1,6 +1,6 @@
 [package]
 name = "lah-messenger"
-version = "1.6.0"
+version = "1.6.1"
 description = "桃園地政信差服務即時通"
 authors = ["pyliu <pangyu.liu@gmail.com>"]
 edition = "2024"
