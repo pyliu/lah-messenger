@@ -134,6 +134,17 @@ export default {
       this.$localForage.setItem('adPassword', val)
     },
 
+    userMap (newMap) {
+      if (newMap && this.validAdAccount) {
+        const mappedName = newMap[this.adAccount]
+        if (mappedName && (this.empty(this.adName) || this.adName === '請更新' || this.adName === this.adAccount || !/[\u4e00-\u9fa5]/.test(this.adName))) {
+          this.adName = mappedName
+          this.$store.commit('username', mappedName)
+          this.$localForage.setItem('adName', mappedName)
+        }
+      }
+    },
+
     apiUserinfo (val) {
       this.handleApiUserInfoUpdate(val)
     }
@@ -221,12 +232,12 @@ export default {
           .post(this.userQueryStr, { type: 'ad_user_info', id: this.adAccount })
           .then(({ data }) => {
             if (this.$utils.statusCheck(data.status)) {
-              const raw = data.data || {}
+              const raw = data.raw || data.data || {}
               const resolvedName = !this.empty(raw.name)
                 ? raw.name
-                : (this.userMap[this.adAccount] || this.adAccount)
+                : ((this.userMap && this.userMap[this.adAccount]) || this.adAccount)
 
-              if (!this.empty(resolvedName) && (this.empty(this.adName) || this.adName === '請更新')) {
+              if (!this.empty(resolvedName) && (this.empty(this.adName) || this.adName === '請更新' || this.adName === this.adAccount || !/[\u4e00-\u9fa5]/.test(this.adName))) {
                 this.adName = resolvedName
                 this.$store.commit('username', resolvedName)
                 this.$localForage.setItem('adName', resolvedName)
@@ -252,8 +263,8 @@ export default {
             }
           })
           .catch((err) => {
-            if (this.empty(this.adName) || this.adName === '請更新') {
-              const fallbackName = this.userMap[this.adAccount] || this.adAccount
+            if (this.empty(this.adName) || this.adName === '請更新' || this.adName === this.adAccount || !/[\u4e00-\u9fa5]/.test(this.adName)) {
+              const fallbackName = (this.userMap && this.userMap[this.adAccount]) || this.adAccount
               if (!this.empty(fallbackName)) {
                 this.adName = fallbackName
               }
@@ -276,6 +287,15 @@ export default {
             if (this.$utils.statusCheck(data.status)) {
               this.$store.commit('userMap', data.data)
               this.setCache('userMap', data.data, this.userDataCacheDuration)
+              this.setCache('userMapping', data.data, this.userDataCacheDuration)
+              if (this.validAdAccount && data.data && data.data[this.adAccount]) {
+                const mappedName = data.data[this.adAccount]
+                if (this.empty(this.adName) || this.adName === '請更新' || this.adName === this.adAccount || !/[\u4e00-\u9fa5]/.test(this.adName)) {
+                  this.adName = mappedName
+                  this.$store.commit('username', mappedName)
+                  this.$localForage.setItem('adName', mappedName)
+                }
+              }
             }
           })
           .catch((err) => console.warn('載入使用者對應表失敗:', err.toString()))
@@ -444,12 +464,23 @@ export default {
       this.adPassword = await this.$localForage.getItem('adPassword')
 
       const savedDept = await this.$localForage.getItem('department')
-      this.department = this.$utils.empty(savedDept) ? 'hr' : savedDept
+      if (!this.$utils.empty(savedDept)) {
+        this.department = savedDept
+      } else if (this.$utils.empty(this.department)) {
+        this.department = 'hr'
+      }
 
       const savedName = await this.$localForage.getItem('adName')
-      this.adName = this.$utils.empty(savedName) ? '請更新' : savedName
+      if (!this.$utils.empty(savedName)) {
+        this.adName = savedName
+      } else if (this.$utils.empty(this.adName)) {
+        this.adName = '請更新'
+      }
 
-      this.adAccount = await this.$localForage.getItem('adAccount')
+      const savedAccount = await this.$localForage.getItem('adAccount')
+      if (!this.$utils.empty(savedAccount)) {
+        this.adAccount = savedAccount
+      }
 
       // 同步讀取本機儲存的字體大小並套用
       this.currentFontSize = (await this.$localForage.getItem('fontSize')) || 'normal'

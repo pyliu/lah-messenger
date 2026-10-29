@@ -6,6 +6,17 @@
 
 ## [未發布]
 
+### 🐛 全新安裝或腳本重裝同仁姓名智慧解析修復
+- **修復 API 響應結構欄位讀取**：
+  - `renderer/mixins/home-auth.js`: 修正 `loadApiADUserData()` 讀取 `ad_user_info` 時僅存取 `data.data` 的問題，改為相容 `data.raw || data.data`，確保從後端正確取得 AD 中文姓名與課室。
+- **放寬身分姓名覆蓋條件**：
+  - `renderer/mixins/home-auth.js`: 於 `loadApiADUserData()` 與錯誤回退處，放寬判斷條件（當目前姓名為帳號代碼或尚未包含中文時允許覆蓋），解決開機初次抓到英數帳號（如 `HA10013859`）後阻擋真實中文姓名更新的問題。
+- **員工對照表響應監聽與快取鍵名統一**：
+  - `renderer/mixins/home-auth.js`: 新增 `userMap` 響應式 watcher，並於 `loadUserMapData()` 下載完成後自動補正中文姓名，同時雙向寫入 `userMap` 與 `userMapping` 快取。
+  - `renderer/pages/home.vue`: 統一快取讀取為 `userMap` 並向下相容 `userMapping`，確保冷啟動時能即時命中本機員工對照表快取。
+- **啟動快取還原防護**：
+  - `renderer/mixins/home-auth.js`: `restoreSettings()` 中加入非空檢查，防止全新安裝本機快取為空時將已由原生系統探測到的帳號與姓名沖刷為 null 或「請更新」。
+
 ### 🚀 開機自動啟動全域支援與舊版殘留清理
 - **跨安裝格式自啟動支援**：
   - `src-tauri/Cargo.toml`: 引入 `tauri-plugin-autostart = "2"` 外掛。

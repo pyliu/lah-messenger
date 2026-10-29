@@ -431,7 +431,7 @@ export default {
 
     this.$nextTick(async () => {
       await this.restoreSettings();
-      const mapping = await this.getCache("userMapping");
+      const mapping = (await this.getCache("userMap")) || (await this.getCache("userMapping"));
       mapping ? this.$store.commit("userMap", mapping) : this.loadUserMapData();
       const auth = await this.getCache("userAuthority");
       const info = await this.getCache("apiUserinfo");
