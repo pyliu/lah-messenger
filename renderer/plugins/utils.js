@@ -539,12 +539,32 @@ export default {
   handleSpecialClick(event) {
     const element = event.target;
     const { ipcRenderer, clipboard } = require("electron");
+    // 僅處理訊息內部點擊之外部超連結 (A 標籤)
     const anchor = element.closest ? element.closest('a') : (element.tagName === 'A' ? element : null);
-    if (anchor && anchor.href && /^(https?:\/\/|mailto:)/i.test(anchor.href)) {
-      event.preventDefault();
-      event.stopPropagation();
-      ipcRenderer.invoke('open-explorer', { path: anchor.href });
-      return;
+    if (anchor) {
+      const rawHref = (anchor.getAttribute('href') || '').trim();
+      if (rawHref && !rawHref.startsWith('#') && !rawHref.startsWith('javascript:')) {
+        if (/^(https?:\/\/|mailto:)/i.test(rawHref) && !rawHref.includes('tauri.localhost')) {
+          try {
+            const urlObj = new URL(rawHref, typeof window !== 'undefined' ? window.location.href : undefined);
+            const isInternal =
+              urlObj.hostname === 'tauri.localhost' ||
+              ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') &&
+                (urlObj.port === '8888' || urlObj.port === '3000'));
+            if (!isInternal) {
+              event.preventDefault();
+              event.stopPropagation();
+              ipcRenderer.invoke('open-explorer', { path: rawHref });
+              return;
+            }
+          } catch (e) {
+            event.preventDefault();
+            event.stopPropagation();
+            ipcRenderer.invoke('open-explorer', { path: rawHref });
+            return;
+          }
+        }
+      }
     }
     if (element.tagName === "IMG" && element.src.startsWith("data:")) {
       // click on img

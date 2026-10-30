@@ -185,35 +185,6 @@ if (typeof window !== 'undefined') {
     }
     return null;
   };
-
-  // 全域外部超連結攔截：點擊外部連結時強制透過系統瀏覽器開啟，避免 WebView 內部導航
-  window.addEventListener(
-    'click',
-    (event) => {
-      const target = event.target;
-      if (!target) return;
-      const anchor = target.closest ? target.closest('a') : (target.tagName === 'A' ? target : null);
-      if (anchor && anchor.href) {
-        const href = anchor.href;
-        if (/^(https?:\/\/|mailto:)/i.test(href)) {
-          try {
-            const urlObj = new URL(href);
-            const isLocalDevHost = (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && (urlObj.port === '8888');
-            if (!isLocalDevHost) {
-              event.preventDefault();
-              event.stopPropagation();
-              ipcRenderer.invoke('open-explorer', { path: href });
-            }
-          } catch (e) {
-            event.preventDefault();
-            event.stopPropagation();
-            ipcRenderer.invoke('open-explorer', { path: href });
-          }
-        }
-      }
-    },
-    true
-  );
 }
 
 export default {

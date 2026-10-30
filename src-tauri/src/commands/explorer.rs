@@ -19,6 +19,10 @@ pub fn open_explorer(path: String) -> Result<(), String> {
 
     // 0. 若為 HTTP / HTTPS 網址，以系統預設瀏覽器開啟 (下載或瀏覽)
     if target.starts_with("http://") || target.starts_with("https://") || target.starts_with("mailto:") {
+        // 防禦：嚴格排除 tauri.localhost 內部路徑，避免誤開啟外部瀏覽器
+        if target.contains("tauri.localhost") {
+            return Ok(());
+        }
         if open::that_detached(&target).is_ok() {
             return Ok(());
         }

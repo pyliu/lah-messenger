@@ -6,13 +6,13 @@
 
 ## [v1.6.1 修復更新] - 2026-10-30
 
-### 🌐 訊息外部超連結強制透過系統預設瀏覽器開啟（防止 WebView 內部跳轉）
-- **Rust 底層導航事件安全攔截**：
-  - `src-tauri/src/main.rs`: 註冊 `external_link_plugin` 插件監聽 `on_navigation`。除本機內部協議（`tauri://*`、`tauri.localhost` 以及開發埠號 `8888`）外，所有外部 HTTP/HTTPS/mailto 超連結一律以 `open::that_detached` 喚起作業系統預設瀏覽器開啟，並回傳 `false` 阻止 WebView2 內部導航跳轉，防止即時通主畫面遭到外部網頁覆蓋。
-  - `src-tauri/src/commands/explorer.rs`: 擴充 `open_explorer` 原生指令，增加對 `mailto:` 協議的判斷與外部喚起支援。
-- **前端全域與元件點擊事件雙層防護**：
-  - `renderer/plugins/electron-shim.js`: 在全域 `window` 註冊捕獲階段（capture phase）的 `click` 事件監聽器。點擊任何非本機開發伺服器的 `<a>` 超連結時自動執行 `preventDefault()` 與 `stopPropagation()`，並經由 IPC 委託系統預設瀏覽器開啟。
-  - `renderer/plugins/utils.js`: 於 `handleSpecialClick` 增加對 `<a>` 標籤的判定與 IPC `open-explorer` 調用，確保訊息與公告中點擊超連結時平滑無縫。
+### 🌐 訊息內部超連結精準導向系統瀏覽器開啟（收斂全域攔截，避免影響頁籤切換與返回頻道）
+- **訊息內部點擊事件精準攔截與防護**：
+  - `renderer/plugins/utils.js`: 於 `handleSpecialClick` 精確處理訊息與公告內部點擊之外部超連結（`<a>` 標籤）。嚴格排除錨點（`#`）、腳本（`javascript:`）與內部應用主機（`tauri.localhost`、`localhost:8888` 等），僅對真實外部 HTTP/HTTPS/mailto 超連結觸發 `preventDefault()` 與 `stopPropagation()`，並透過 IPC 喚起系統預設瀏覽器開啟。
+  - `renderer/plugins/electron-shim.js`: 移除全域 `window` click 監聽器，避免過度攔截誤傷 BootstrapVue 之分頁頁籤（`b-nav-item`）與返回頻道（`b-link`）等內部導航按鈕。
+- **原生指令防禦與協議支援**：
+  - `src-tauri/src/commands/explorer.rs`: 擴充 `open_explorer` 原生指令，增加對 `mailto:` 協議支援，並加入安全防禦：嚴格排除 `tauri.localhost` 內部路徑，避免誤開啟外部瀏覽器造成 Not Found。
+  - `src-tauri/src/main.rs`: 移除全域 webview 導航插件，由前端訊息點擊事件精準主動調度。
 
 ### 🔒 通知頁籤跨部門頻道切換權限嚴格限制（限管理者）
 - **通知頁籤切換介面權限收斂**：
