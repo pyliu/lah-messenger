@@ -1,7 +1,7 @@
 <template lang="pug">
 .chat-channel-list(v-if="isChat")
   b-list-group.gray-bottom-border(
-    v-if="isNotifyMgtStaff"
+    v-if="isAdmin"
     flush
   )
     b-list-group-item.d-flex.justify-content-between.align-items-center(key="dept-key-b-select")
@@ -62,7 +62,7 @@
     v-if="deptList.users.length > 0"
   ): .d-flex.align-items-start
     .text-nowrap.mr-auto.lah-shadow
-      b-link(v-if="isNotifyMgtStaff", @click="setCurrentChannel(deptList.id)") {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
+      b-link(v-if="isAdmin", @click="setCurrentChannel(deptList.id)") {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
       span(v-else) {{ deptList.text }} #[b-badge(variant="success" pill) {{ deptList.users.length }}]
     b-avatar-group(size="3rem" :overlap="overlapRatio(deptList.users.length)"): transition-group.d-flex.justify-content-end.flex-wrap(name="listY" mode="out-in"): user-avatar.shadow(
       v-for="(user, uidx) in deptList.users"
@@ -105,7 +105,8 @@ export default {
   }),
   computed: {
     isChat () { return this.currentChannel === 'chat'},
-    isNotifyMgtStaff () { return this.authority.isNotifyMgtStaff || this.authority.isAdmin },
+    isAdmin () { return Boolean(this.authority?.isAdmin) },
+    isNotifyMgtStaff () { return Boolean(this.authority?.isNotifyMgtStaff || this.authority?.isAdmin) },
     onlineUsersByDept () {
       const keyword = this.keyword
       const filter = [

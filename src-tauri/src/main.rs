@@ -7,6 +7,29 @@ mod tray;
 use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
+fn external_link_plugin<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
+    tauri::plugin::Builder::new("external-link-handler")
+        .on_navigation(|_webview, url| {
+            let scheme = url.scheme();
+            let host = url.host_str().unwrap_or("");
+            let is_internal = scheme == "tauri"
+                || host == "tauri.localhost"
+                || ((scheme == "http" || scheme == "https")
+                    && (host == "localhost" || host == "127.0.0.1")
+                    && url.port() == Some(8888));
+
+            if is_internal {
+                true
+            } else {
+                if open::that_detached(url.as_str()).is_err() {
+                    let _ = std::process::Command::new("explorer.exe").arg(url.as_str()).spawn();
+                }
+                false
+            }
+        })
+        .build()
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -21,6 +44,7 @@ fn main() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(external_link_plugin())
         .setup(|app| {
             // 確保開機自動啟動（NSIS 與 MSI 皆適用），失敗不影響主程式啟動
             let autolaunch = app.autolaunch();

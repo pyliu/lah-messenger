@@ -539,6 +539,13 @@ export default {
   handleSpecialClick(event) {
     const element = event.target;
     const { ipcRenderer, clipboard } = require("electron");
+    const anchor = element.closest ? element.closest('a') : (element.tagName === 'A' ? element : null);
+    if (anchor && anchor.href && /^(https?:\/\/|mailto:)/i.test(anchor.href)) {
+      event.preventDefault();
+      event.stopPropagation();
+      ipcRenderer.invoke('open-explorer', { path: anchor.href });
+      return;
+    }
     if (element.tagName === "IMG" && element.src.startsWith("data:")) {
       // click on img
       ipcRenderer.invoke("open-image", {

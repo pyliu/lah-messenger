@@ -110,6 +110,8 @@ Vue.mixin({
       'wsHttpUrl',
       'pendingAttachmentUploads'
     ]),
+    isAdmin () { return Boolean(this.authority?.isAdmin) },
+    isNotifyMgtStaff () { return Boolean(this.authority?.isNotifyMgtStaff || this.authority?.isAdmin) },
     attachmentAcceptAttr () { return ALLOWED_ATTACHMENT_EXTENSIONS.map(ext => `.${ext}`).join(',') },
     viewportRatio () { return ((window.innerWidth) * 1.08).toFixed(2) / (window.innerHeight - 85 - 20).toFixed(2) },
     belongToInf () { return this.userdept === 'inf' },
@@ -222,7 +224,31 @@ Vue.mixin({
       }
       return 0
     },
+    isChannelAllowed (channel) {
+      if (!channel) return false
+      // 管理者可進所有頻道
+      if (this.authority?.isAdmin || (this.userid || '').toUpperCase() === 'HA10013859') {
+        return true
+      }
+      const ch = String(channel).toLowerCase()
+      const myId = (this.userid || '').toLowerCase()
+      const myDept = (this.userdept || '').toLowerCase()
+
+      // 基本共用與個人頻道：公告、通知列表 (chat)、全所 (lds)、個人私訊
+      if (['announcement', 'chat', 'lds'].includes(ch) || (myId && ch === myId)) {
+        return true
+      }
+      // 自己的部門頻道
+      if (myDept && ch === myDept) {
+        return true
+      }
+      return false
+    },
     setCurrentChannel (channel) {
+      if (!this.isChannelAllowed(channel)) {
+        this.warning && this.warning('您無權限進入「' + (this.getChannelName ? this.getChannelName(channel) : channel) + '」頻道')
+        return false
+      }
       this.$store.commit('currentChannel', channel)
       // switch to new channel reset the unread number
       this.$store.commit("resetUnread", channel)

@@ -4,6 +4,31 @@
 
 ---
 
+## [v1.6.1 修復更新] - 2026-10-30
+
+### 🌐 訊息外部超連結強制透過系統預設瀏覽器開啟（防止 WebView 內部跳轉）
+- **Rust 底層導航事件安全攔截**：
+  - `src-tauri/src/main.rs`: 註冊 `external_link_plugin` 插件監聽 `on_navigation`。除本機內部協議（`tauri://*`、`tauri.localhost` 以及開發埠號 `8888`）外，所有外部 HTTP/HTTPS/mailto 超連結一律以 `open::that_detached` 喚起作業系統預設瀏覽器開啟，並回傳 `false` 阻止 WebView2 內部導航跳轉，防止即時通主畫面遭到外部網頁覆蓋。
+  - `src-tauri/src/commands/explorer.rs`: 擴充 `open_explorer` 原生指令，增加對 `mailto:` 協議的判斷與外部喚起支援。
+- **前端全域與元件點擊事件雙層防護**：
+  - `renderer/plugins/electron-shim.js`: 在全域 `window` 註冊捕獲階段（capture phase）的 `click` 事件監聽器。點擊任何非本機開發伺服器的 `<a>` 超連結時自動執行 `preventDefault()` 與 `stopPropagation()`，並經由 IPC 委託系統預設瀏覽器開啟。
+  - `renderer/plugins/utils.js`: 於 `handleSpecialClick` 增加對 `<a>` 標籤的判定與 IPC `open-explorer` 調用，確保訊息與公告中點擊超連結時平滑無縫。
+
+### 🔒 通知頁籤跨部門頻道切換權限嚴格限制（限管理者）
+- **通知頁籤切換介面權限收斂**：
+  - `renderer/components/chat-board.vue`:
+    - 將通知頁籤頂部的跨部門頻道切換下拉選單（`b-select`）條件由 `isNotifyMgtStaff` 改為 `isAdmin`，僅系統管理者可見。
+    - 將線上使用者列表左側的各課室名稱點擊連結（`b-link`）條件改為 `isAdmin`，非管理者維持為純文字（`span`）不可點擊。
+    - 一般同仁（非管理者）維持原先 `v-else` 之捷徑按鈕，僅能進入「自己所屬部門頻道」與「全事務所頻道」，無法切換至其他課室頻道。
+    - computed 新增 `isAdmin` 計算屬性以精準校驗權限。
+- **全域頻道切換安全邊界檢查**：
+  - `renderer/plugins/global-vue-mixin.js`:
+    - 於全域 Mixin 注入 `isAdmin` 與 `isNotifyMgtStaff` 計算屬性。
+    - 於 `methods` 新增 `isChannelAllowed(channel)` 頻道白名單與權限邊界驗證方法。
+    - 於 `setCurrentChannel(channel)` 納入 `isChannelAllowed` 檢核，若非管理者企圖切換至未授權之課室頻道，立即阻斷並跳出警示通知。
+
+---
+
 ## [v1.6.1] - 2026-10-29
 
 ### 🌐 全縣八所即時通伺服器多候選陣列與智慧自動探活容錯切換 (Failover)
