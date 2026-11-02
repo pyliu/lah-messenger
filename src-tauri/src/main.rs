@@ -4,7 +4,7 @@
 mod commands;
 mod tray;
 
-use tauri::{Emitter, Manager, WindowEvent};
+use tauri::{Emitter, LogicalSize, Manager, Size, WindowEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 fn ensure_autostart_registry() {
@@ -37,21 +37,6 @@ fn ensure_autostart_registry() {
 }
 
 fn main() {
-    #[cfg(windows)]
-    unsafe {
-        // [強制鎖定 DPI 縮放] 忽略 Windows 系統桌面縮放 (125%、150%)，永遠保持 100% 原始像素
-        // 與原 Electron 方案 app.commandLine.appendSwitch('force-device-scale-factor', '1') 一致
-        let current_args = std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS").unwrap_or_default();
-        if !current_args.contains("--force-device-scale-factor") {
-            let new_args = if current_args.is_empty() {
-                "--force-device-scale-factor=1".to_string()
-            } else {
-                format!("{} --force-device-scale-factor=1", current_args)
-            };
-            std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", new_args);
-        }
-    }
-
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -78,6 +63,26 @@ fn main() {
             if let Some(window) = app.get_webview_window("main") {
                 // 強制將網頁縮放比例重設為 1.0，防止因快取或誤觸 Ctrl+滾輪 導致放大的版面
                 let _ = window.set_zoom(1.0);
+
+                // 依據螢幕可用工作區高度自適應視窗高度，防止在 150% 桌面縮放或小筆電上底部被工作列截斷
+                if let Ok(Some(monitor)) = window.current_monitor() {
+                    let scale = monitor.scale_factor();
+                    let mon_logical_height = monitor.size().height as f64 / scale;
+                    // 保留 Windows 工作列與安全邊界約 48px
+                    let safe_height = (mon_logical_height - 48.0).clamp(560.0, 740.0);
+                    let _ = window.set_size(Size::Logical(LogicalSize {
+                        width: 490.0,
+                        height: safe_height,
+                    }));
+                    let _ = window.set_max_size(Some(Size::Logical(LogicalSize {
+                        width: 490.0,
+                        height: safe_height,
+                    })));
+                    let _ = window.set_min_size(Some(Size::Logical(LogicalSize {
+                        width: 490.0,
+                        height: safe_height,
+                    })));
+                }
 
                 // 視窗事件監聽：關閉與最小化時隱藏至系統匣 (Tray)
                 let win_clone = window.clone();

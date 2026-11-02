@@ -6,14 +6,16 @@
 
 ## [v1.6.2] - 2026-11-02
 
-### 🖥️ 鎖定原生 WebView2 縮放比例與全域文字縮放防禦（杜絕桌面縮放導致視窗排版被截斷破版）
-- **強制鎖定原始像素與重設快取**：
-  - `src-tauri/src/main.rs`: 於應用程式進入點注入環境變數 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--force-device-scale-factor=1"`，強制 WebView2 永遠以 100% 原始像素渲染，忽略 Windows 系統 125%/150% 桌面縮放膨脹；並於視窗就緒時主動執行 `window.set_zoom(1.0)` 重設頁面縮放快取。
-- **全域樣式保護與滾輪縮放攔截**：
-  - `renderer/assets/scss/main.scss`: `html, body` 注入 `-webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; zoom: 1 !important;`，徹底封鎖 Windows 協助工具系統文字大小縮放對前端介面的干擾。
+### 🖥️ 原生 Per-Monitor DPI 渲染、工作區高度自適應與文字縮放防禦（徹底根治 150% 桌面縮放破版與右側白邊）
+- **回歸原生 Per-Monitor DPI 一致性與寬度自適應**：
+  - `src-tauri/src/main.rs`: 移除 `--force-device-scale-factor=1`，讓外框與 Web 內容維持 1:1 的 DPI 同步縮放，字體清晰銳利且不失真；視窗就緒時主動執行 `window.set_zoom(1.0)` 重設快取。
+  - `renderer/assets/scss/main.scss`: `html, body` 寬度由寫死 `490px` 改為 `width: 100%`，自適應視窗客戶區，徹底消除右側留白；同時注入 `-webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; zoom: 1 !important;` 封鎖系統文字大小膨脹。
+- **螢幕工作區高度動態安全自適應（Work Area Clamp）**：
+  - `src-tauri/src/main.rs`: 啟動時偵測當前顯示器可用工作區高度，若空間不足（如 1080p 搭配 150% 縮放下邏輯高度僅 680px）動態收斂視窗高度為 `min(740, work_area_height - 48)`，確保底部輸入框永遠完整呈現於工作列上方。
+  - `src-tauri/tauri.conf.json`: 將視窗最小高度限制調整為 `560px`（最大維持 `740px`，寬度嚴格鎖定 `490px`），支援安全範圍內自適應螢幕。
+- **全域滾輪縮放攔截與頭像排版優化**：
   - `renderer/pages/home.vue`: 全域攔截 `wheel`（`e.ctrlKey`）與鍵盤快捷鍵（`Ctrl` 搭配 `+`/`-`/`_`/`0`），防止同仁貼圖或複製時誤觸滑鼠滾輪導致頁面非預期放大。
-- **線上使用者頭像排版結構優化**：
-  - `renderer/components/chat-board.vue`: 線上使用者頭像群加入上下垂直間距（`margin-top: 2px; margin-bottom: 2px;`）與列表邊距優化，杜絕人數眾多換行時負 margin 導致的上下行頭像重疊與遮蔽下個課室標題。
+  - `renderer/components/chat-board.vue`: 線上使用者頭像群加入上下垂直間距（`margin-top: 2px; margin-bottom: 2px;`）與列表邊距優化，杜絕人數眾多換行時負 margin 疊蓋。
 
 ### 🚀 整合 NSIS 安裝包與主程式自修復開機啟動登錄機碼機制（解決安裝後未隨開機啟動問題）
 - **NSIS 安裝程式完整註冊與深度清理**：
