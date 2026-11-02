@@ -16,7 +16,8 @@ export default {
     asking: false,
     autoProbeTimer: null,
     probeAttemptedIps: [],
-    allCandidatesFailed: false
+    allCandidatesFailed: false,
+    hasSavedWsHost: false
   }),
 
   computed: {
@@ -87,7 +88,10 @@ export default {
     wsHost (val) {
       this.resetReconnectTimer()
       if (this.$utils.isIPv4(val) || val === 'localhost' || this.$utils.empty(val)) {
-        this.$localForage.setItem('wsHost', val)
+        // 僅在已有正式設定模式下才同步持久化；初次安裝探測過程中不提前寫入快取
+        if (this.hasSavedWsHost) {
+          this.$localForage.setItem('wsHost', val)
+        }
         this.$store.commit('apiHost', val)
         this.$store.commit('wsHost', val)
       }
@@ -111,21 +115,27 @@ export default {
       this.clearProbeTimer()
       if (this.connected) return
 
-      // 將當前失敗的 IP 記錄至已嘗試名單
+      // 既有設定優先原則：若本機已有設定（或同仁手動設定），嚴格鎖定該主機，不執行跨所自動輪替漫遊
+      if (this.hasSavedWsHost) {
+        this.connecting = false
+        this.setConnectText(`伺服器連線失敗 (${this.wsHost})`)
+        this.log(this.time(), `[伺服器連線] 既有設定伺服器 (${this.wsHost}) 連線失敗，嚴格鎖定原主機並排程重試`)
+        this.resetReconnectTimer()
+        return
+      }
+
+      // 以下僅在「完全未設定、初次安裝使用」時執行多所主機自動探測填入：
       if (this.wsHost && !this.probeAttemptedIps.includes(this.wsHost)) {
         this.probeAttemptedIps.push(this.wsHost)
       }
 
-      // 取得該所所有候選 IP
       const candidates = this.candidateSvrIps || []
-
-      // 找出尚未嘗試過的下一個候選 IP
       const nextIp = candidates.find(ip => !this.probeAttemptedIps.includes(ip))
 
       if (nextIp) {
         const isNextLocal = typeof this.isLocalSiteIp === 'function' ? this.isLocalSiteIp(nextIp) : true
-        const modeDesc = isNextLocal ? '本所備援主機' : '跨所全局備援主機'
-        this.log(this.time(), `[伺服器容錯切換] 原伺服器 (${this.wsHost}) 無法連線，自動嘗試下一個${modeDesc}: ${nextIp}`)
+        const modeDesc = isNextLocal ? '本所主機' : '全縣備援主機'
+        this.log(this.time(), `[初次安裝自動探測] 伺服器 (${this.wsHost}) 無回應，自動嘗試下一個${modeDesc}: ${nextIp}`)
         this.wsHost = nextIp
         this.$store.commit('wsHost', nextIp)
         this.$store.commit('apiHost', nextIp)
@@ -138,7 +148,7 @@ export default {
         this.allCandidatesFailed = true
         this.connecting = false
         this.setConnectText(`伺服器連線失敗 (已嘗試 ${this.probeAttemptedIps.join(', ')})`)
-        this.log(this.time(), '[伺服器容錯] 全縣所有候選伺服器皆無法連線:', this.probeAttemptedIps)
+        this.log(this.time(), '[初次安裝自動探測] 全縣所有候選伺服器皆無法連線:', this.probeAttemptedIps)
       }
     },
 
@@ -147,6 +157,7 @@ export default {
       this.probeAttemptedIps = []
       if (host) {
         this.wsHost = host
+        this.hasSavedWsHost = true
         this.$store.commit('wsHost', host)
         this.$store.commit('apiHost', host)
         this.$localForage.setItem('wsHost', host)
@@ -178,9 +189,9 @@ export default {
           this.setConnectText(`連線中 (${this.wsHost})`)
           const ws = new WebSocket(this.wsConnStr)
 
-          // 啟動階層式動態探活逾時監控 (本所轄區主機 3.5s，跨所全局備援主機 1.5s)
-          const isLocal = typeof this.isLocalSiteIp === 'function' ? this.isLocalSiteIp(this.wsHost) : true
-          const probeMs = isLocal ? 3500 : 1500
+          // 啟動逾時監控 (既有設定或本所主機維持 3.5s 充分握手；初次無設定探測之跨所主機則為 1.5s 快速跳轉)
+          const isFastProbe = !this.hasSavedWsHost && (typeof this.isLocalSiteIp === 'function' ? !this.isLocalSiteIp(this.wsHost) : false)
+          const probeMs = isFastProbe ? 1500 : 3500
           this.autoProbeTimer = setTimeout(() => {
             if (!this.connected && this.connecting) {
               this.log(this.time(), `伺服器 ${this.wsHost} 連線逾時 (${probeMs / 1000}s)，啟動備援容錯切換...`)
@@ -200,7 +211,12 @@ export default {
             this.log(this.time(), `已成功連線至伺服器 ${this.wsHost}`)
             this.allCandidatesFailed = false
             this.probeAttemptedIps = []
-            this.$localForage.setItem('wsHost', this.wsHost)
+            // 初次安裝自動探測成功時，自動填入並保存至本機快取，日後即以此設定為主
+            if (!this.hasSavedWsHost) {
+              this.log(this.time(), `[初次安裝自動探測] 成功尋得可用主機，自動填入並保存伺服器 IP: ${this.wsHost}`)
+              this.$localForage.setItem('wsHost', this.wsHost)
+              this.hasSavedWsHost = true
+            }
             this.$store.commit('wsHost', this.wsHost)
             this.$store.commit('apiHost', this.wsHost)
             this.register()

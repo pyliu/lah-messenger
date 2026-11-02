@@ -471,11 +471,14 @@ export default {
         savedWsHost = (process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST) || '127.0.0.1'
         await this.$localForage.setItem('wsHost', savedWsHost)
       }
-      // 若上次快取的是跨所備援主機，冷啟動時優先回歸嘗試本所預設伺服器
-      if (savedWsHost && typeof this.isLocalSiteIp === 'function' && !this.isLocalSiteIp(savedWsHost)) {
-        savedWsHost = this.defaultSvrIp
+      // 既有設定優先原則：若本機已有儲存設定，100% 以既有設定為主，絕不自動覆蓋；若完全未設定（初次安裝）才標記為探測模式
+      if (!this.$utils.empty(savedWsHost)) {
+        this.hasSavedWsHost = true
+        this.wsHost = savedWsHost
+      } else {
+        this.hasSavedWsHost = false
+        this.wsHost = this.defaultSvrIp || (process.env.isDev ? '127.0.0.1' : '220.1.34.18')
       }
-      this.wsHost = savedWsHost || this.defaultSvrIp || (process.env.isDev ? '127.0.0.1' : '220.1.34.18')
       this.wsPort = (await this.$localForage.getItem('wsPort')) || 8081
       const wsHttpPort = (await this.$localForage.getItem('wsHttpPort')) || 8082
       this.$store.commit('wsHost', this.wsHost)
