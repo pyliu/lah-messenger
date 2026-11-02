@@ -221,11 +221,16 @@ export default {
 <style lang="scss" scoped>
 .chat-channel-list {
   margin: 5px;
-  height: 86.5vh;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .online-users-list {
-  height: 66.5vh;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 

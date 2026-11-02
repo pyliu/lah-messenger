@@ -148,7 +148,7 @@ export default {
 
 <style lang="scss" scoped>
 .bottom {
-  width: 475px;
+  width: calc(100% - 1rem);
   position: absolute;
   left: .5rem;
   bottom: .35rem;

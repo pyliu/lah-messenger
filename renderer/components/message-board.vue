@@ -1,5 +1,5 @@
 <template lang="pug">
-.center(v-if="loading" style="height: 80vh"): b-icon(font-scale="3" icon="circle-fill" animation="throb" variant="secondary")
+.center.flex-grow-1(v-if="loading" style="min-height: 120px;"): b-icon(font-scale="3" icon="circle-fill" animation="throb" variant="secondary")
 div(v-else :class="blockCss")
   .msg(
     ref="box"
@@ -267,27 +267,25 @@ export default {
   cursor: pointer;
 }
 
-.personal-container {
-  margin: 5px;
-  height: calc(81.5vh - 24px);
-}
-
-.announcement-container {
-  margin: 5px;
-  height: calc(89.5vh - 24px);
-}
-
+.personal-container,
+.announcement-container,
 .chat-container {
   margin: 5px;
-  height: calc(73.25vh - 18px);
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .msg {
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  display: inline-block;
+  display: block;
 }
 
 .old-message-arrow {

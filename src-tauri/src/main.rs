@@ -68,20 +68,22 @@ fn main() {
                 if let Ok(Some(monitor)) = window.current_monitor() {
                     let scale = monitor.scale_factor();
                     let mon_logical_height = monitor.size().height as f64 / scale;
-                    // 保留 Windows 工作列與安全邊界約 48px
-                    let safe_height = (mon_logical_height - 48.0).clamp(560.0, 740.0);
+                    // 螢幕邏輯高度 <= 768px（如 1080p 在 150% 縮放下為 720px）時預設採緊湊高度 600px，大螢幕預設 740px
+                    let default_height: f64 = if mon_logical_height <= 768.0 { 600.0 } else { 740.0 };
+                    let initial_height = default_height.clamp(500.0, (mon_logical_height - 48.0).max(500.0));
                     let _ = window.set_size(Size::Logical(LogicalSize {
                         width: 490.0,
-                        height: safe_height,
+                        height: initial_height,
                     }));
-                    let _ = window.set_max_size(Some(Size::Logical(LogicalSize {
-                        width: 490.0,
-                        height: safe_height,
-                    })));
                     let _ = window.set_min_size(Some(Size::Logical(LogicalSize {
                         width: 490.0,
-                        height: safe_height,
+                        height: 500.0,
                     })));
+                    let _ = window.set_max_size(Some(Size::Logical(LogicalSize {
+                        width: 490.0,
+                        height: 850.0,
+                    })));
+                    let _ = window.set_resizable(true);
                 }
 
                 // 視窗事件監聽：關閉與最小化時隱藏至系統匣 (Tray)
