@@ -226,7 +226,22 @@ export default {
 
 .online-users-list {
   height: 66.5vh;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  .list-group-item {
+    padding: 0.5rem 0.75rem;
+    overflow: visible;
+  }
+}
+
+::v-deep .b-avatar-group {
+  max-width: 340px;
+  .user-avatar,
+  .b-avatar {
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
 }
 
 .gray-bottom-border {

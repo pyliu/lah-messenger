@@ -367,7 +367,16 @@ export default {
     onSaveManualServer (data) {
       this.handleManualSetServer(data.host, data.port)
     },
+    onWindowWheel(e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    },
     keydown(e) {
+      if (e.ctrlKey && (e.key === '=' || e.key === '+' || e.key === '-' || e.key === '_' || e.key === '0')) {
+        e.preventDefault();
+        return;
+      }
       if (e.keyCode >= 37 && e.keyCode <= 40)
         this.setConnectText(["←", "↑", "→", "↓"][e.keyCode - 37]);
       else if (e.keyCode === 65 || e.keyCode === 66)
@@ -451,6 +460,7 @@ export default {
     });
 
     window.addEventListener("keydown", this.keydown);
+    window.addEventListener("wheel", this.onWindowWheel, { passive: false });
     window.addEventListener("paste", this.onWindowPaste);
     window.addEventListener("focus", this.onWindowFocus);
     window.addEventListener("blur", this.onWindowBlur);
@@ -464,6 +474,7 @@ export default {
     this.closeWebsocket();
     clearTimeout(this.checkUnreadTimer);
     window.removeEventListener("keydown", this.keydown);
+    window.removeEventListener("wheel", this.onWindowWheel);
     window.removeEventListener("paste", this.onWindowPaste);
     window.removeEventListener("focus", this.onWindowFocus);
     window.removeEventListener("blur", this.onWindowBlur);

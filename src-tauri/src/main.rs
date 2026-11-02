@@ -7,7 +7,51 @@ mod tray;
 use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
+fn ensure_autostart_registry() {
+    #[cfg(windows)]
+    {
+        use windows_registry::{CURRENT_USER, LOCAL_MACHINE};
+        const RUN_KEY: &str = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+        const APP_KEY_NAME: &str = "桃園地政信差服務即時通";
+
+        if let Ok(exe_path) = std::env::current_exe() {
+            let target_cmd = format!("\"{}\"", exe_path.display());
+
+            // 1. 寫入或校準 HKCU Run (確保開機自動以引號包覆路徑啟動)
+            if let Ok(run) = CURRENT_USER.create(RUN_KEY) {
+                let current_val = run.get_string(APP_KEY_NAME).unwrap_or_default();
+                if current_val != target_cmd {
+                    let _ = run.set_string(APP_KEY_NAME, &target_cmd);
+                }
+                // 同步清理舊版 Electron 遺留或舊英文章節名
+                let _ = run.remove_value("lah-messenger");
+                let _ = run.remove_value("地政信差服務即時通");
+            }
+
+            // 2. 嘗試清理 HKLM 中殘留的無效舊路徑 (若具備管理員權限則清理，無權限則靜默忽略)
+            if let Ok(hklm_run) = LOCAL_MACHINE.open(RUN_KEY) {
+                let _ = hklm_run.remove_value("地政信差服務即時通");
+            }
+        }
+    }
+}
+
 fn main() {
+    #[cfg(windows)]
+    unsafe {
+        // [強制鎖定 DPI 縮放] 忽略 Windows 系統桌面縮放 (125%、150%)，永遠保持 100% 原始像素
+        // 與原 Electron 方案 app.commandLine.appendSwitch('force-device-scale-factor', '1') 一致
+        let current_args = std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS").unwrap_or_default();
+        if !current_args.contains("--force-device-scale-factor") {
+            let new_args = if current_args.is_empty() {
+                "--force-device-scale-factor=1".to_string()
+            } else {
+                format!("{} --force-device-scale-factor=1", current_args)
+            };
+            std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", new_args);
+        }
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -23,6 +67,7 @@ fn main() {
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .setup(|app| {
             // 確保開機自動啟動（NSIS 與 MSI 皆適用），失敗不影響主程式啟動
+            ensure_autostart_registry();
             let autolaunch = app.autolaunch();
             if !autolaunch.is_enabled().unwrap_or(false) {
                 let _ = autolaunch.enable();
@@ -31,6 +76,9 @@ fn main() {
             let _ = tray::create_tray(app.handle())?;
 
             if let Some(window) = app.get_webview_window("main") {
+                // 強制將網頁縮放比例重設為 1.0，防止因快取或誤觸 Ctrl+滾輪 導致放大的版面
+                let _ = window.set_zoom(1.0);
+
                 // 視窗事件監聽：關閉與最小化時隱藏至系統匣 (Tray)
                 let win_clone = window.clone();
                 window.on_window_event(move |event| match event {
@@ -70,3 +118,4 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+

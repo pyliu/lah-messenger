@@ -33,29 +33,44 @@
     RMDir /r "$SMPROGRAMS\lah-messenger"
   ${EndIf}
 
-  ; 4. 清除舊版 Electron 遺留的開機啟動登錄項與啟動資料夾捷徑
+  ; 4. 清除舊版 Electron 與舊版路徑遺留的開機啟動登錄項與啟動資料夾捷徑 (涵蓋 HKCU 與 HKLM)
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.桃園地政信差服務即時通"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.Electron"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.lah-messenger"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "地政信差服務即時通"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "桃園地政信差服務即時通"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "lah-messenger"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "地政信差服務即時通"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "桃園地政信差服務即時通"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "lah-messenger"
   Delete "$SMSTARTUP\lah-messenger.lnk"
   Delete "$SMSTARTUP\${PRODUCTNAME}.lnk"
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
-  ; 安裝完成後自動啟動即時通主程式
-  Exec '"$INSTDIR\${MAINBINARYNAME}.exe"'
+  ; 1. 安裝完成後自動在目前使用者 HKCU 註冊開機啟動登錄項 (雙引號包覆路徑確保安全)
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCTNAME}" '"$INSTDIR\${MAINBINARYNAME}.exe"'
 
-  ; 開機自動啟動改由程式內 autostart 外掛寫入 HKCU Run，移除舊版啟動資料夾捷徑以免重複啟動
+  ; 2. 清理啟動資料夾舊捷徑以免重複啟動
   Delete "$SMSTARTUP\lah-messenger.lnk"
   Delete "$SMSTARTUP\${PRODUCTNAME}.lnk"
+
+  ; 3. 安裝完成後自動啟動即時通主程式
+  Exec '"$INSTDIR\${MAINBINARYNAME}.exe"'
 !macroend
 
 !macro NSIS_HOOK_POSTUNINSTALL
-  ; 卸載時移除開機啟動捷徑與舊版遺留項目
+  ; 卸載時移除開機啟動捷徑與登錄項目
   Delete "$SMSTARTUP\lah-messenger.lnk"
   Delete "$SMSTARTUP\${PRODUCTNAME}.lnk"
   Delete "$DESKTOP\lah-messenger.lnk"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCTNAME}"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "lah-messenger"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "地政信差服務即時通"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.桃園地政信差服務即時通"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.Electron"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.lah-messenger"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${PRODUCTNAME}"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "地政信差服務即時通"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "lah-messenger"
 !macroend

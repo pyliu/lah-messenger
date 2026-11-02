@@ -1,6 +1,6 @@
 [package]
 name = "lah-messenger"
-version = "1.6.1"
+version = "1.6.2"
 description = "桃園地政信差服務即時通"
 authors = ["pyliu <pangyu.liu@gmail.com>"]
 edition = "2024"
@@ -26,6 +26,7 @@ base64 = "0.22"
 reqwest = { version = "0.12", features = ["json", "default-tls"] }
 open = "5"
 tauri-plugin-autostart = "2"
+windows-registry = "0.6"
 
 [profile.dev]
 incremental = false

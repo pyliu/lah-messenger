@@ -4,6 +4,29 @@
 
 ---
 
+## [v1.6.2] - 2026-11-02
+
+### 🖥️ 鎖定原生 WebView2 縮放比例與全域文字縮放防禦（杜絕桌面縮放導致視窗排版被截斷破版）
+- **強制鎖定原始像素與重設快取**：
+  - `src-tauri/src/main.rs`: 於應用程式進入點注入環境變數 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--force-device-scale-factor=1"`，強制 WebView2 永遠以 100% 原始像素渲染，忽略 Windows 系統 125%/150% 桌面縮放膨脹；並於視窗就緒時主動執行 `window.set_zoom(1.0)` 重設頁面縮放快取。
+- **全域樣式保護與滾輪縮放攔截**：
+  - `renderer/assets/scss/main.scss`: `html, body` 注入 `-webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; zoom: 1 !important;`，徹底封鎖 Windows 協助工具系統文字大小縮放對前端介面的干擾。
+  - `renderer/pages/home.vue`: 全域攔截 `wheel`（`e.ctrlKey`）與鍵盤快捷鍵（`Ctrl` 搭配 `+`/`-`/`_`/`0`），防止同仁貼圖或複製時誤觸滑鼠滾輪導致頁面非預期放大。
+- **線上使用者頭像排版結構優化**：
+  - `renderer/components/chat-board.vue`: 線上使用者頭像群加入上下垂直間距（`margin-top: 2px; margin-bottom: 2px;`）與列表邊距優化，杜絕人數眾多換行時負 margin 導致的上下行頭像重疊與遮蔽下個課室標題。
+
+### 🚀 整合 NSIS 安裝包與主程式自修復開機啟動登錄機碼機制（解決安裝後未隨開機啟動問題）
+- **NSIS 安裝程式完整註冊與深度清理**：
+  - `src-tauri/hooks.nsh`:
+    - `NSIS_HOOK_PREINSTALL`: 深度清理 HKLM 與 HKCU 中殘留的無效 Run 登錄項目（含舊版 Electron `%LOCALAPPDATA%` 失效路徑、舊英文章節名與未加引號之項目）。
+    - `NSIS_HOOK_POSTINSTALL`: 安裝完成時自動為當前使用者於 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` 寫入標準帶引號的開機啟動指令（`"${PRODUCTNAME}" '"$INSTDIR\${MAINBINARYNAME}.exe"'`）。
+    - `NSIS_HOOK_POSTUNINSTALL`: 卸載時徹底清除 HKCU 與 HKLM 的開機啟動登錄機碼。
+- **主程式啟動時主動自我校正**：
+  - `src-tauri/src/main.rs`: 實作 `ensure_autostart_registry()` 自我校正函式，每次啟動主程式時主動驗證並校正 HKCU Run 之目標執行路徑，並順手清理 HKLM 失效舊殘留。
+  - `src-tauri/Cargo.toml`: 引入微軟官方 `windows-registry = "0.6"` 安全操作登錄機碼。
+
+---
+
 ## [v1.6.1 修復更新] - 2026-10-30
 
 ### 🌐 訊息內部超連結精準導向系統瀏覽器開啟（收斂全域攔截，避免影響頁籤切換與返回頻道）
