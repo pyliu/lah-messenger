@@ -123,7 +123,9 @@ export default {
       const nextIp = candidates.find(ip => !this.probeAttemptedIps.includes(ip))
 
       if (nextIp) {
-        this.log(this.time(), `[伺服器容錯切換] 原伺服器 (${this.wsHost}) 無法連線，自動嘗試下一個備援主機: ${nextIp}`)
+        const isNextLocal = typeof this.isLocalSiteIp === 'function' ? this.isLocalSiteIp(nextIp) : true
+        const modeDesc = isNextLocal ? '本所備援主機' : '跨所全局備援主機'
+        this.log(this.time(), `[伺服器容錯切換] 原伺服器 (${this.wsHost}) 無法連線，自動嘗試下一個${modeDesc}: ${nextIp}`)
         this.wsHost = nextIp
         this.$store.commit('wsHost', nextIp)
         this.$store.commit('apiHost', nextIp)
@@ -136,7 +138,7 @@ export default {
         this.allCandidatesFailed = true
         this.connecting = false
         this.setConnectText(`伺服器連線失敗 (已嘗試 ${this.probeAttemptedIps.join(', ')})`)
-        this.log(this.time(), '[伺服器容錯] 本所所有候選伺服器皆無法連線:', this.probeAttemptedIps)
+        this.log(this.time(), '[伺服器容錯] 全縣所有候選伺服器皆無法連線:', this.probeAttemptedIps)
       }
     },
 
@@ -176,10 +178,12 @@ export default {
           this.setConnectText(`連線中 (${this.wsHost})`)
           const ws = new WebSocket(this.wsConnStr)
 
-          // 啟動 3.5 秒快速探活與連線逾時監控
+          // 啟動階層式動態探活逾時監控 (本所轄區主機 3.5s，跨所全局備援主機 1.5s)
+          const isLocal = typeof this.isLocalSiteIp === 'function' ? this.isLocalSiteIp(this.wsHost) : true
+          const probeMs = isLocal ? 3500 : 1500
           this.autoProbeTimer = setTimeout(() => {
             if (!this.connected && this.connecting) {
-              this.log(this.time(), `伺服器 ${this.wsHost} 連線逾時 (3.5s)，啟動備援容錯切換...`)
+              this.log(this.time(), `伺服器 ${this.wsHost} 連線逾時 (${probeMs / 1000}s)，啟動備援容錯切換...`)
               try {
                 ws.onopen = null
                 ws.onerror = null
@@ -188,7 +192,7 @@ export default {
               } catch (e) {}
               this.handleConnectionFailure()
             }
-          }, 3500)
+          }, probeMs)
 
           ws.onopen = () => {
             this.clearProbeTimer()

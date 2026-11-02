@@ -171,19 +171,35 @@ Vue.mixin({
       }
       return raw || '220.1.34.18'
     },
+    localSvrIps () {
+      if (process.env.API_HOST) {
+        const devHost = process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST
+        return [devHost]
+      }
+      const raw = this.tySvrIp?.get(this.site)
+      if (Array.isArray(raw)) {
+        return [...raw]
+      }
+      return raw ? [raw] : ['220.1.34.18', '220.1.34.75']
+    },
     candidateSvrIps () {
       if (process.env.API_HOST) {
         const devHost = process.env.API_HOST === 'localhost' ? '127.0.0.1' : process.env.API_HOST
         return [devHost]
       }
-      const raw = this.tySvrIp.get(this.site)
-      let list = []
-      if (Array.isArray(raw)) {
-        list = [...raw]
-      } else if (raw) {
-        list = [raw]
-      } else {
-        list = ['220.1.34.18', '220.1.34.75']
+      const list = [...this.localSvrIps]
+      // 將全縣其餘各所與局本部的正式主機依序附加為全局備援
+      if (this.tySvrIp && typeof this.tySvrIp.forEach === 'function') {
+        this.tySvrIp.forEach((ips, siteCode) => {
+          if (siteCode !== this.site) {
+            const arr = Array.isArray(ips) ? ips : [ips]
+            arr.forEach(ip => {
+              if (ip && !list.includes(ip)) {
+                list.push(ip)
+              }
+            })
+          }
+        })
       }
       // 若目前自訂的 wsHost 不在候選名單中，優先排在第一順位嘗試
       if (this.wsHost && !list.includes(this.wsHost)) {
@@ -193,6 +209,9 @@ Vue.mixin({
     }
   },
   methods: {
+    isLocalSiteIp (ip) {
+      return Array.isArray(this.localSvrIps) && this.localSvrIps.includes(ip)
+    },
     ...mapActions([
       'resetUnread',
       'plusUnread'
