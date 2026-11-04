@@ -1,7 +1,7 @@
 # AGENTS.md — Rust + Tauri v2 & Nuxt 2 (Renderer) 專案規範
 
 > 適用分支：`main`  
-> 專案角色：桃園即時通桌面客戶端（底層已遷移至 Rust + Tauri v2 並合併回主線，前端沿用 Nuxt 2 / Vue 2 / BootstrapVue v2）
+> 專案角色：桃園即時通桌面客戶端（底層為 Rust + Tauri v2，前端為 Nuxt 2 / Vue 2 / BootstrapVue v2）
 
 ---
 
@@ -16,7 +16,7 @@
 - **核心底層（System Layer）**：`src-tauri/`
   - 語言與框架：**Rust 2021 Edition**、**Tauri v2**
   - 主要依賴：`tauri` (v2), `tauri-plugin-single-instance`, `tauri-plugin-notification`, `tauri-plugin-shell`, `tauri-plugin-process`, `tauri-plugin-dialog`, `ldap3`, `sysinfo`, `local-ip-address`, `whoami`, `open`
-  - 職責：視窗生命週期、單一執行個體、系統匣 (Tray)、AD 網域驗證、檔案開啟與本機資訊獲取。
+  - 職責：視窗生命週期、單一執行個體、系統匣 (Tray)、AD 網域驗證、檔案開啟與本機資訊獲取（含虛擬網卡雜訊過濾與 UDP 出站路由探測）。
 - **前端渲染層（Renderer Layer）**：`renderer/`
   - 框架與 UI：**Nuxt.js 2.15.8** (Vue 2.x), **BootstrapVue 2.18.1**, Vuex
   - 模組化架構：
@@ -25,9 +25,7 @@
     - `mixins/`：專責業務邏輯 Mixins（`home-ws.js`、`home-auth.js`、`home-desktop.js`、`home-input.js`、`home-status-queue.js` 與 `input-history.js`）。
   - 職責：使用者互動、聊天室、歷史記錄、公告卡片與個人設定。
 - **IPC 橋接層（Shim Layer）**：`renderer/plugins/electron-shim.js`
-  - 職責：在前端提供與既有 `ipcRenderer.invoke` 及 `ipcRenderer.on` 100% 相容的 API，透明映射至 Tauri v2 的 `invoke` 與 `listen`，確保 Vue 元件免改動。
-- **舊版對照（Legacy Reference）**：`main/`
-  - 職責：原 Electron 主程序保留供比對行為相容性，未經明確要求不得隨意更動。
+  - 職責：在前端提供與既有 `ipcRenderer.invoke` 及 `ipcRenderer.on` 100% 相容的 API，透明映射至 Tauri v2 的 `invoke` 與 `listen`（若於純瀏覽器開啟則自動降級為 Web Mock），確保 Vue 元件免改動。
 
 ---
 
@@ -40,9 +38,9 @@
 - 任何底層原生變更應透過 IPC Commands 解決，不改動元件端呼叫習慣。
 
 ### 3.2 介面契約相容性 (Backward Compatibility)
-所有 Rust Commands 必須保持既有 Electron IPC 事件名稱與參數欄位相容：
+所有 Rust Commands 必須保持既有 IPC 事件名稱與參數欄位相容：
 
-| Electron Channel | Tauri Command 名稱 | 參數結構 | 回傳格式 |
+| IPC Channel | Tauri Command 名稱 | 參數結構 | 回傳格式 |
 |---|---|---|---|
 | `ad-user-query` | `ad_user_query` | `{ config: { url, baseDN, username, password } }` | `{ description, group }` |
 | `userinfo` | `get_userinfo` | 無 | `{ ip, ipv4, userid, pcname, hostname, os, dns }` |
@@ -118,4 +116,3 @@ npm run tauri:build
 - ❌ 不要隨意更動現有 IPC 指令名稱與資料欄位，破壞相容性。
 - ❌ 不要更動主視窗固定寬高 (490x740) 或開啟 `resizable`。
 - ❌ 不要直接在 Vue 元件中引入 Tauri 原生特定型別，應統一透過 `electron-shim.js` 維持跨環境降級相容能力。
-- ❌ 不要刪除 `main/` 目錄，保留其作為對照驗證參考。
