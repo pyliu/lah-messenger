@@ -437,8 +437,17 @@ const mutations = {
         const existing = map.get(key)
         const userTs = parseInt(user.timestamp) || 0
         const existingTs = existing ? (parseInt(existing.timestamp) || 0) : 0
-        if (!existing || userTs > existingTs) {
+        if (!existing) {
           map.set(key, user)
+        } else {
+          const merged = userTs >= existingTs ? { ...user } : { ...existing }
+          const other = userTs >= existingTs ? existing : user
+          if ((merged.domain === 'tyland' || !merged.dept) && other.domain !== 'tyland' && other.dept) {
+            merged.dept = other.dept
+          } else if ((!merged.dept || merged.dept === 'inf') && other.dept && other.dept !== 'inf') {
+            merged.dept = other.dept
+          }
+          map.set(key, merged)
         }
       } else {
         anonymous.push(user)

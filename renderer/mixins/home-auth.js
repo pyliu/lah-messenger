@@ -114,6 +114,9 @@ export default {
       this.$store.commit('userdept', val)
       this.$localForage.setItem('department', val)
       this.updateWindowTitle()
+      if (this.connected && this.validAdAccount && this.validAdName && !this.empty(val)) {
+        this.register()
+      }
     },
 
     manualLogin (flag) {
@@ -136,6 +139,9 @@ export default {
       this.$localForage.setItem('adName', val)
       this.$store.commit('username', val)
       this.updateWindowTitle()
+      if (this.connected && this.validAdAccount && this.validAdName && this.validDepartment) {
+        this.register()
+      }
     },
 
     adPassword (val) {
@@ -254,8 +260,9 @@ export default {
 
               const deptArr = raw.department
               if (Array.isArray(deptArr) && deptArr.length > 0) {
-                const deptName = deptArr[0]
-                if (deptArr.length === 1 || this.empty(this.department)) {
+                const knownUnits = ['資訊課', '行政課', '登記課', '測量課', '地價課', '人事室', '會計室', '主任祕書室', '秘書室', '主任室']
+                const deptName = deptArr.find(d => knownUnits.includes(d)) || deptArr[0]
+                if (deptName && deptName !== '未分配') {
                   const prev = this.deptName
                   this.handleApiUserInfoUpdate({ unit: deptName })
                   this.$store.commit('apiUserinfo', { unit: deptName })
@@ -327,16 +334,24 @@ export default {
     },
 
     handleApiUserInfoUpdate (v) {
-      this.department =
-        {
-          '資訊課': 'inf',
-          '行政課': 'adm',
-          '登記課': 'reg',
-          '測量課': 'sur',
-          '地價課': 'val',
-          '人事室': 'hr',
-          '會計室': 'acc'
-        }[v?.unit] || 'supervisor'
+      if (!v || !v.unit || v.unit === '未分配') {
+        return
+      }
+      const mapped = {
+        '資訊課': 'inf',
+        '行政課': 'adm',
+        '登記課': 'reg',
+        '測量課': 'sur',
+        '地價課': 'val',
+        '人事室': 'hr',
+        '會計室': 'acc',
+        '主任祕書室': 'supervisor',
+        '秘書室': 'supervisor',
+        '主任室': 'supervisor'
+      }[v.unit]
+      if (mapped) {
+        this.department = mapped
+      }
     },
 
     getDepartmentName (v) {
