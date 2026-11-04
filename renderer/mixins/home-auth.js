@@ -29,7 +29,8 @@ export default {
     ],
     autoConnectTimer: null,
     autoConnectScheduled: false,
-    adQuerying: false
+    adQuerying: false,
+    lastReportedIpTime: 0
   }),
 
   computed: {
@@ -456,12 +457,28 @@ export default {
     },
 
     reportToAPIServer () {
+      if (!this.validAdAccount) {
+        return
+      }
+      const now = Date.now()
+      if (this.lastReportedIpTime && now - this.lastReportedIpTime < 15000) {
+        return
+      }
+      this.lastReportedIpTime = now
+
       this.ipcRenderer.invoke('add-ip-entry', {
         api: `${this.apiQueryUrl}${this.$consts.API.JSON.IP}`,
         type: 'add_user_ip_entry',
-        note: `${this.domain} ${this.department}`,
+        ip: this.ip,
+        note: `${this.domain || ''} ${this.department || ''}`.trim(),
         entry_id: this.adAccount,
         entry_desc: this.adName
+      }).then(() => {
+        if (!isProd) {
+          console.log('[reportToAPIServer] 已成功送出使用者 IP 回報至 API 伺服器')
+        }
+      }).catch((err) => {
+        console.warn('[reportToAPIServer] 回報 IP 至 API 伺服器失敗:', err)
       })
     },
 

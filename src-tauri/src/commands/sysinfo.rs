@@ -126,12 +126,17 @@ pub async fn change_user_dept(payload: serde_json::Value) -> Result<serde_json::
 
 #[tauri::command]
 pub async fn add_ip_entry(payload: serde_json::Value) -> Result<(), String> {
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .unwrap_or_else(|_| reqwest::Client::new());
+
     let api_url = match payload.get("api").and_then(|v| v.as_str()) {
         Some(url) => url,
         None => return Ok(()),
     };
 
+    let mut sent = false;
     if let Ok(interfaces) = local_ip_address::list_afinet_netifas() {
         for (_name, ip) in interfaces {
             if let IpAddr::V4(ipv4) = ip {
@@ -140,11 +145,60 @@ pub async fn add_ip_entry(payload: serde_json::Value) -> Result<(), String> {
                     if let Some(obj) = item.as_object_mut() {
                         obj.insert("ip".to_string(), serde_json::Value::String(ipv4.to_string()));
                     }
-                    let _ = client.post(api_url).form(&item).send().await;
+                    if let Err(e) = client.post(api_url).form(&item).send().await {
+                        eprintln!("[add_ip_entry] 回報 IP ({}) 失敗: {}", ipv4, e);
+                    } else {
+                        sent = true;
+                    }
+                }
+            }
+        }
+    }
+
+    if !sent {
+        if let Some(ip) = payload.get("ip").and_then(|v| v.as_str()) {
+            if !ip.is_empty() {
+                if let Err(e) = client.post(api_url).form(&payload).send().await {
+                    eprintln!("[add_ip_entry] 回報 IP (備援 {}) 失敗: {}", ip, e);
                 }
             }
         }
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_serde_urlencoded_with_json_value() {
+        let mut map = serde_json::Map::new();
+        map.insert("api".to_string(), serde_json::Value::String("http://127.0.0.1/api/ip_json_api.php".to_string()));
+        map.insert("type".to_string(), serde_json::Value::String("add_user_ip_entry".to_string()));
+        map.insert("note".to_string(), serde_json::Value::String("ty.land hr".to_string()));
+        map.insert("entry_id".to_string(), serde_json::Value::String("HA10013859".to_string()));
+        map.insert("entry_desc".to_string(), serde_json::Value::String("測試員".to_string()));
+        map.insert("ip".to_string(), serde_json::Value::String("192.168.10.50".to_string()));
+        let val = serde_json::Value::Object(map);
+
+        let client = reqwest::Client::new();
+        let req = client.post("http://127.0.0.1/api/ip_json_api.php").form(&val).build();
+        assert!(req.is_ok(), "Reqwest form build failed: {:?}", req.err());
+    }
+
+    #[tokio::test]
+    async fn test_add_ip_entry_call() {
+        let mut map = serde_json::Map::new();
+        map.insert("api".to_string(), serde_json::Value::String("http://127.0.0.1/api/ip_json_api.php".to_string()));
+        map.insert("type".to_string(), serde_json::Value::String("add_user_ip_entry".to_string()));
+        map.insert("note".to_string(), serde_json::Value::String("ty.land hr".to_string()));
+        map.insert("entry_id".to_string(), serde_json::Value::String("HA10013859".to_string()));
+        map.insert("entry_desc".to_string(), serde_json::Value::String("測試員".to_string()));
+        let val = serde_json::Value::Object(map);
+
+        let res = add_ip_entry(val).await;
+        assert!(res.is_ok(), "add_ip_entry failed: {:?}", res);
+    }
 }
