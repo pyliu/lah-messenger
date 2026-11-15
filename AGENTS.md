@@ -1,6 +1,7 @@
 # lah-messenger — 桃園即時通桌面端（Tauri 2 + Nuxt 2）規範
 
-> **專案架構**：底層為 `src-tauri/`（Rust 2021 + Tauri v2），前端為 `renderer/`（Nuxt 2.15.8 / Vue 2 / BootstrapVue 2.18），透過 `renderer/plugins/electron-shim.js` 將前端 `ipcRenderer.invoke` / `on` 透明映射至 Tauri v2（瀏覽器環境自動降級為 Web Mock）。
+> **專案架構**：底層為 `src-tauri/`（Rust 2021 + Tauri v2），前端為 `renderer/`（Nuxt 2.15.8 / Vue 2 / BootstrapVue 2.18），透過 `renderer/plugins/electron-shim.js` 將前端 `ipcRenderer.invoke` / `on` 透明映射至 Tauri v2（瀏覽器環境自動降級為 Web Mock）。  
+> **記憶指標**：探索或修改前，若 `docs/MEMORY.md` 存在請優先讀取；完成重要 Feature 或踩坑 Bug 修正後，依工作區 `../docs/agents/memory.md` 規範沉澱。
 
 ---
 
