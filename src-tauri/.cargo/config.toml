@@ -1,6 +1,6 @@
 [build]
 pipelining = false
-target-dir = "C:/Temp/cargo-target/lah-messenger"
+target-dir = "D:/tmp/cargo-target/lah-messenger"
 
 [profile.dev]
 incremental = false

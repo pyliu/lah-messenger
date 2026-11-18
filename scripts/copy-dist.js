@@ -8,7 +8,7 @@ function findBundleDir(targetType) {
   }
   candidates.push(path.resolve(__dirname, `../src-tauri/target/release/bundle/${targetType}`));
   candidates.push(path.resolve(__dirname, `../target/release/bundle/${targetType}`));
-  candidates.push(path.resolve(`C:/Temp/cargo-target/lah-messenger/release/bundle/${targetType}`));
+  candidates.push(path.resolve(`D:/tmp/cargo-target/lah-messenger/release/bundle/${targetType}`));
 
   for (const dir of candidates) {
     if (fs.existsSync(dir)) {
@@ -68,6 +68,22 @@ function copyDist() {
   if (!copiedNsis && !copiedMsi) {
     console.error('❌ 在輸出目錄未找到可複製的安裝檔 (.exe / .msi)。');
     process.exit(1);
+  }
+  if (process.env.KEEP_CARGO_CACHE !== '1' && !process.argv.includes('--keep-cache')) {
+    const cacheRoot = path.resolve('D:/tmp/cargo-target');
+    if (fs.existsSync(cacheRoot)) {
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      for (const entry of fs.readdirSync(cacheRoot, { withFileTypes: true })) {
+        if (!entry.isDirectory() || entry.name.toLowerCase() === 'lah-messenger') continue;
+        const full = path.join(cacheRoot, entry.name);
+        try {
+          if (fs.statSync(full).mtimeMs < cutoff) {
+            fs.rmSync(full, { recursive: true, force: true });
+            console.log(`🧹 已清除超過 1 天的過期暫存目錄：${full}`);
+          }
+        } catch (err) {}
+      }
+    }
   }
   console.log('==================================================\n');
 }
