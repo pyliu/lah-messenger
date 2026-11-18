@@ -1,6 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
+function resolveCargoTargetRoot() {
+  if (process.env.LAH_CARGO_TARGET_ROOT && process.env.LAH_CARGO_TARGET_ROOT.trim()) {
+    return path.resolve(process.env.LAH_CARGO_TARGET_ROOT.trim());
+  }
+  if (fs.existsSync('D:\\')) {
+    return path.resolve('D:/tmp/cargo-target');
+  }
+  return path.resolve('/tmp/cargo-target');
+}
+
 function findBundleDir(targetType) {
   const candidates = [];
   if (process.env.CARGO_TARGET_DIR) {
@@ -8,7 +18,12 @@ function findBundleDir(targetType) {
   }
   candidates.push(path.resolve(__dirname, `../src-tauri/target/release/bundle/${targetType}`));
   candidates.push(path.resolve(__dirname, `../target/release/bundle/${targetType}`));
-  candidates.push(path.resolve(`D:/tmp/cargo-target/lah-messenger/release/bundle/${targetType}`));
+  const targetRootBundle = path.resolve(resolveCargoTargetRoot(), `lah-messenger/release/bundle/${targetType}`);
+  candidates.push(targetRootBundle);
+  const driveBundle = path.resolve(`/tmp/cargo-target/lah-messenger/release/bundle/${targetType}`);
+  if (!candidates.includes(driveBundle)) {
+    candidates.push(driveBundle);
+  }
 
   for (const dir of candidates) {
     if (fs.existsSync(dir)) {
@@ -70,7 +85,7 @@ function copyDist() {
     process.exit(1);
   }
   if (process.env.KEEP_CARGO_CACHE !== '1' && !process.argv.includes('--keep-cache')) {
-    const cacheRoot = path.resolve('D:/tmp/cargo-target');
+    const cacheRoot = resolveCargoTargetRoot();
     if (fs.existsSync(cacheRoot)) {
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       for (const entry of fs.readdirSync(cacheRoot, { withFileTypes: true })) {
