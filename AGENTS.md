@@ -33,6 +33,7 @@
 
 ## 3. 常用驗證與建置指令
 
+- **Vue 樣板靜態檢查（防範孤立 `v-else-if` 等編譯器靜默丟棄）**：`npm run check:vue`（檢查異動檔）或 `npm run check:vue:all`（全量檢查）
 - **Rust 檢查與單元測試**：`cargo check --manifest-path src-tauri/Cargo.toml`、`cargo test --manifest-path src-tauri/Cargo.toml`
-- **前端靜態生成驗證**：`npm run generate:nuxt`
+- **前端靜態生成驗證**：`npm run generate:nuxt`（於 Node v26 環境執行須先設定 `NODE_OPTIONS=--openssl-legacy-provider`）
 - **開發熱重載／正式打包**：`npm run tauri:dev`、`npm run tauri:build`（打包前須確認授權）

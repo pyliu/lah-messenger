@@ -6,6 +6,7 @@ const rendererDir = fs.realpathSync(__dirname)
 const rootDir = fs.realpathSync(path.resolve(__dirname, '..'))
 
 export default {
+  telemetry: false,
   rootDir,
   srcDir: rendererDir,
   buildDir: path.resolve(rendererDir, '.nuxt'),
