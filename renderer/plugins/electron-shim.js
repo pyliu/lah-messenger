@@ -81,7 +81,7 @@ export const ipcRenderer = {
 
     // 2. 瀏覽器端 Mock 降級
     console.warn(`[IPC Shim Mock] ${channel}`, payload);
-    if (channel === 'version') return '1.6.2 (Tauri Mode)';
+    if (channel === 'version') return '1.6.3 (Tauri Mode)';
     if (channel === 'userinfo') {
       return {
         ip: '127.0.0.1',

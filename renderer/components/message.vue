@@ -48,6 +48,7 @@
       :raw-attachments="attachments"
       :channel="channel"
       :message-id="id"
+      :is-latest="isLatest"
       :class="isToday ? 'today-card' : ''"
     )
 
@@ -162,7 +163,8 @@ export default {
   props: {
     raw: { type: Object, required: true },
     prev: { type: Object, default: undefined },
-    preview: { type: Boolean, default: false }
+    preview: { type: Boolean, default: false },
+    isLatest: { type: Boolean, default: false }
   },
   computed: {
     isAdmin () { return this.authority.isAdmin },

@@ -461,6 +461,12 @@ export default {
         case 'update_current_channel':
           this.setConnectText(json.message)
           break
+        case 'bump_message':
+          this.setConnectText(json.message)
+          if (!json.success) {
+            this.warning(json.message || '公告推前失敗')
+          }
+          break
         default:
           console.warn(`收到未支援指令 ${cmd} ACK`, json)
       }

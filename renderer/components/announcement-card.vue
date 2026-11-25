@@ -37,8 +37,21 @@ b-card.announcement-card(
   
   //- 移除了原有的 .small，並使用 protected-footer 進行絕對隔離
   template(#footer): .protected-footer.d-flex.justify-content-between.align-items-center.text-muted
-    span {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
-    b-button-group(v-if="!preview && (mine || isAdmin)", size="sm")
+    span.text-truncate.mr-1 {{ dataJson.sender }}#[span.ml-1(v-if="sender !== dataJson.sender") {{ sender }}]
+    b-button-group.flex-shrink-0(v-if="!preview && (mine || isAdmin)", size="sm")
+      b-button(
+        v-if="isAnnouncementChannel"
+        variant="outline-success"
+        :disabled="isLatest || bumping"
+        :title="isLatest ? '此公告已在最前' : '將此公告推至最前'"
+        @click="bump"
+      )
+        b-icon.align-middle(
+          :icon="bumping ? 'arrow-repeat' : 'arrow-down-circle-fill'"
+          :animation="bumping ? 'spin' : undefined"
+          scale="0.8"
+        )
+        span.align-middle.ml-1 推前
       b-button(
         variant="outline-primary"
         title="編輯公告"
@@ -59,7 +72,7 @@ b-card.announcement-card(
           scale="0.8"
         )
         span.align-middle.ml-1 移除
-    span {{ dataJson.create_datetime }}
+    span.text-nowrap.ml-1 {{ dataJson.create_datetime }}
 </template>
 
 <script>
@@ -75,9 +88,17 @@ export default {
     channel: { type: String, required: true },
     preview: { type: Boolean, default: false },
     rawAttachments: { type: Array, default: () => [] },
-    messageId: { type: [Number, String], default: 0 }
+    messageId: { type: [Number, String], default: 0 },
+    isLatest: { type: Boolean, default: false }
   },
+  data: () => ({
+    bumping: false,
+    bumpTimer: null
+  }),
   computed: {
+    isAnnouncementChannel () {
+      return typeof this.channel === 'string' && this.channel.startsWith('announcement')
+    },
     effectiveId () {
       return parseInt(this.dataJson?.id || this.dataJson?.messageId || this.dataJson?.message_id || this.messageId) || 0
     },
@@ -131,7 +152,38 @@ export default {
       return []
     }
   },
+  beforeDestroy () {
+    clearTimeout(this.bumpTimer)
+  },
   methods: {
+    bump () {
+      if (this.isLatest || this.bumping || !this.isAnnouncementChannel || this.effectiveId <= 0) {
+        return
+      }
+      if (!this.websocket || this.websocket.readyState !== 1) {
+        this.warning('即時通未連線，無法推前公告')
+        return
+      }
+      this.bumping = true
+      clearTimeout(this.bumpTimer)
+      this.bumpTimer = setTimeout(() => {
+        this.bumping = false
+      }, 5000)
+      const jsonString = JSON.stringify({
+        type: 'command',
+        sender: this.userid,
+        date: this.date(),
+        time: this.time(),
+        message: JSON.stringify({
+          command: 'bump_message',
+          channel: this.channel,
+          id: this.effectiveId,
+          sender: this.userid
+        }),
+        channel: 'system'
+      })
+      this.websocket.send(jsonString)
+    },
     remove () {
       this.confirm(`刪除公告 - 「${this.dataJson.title}」？`).then((YN) => {
         if (YN) {
@@ -256,8 +308,9 @@ export default {
   // 3. 按鈕與圖示特例保護
   ::v-deep .btn {
     font-size: 11px !important; // 按鈕字體等比調大至 11px
-    padding: 2px 6px !important; // 縮小按鈕內距
+    padding: 2px 5px !important; // 縮小按鈕內距以確保 490px 寬度下三顆按鈕單行不換行
     height: auto !important;
+    white-space: nowrap !important;
     display: inline-flex;
     align-items: center;
     

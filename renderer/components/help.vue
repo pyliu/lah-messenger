@@ -1,295 +1,259 @@
 <template lang="pug">
 .lah-messenger-help(@click="handleSpecialClick($event)")
-  b-tabs(pills card fill active-nav-item-class="font-weight-bold" content-class="mt-3")
-    //- ======================= 分頁 1: 文字排版與醒目 =======================
+  b-tabs(
+    pills
+    fill
+    small
+    nav-wrapper-class="help-tabs-nav bg-light rounded p-1 mb-2"
+    active-nav-item-class="font-weight-bold shadow-sm"
+    content-class="help-tabs-content"
+  )
+    //- ======================= 分頁 1: 排版語法 =======================
     b-tab(active)
       template(#title)
         b-icon.mr-1(icon="fonts")
-        span 文字排版與醒目
+        span 排版語法
 
-      //- 1. 自訂醒目色彩文字
-      .tab-section.mb-3
-        .d-flex.align-items-center.mb-2
+      //- 1. 自訂醒目色彩
+      .help-section.mb-3
+        .section-heading
           b-icon.mr-1(icon="palette-fill" variant="primary")
-          h6.font-weight-bold.mb-0 自訂醒目色彩文字
-        p.s-90.text-muted.mb-2
-          span 使用大括號標籤包圍文字，即可自訂粗體醒目色彩（半形 
+          span 自訂醒目色彩
+        p.section-desc
+          span 使用半形 
           code(v-pre) {{ }}
           span  或全形 
           code ｛｛ ｝｝
-          span  皆支援）：
-        .table-responsive
-          table.table.table-sm.table-bordered.align-middle.s-90.mb-0
-            thead.thead-light
-              tr.text-center
-                th(style="width: 20%") 色彩標籤
-                th(style="width: 40%") 輸入語法
-                th(style="width: 40%") 呈現效果
-            tbody
-              tr
-                td.text-center: b-badge(variant="primary") 藍色文字 (b)
-                td: code(v-pre) {{b 藍色重點文字 b}}
-                td: span.text-bold-blue 藍色重點文字
-              tr
-                td.text-center: b-badge(variant="danger") 紅色文字 (r)
-                td: code(v-pre) {{r 紅色緊急提醒 r}}
-                td: span.text-bold-red 紅色緊急提醒
-              tr
-                td.text-center: b-badge(variant="success") 綠色文字 (g)
-                td: code(v-pre) {{g 綠色正常進度 g}}
-                td: span.text-bold-green 綠色正常進度
-              tr
-                td.text-center: b-badge(variant="warning") 橘色文字 (o)
-                td: code(v-pre) {{o 橘色警示事項 o}}
-                td: span.text-bold-orange 橘色警示事項
+          span  包圍文字即可套用粗體色彩。
+        .help-card-list
+          .help-card
+            .d-flex.justify-content-between.align-items-center.mb-1
+              b-badge(variant="primary") 藍色重點 (b)
+              span.text-bold-blue.demo-text 藍色重點文字
+            code.code-block(v-pre) {{b 藍色重點文字 b}}
+          .help-card
+            .d-flex.justify-content-between.align-items-center.mb-1
+              b-badge(variant="danger") 紅色緊急 (r)
+              span.text-bold-red.demo-text 紅色緊急提醒
+            code.code-block(v-pre) {{r 紅色緊急提醒 r}}
+          .help-card
+            .d-flex.justify-content-between.align-items-center.mb-1
+              b-badge(variant="success") 綠色進度 (g)
+              span.text-bold-green.demo-text 綠色正常進度
+            code.code-block(v-pre) {{g 綠色正常進度 g}}
+          .help-card
+            .d-flex.justify-content-between.align-items-center.mb-1
+              b-badge(variant="warning") 橘色警示 (o)
+              span.text-bold-orange.demo-text 橘色警示事項
+            code.code-block(v-pre) {{o 橘色警示事項 o}}
 
-      //- 2. 系統智慧辨識自動醒目
-      .tab-section.mb-3
-        .d-flex.align-items-center.mb-2
+      //- 2. 系統自動辨識
+      .help-section.mb-3
+        .section-heading
           b-icon.mr-1(icon="magic" variant="primary")
-          h6.font-weight-bold.mb-0 系統自動辨識加粗與變色
-        .table-responsive
-          table.table.table-sm.table-bordered.align-middle.s-90.mb-0
-            thead.thead-light
-              tr.text-center
-                th(style="width: 25%") 辨識類型
-                th(style="width: 35%") 輸入範例
-                th(style="width: 40%") 呈現效果與說明
-            tbody
-              tr
-                td.font-weight-bold.text-center 日期與時間區間
-                td
-                  code 08:00~17:00
-                  br
-                  code 6/30~7/1
-                  br
-                  code 10點至12點
-                td
-                  span.text-bold-blue 08:00~17:00
-                  br
-                  span.text-bold-blue 6/30~7/1
-                  br
-                  span.text-bold-blue 10點至12點
-                  .s-80.text-muted.mt-1 自動轉換為藍色粗體醒目顯示
-              tr
-                td.font-weight-bold.text-center 全形括號文字
-                td
-                  code 「重要決策」
-                  br
-                  code （註記說明）
-                  br
-                  code 【緊急公文】
-                td
-                  b 「重要決策」
-                  br
-                  b （註記說明）
-                  br
-                  b 【緊急公文】
-                  .s-80.text-muted.mt-1 支援 「（【《『〈〔 等符號自動加粗
-              tr
-                td.font-weight-bold.text-center 本機與網路路徑
-                td
-                  code \\220.1.34.57\分享區
-                  br
-                  code C:\Users\Document
-                td
-                  span.open-os-explorer(title="點擊測試複製路徑") \\220.1.34.57\分享區
-                  br
-                  span.open-os-explorer(title="點擊測試複製路徑") C:\Users\Document
-                  .s-80.text-success.mt-1
-                    b-icon.mr-1(icon="cursor-fill")
-                    strong 點擊上方文字即可自動複製至剪貼簿！
-              tr
-                td.font-weight-bold.text-center 含空白之路徑
-                td: code "\\192.168.1.1\Public Folder"
-                td
-                  span.open-os-explorer(title="點擊測試複製路徑") "\\192.168.1.1\Public Folder"
-                  .s-80.text-muted.mt-1 包含空格的路徑請以雙引號包覆
+          span 系統自動辨識與路徑複製
+        .help-card-list
+          .help-card
+            .card-title-row
+              strong 日期與時間區間
+              span.card-note 自動藍字加粗
+            .d-flex.flex-wrap.align-items-center.mt-1
+              code.mr-1.mb-1 08:00~17:00
+              code.mr-1.mb-1 6/30~7/1
+              span.mx-1 ➔
+              span.text-bold-blue.mr-2 08:00~17:00
+              span.text-bold-blue 6/30~7/1
+          .help-card
+            .card-title-row
+              strong 全形括號自動加粗
+              span.card-note 支援 「（【《『〈〔
+            .mt-1
+              b 「重要決策」
+              span.mx-1 ・
+              b （註記說明）
+              span.mx-1 ・
+              b 【緊急公文】
+          .help-card
+            .card-title-row
+              strong 本機與網路路徑
+              span.card-note.text-success.font-weight-bold 點擊即可複製
+            .mt-1.path-demo-wrap
+              span.open-os-explorer.mb-1(title="點擊測試複製路徑") \\220.1.34.57\分享區
+              span.open-os-explorer.mb-1(title="點擊測試複製路徑") C:\Users\Document
+              .card-note.mt-1 含空白路徑請加雙引號，例如：
+              span.open-os-explorer.mt-1(title="點擊測試複製路徑") "\\192.168.1.1\Public Folder"
 
-      //- 3. 常用 Markdown 排版
-      .tab-section
-        .d-flex.align-items-center.mb-2
+      //- 3. 常用 Markdown
+      .help-section
+        .section-heading
           b-icon.mr-1(icon="markdown" variant="primary")
-          h6.font-weight-bold.mb-0 常用 Markdown 排版語法
-        .table-responsive
-          table.table.table-sm.table-bordered.align-middle.s-90.mb-0
-            thead.thead-light
-              tr.text-center
-                th(style="width: 25%") 排版樣式
-                th(style="width: 45%") 輸入語法
-                th(style="width: 30%") 呈現效果
-            tbody
-              tr
-                td.font-weight-bold.text-center 階層標題
-                td: code # 大標題 #[br] ## 次標題
-                td
-                  strong.d-block.h6.mb-0 大標題
-                  span.d-block.s-90.font-weight-bold 次標題
-              tr
-                td.font-weight-bold.text-center 粗體與斜體
-                td: code **粗體文字** 與 *斜體文字*
-                td
-                  strong 粗體文字
-                  span  與 
-                  em 斜體文字
-              tr
-                td.font-weight-bold.text-center 刪除線
-                td: code ~~已廢棄或修正文字~~
-                td: del 已廢棄或修正文字
-              tr
-                td.font-weight-bold.text-center 引用文字
-                td: code > 這是重要引言內容
-                td.text-muted.border-left.pl-2: em 這是重要引言內容
-              tr
-                td.font-weight-bold.text-center 條列清單
-                td: code - 項目一 #[br] - 項目二
-                td
-                  ul.pl-3.mb-0
-                    li 項目一
-                    li 項目二
+          span 常用 Markdown 語法
+        .help-card-list
+          .help-card
+            .d-flex.justify-content-between.align-items-center
+              code # 標題 / ## 次標
+              strong 階層標題
+          .help-card
+            .d-flex.justify-content-between.align-items-center
+              code **粗體** *斜體*
+              span #[strong 粗體] 與 #[em 斜體]
+          .help-card
+            .d-flex.justify-content-between.align-items-center
+              code ~~修正文字~~
+              del 刪除線文字
+          .help-card
+            .d-flex.justify-content-between.align-items-center
+              code > 引言內容
+              span.text-dark.border-left.pl-2: em 引言文字
+          .help-card
+            .d-flex.justify-content-between.align-items-center
+              code - 項目一
+              span 項目條列清單
 
-    //- ======================= 分頁 2: 訊息操作與快捷鍵 =======================
+    //- ======================= 分頁 2: 快捷操作 =======================
     b-tab
       template(#title)
         b-icon.mr-1(icon="keyboard")
-        span 訊息操作與快捷鍵
+        span 快捷操作
 
-      //- 1. 快捷鍵
-      .tab-section.mb-3
-        .d-flex.align-items-center.mb-2
+      //- 1. 鍵盤操作
+      .help-section.mb-3
+        .section-heading
           b-icon.mr-1(icon="lightning-fill" variant="primary")
-          h6.font-weight-bold.mb-0 鍵盤操作與快速鍵
-        .row.s-90
-          .col-md-6.mb-2
-            .p-2.border.rounded.bg-light.d-flex.align-items-center.justify-content-between.h-100
-              div
-                .font-weight-bold.text-dark 立即送出訊息
-                .s-80.text-muted 於文字輸入框直接按下送出
-              div
-                kbd Enter
-          .col-md-6.mb-2
-            .p-2.border.rounded.bg-light.d-flex.align-items-center.justify-content-between.h-100
-              div
-                .font-weight-bold.text-dark 換行輸入 (多行文字)
-                .s-80.text-muted 同時按住輔助鍵與 Enter 換行
+          span 聊天室輸入快速鍵
+        .help-card-list
+          .help-card.d-flex.justify-content-between.align-items-center
+            div
+              strong.d-block 傳送訊息
+              span.card-note 搭配輔助鍵送出對話
+            .text-nowrap.ml-2
+              kbd Ctrl
+              span.mx-1 /
+              kbd Shift
+              span.mx-1 +
+              kbd Enter
+          .help-card.d-flex.justify-content-between.align-items-center
+            div
+              strong.d-block 換行輸入
+              span.card-note 多行分段編輯
+            kbd Enter
+          .help-card.d-flex.justify-content-between.align-items-center
+            div
+              strong.d-block 清空輸入框
+              span.card-note 快速清除目前草稿
+            kbd Esc
+
+      //- 2. 圖片、附件與表情
+      .help-section.mb-3
+        .section-heading
+          b-icon.mr-1(icon="paperclip" variant="primary")
+          span 圖片、附件與貼圖
+        .help-card-list
+          .help-card
+            .card-title-row
+              strong 剪貼簿快速貼圖
               .text-nowrap
-                kbd Shift
-                span.mx-1 +
-                kbd Enter
+                kbd Win+Shift+S
+                span.mx-1 ➔
+                kbd Ctrl+V
+            .card-note.mt-1 截圖後於輸入框直接貼上即可載入預覽送出。
+          .help-card
+            .d-flex.align-items-center
+              b-icon.mr-2(icon="image" variant="success")
+              div
+                strong.d-block 圖片與附加檔案
+                span.card-note 點選輸入列圖示上傳 PNG/JPG 圖檔或各類業務附件。
+          .help-card
+            .d-flex.align-items-center
+              b-icon.mr-2(icon="emoji-smile" variant="warning")
+              div
+                strong.d-block 表情符號挑選器
+                span.card-note 點擊笑臉圖示快速插入常用 Emoji。
 
-      //- 2. 圖片與貼圖
-      .tab-section.mb-3
-        .d-flex.align-items-center.mb-2
-          b-icon.mr-1(icon="images" variant="primary")
-          h6.font-weight-bold.mb-0 圖片傳送與貼圖支援
-        ul.s-90.pl-3.mb-0
-          li.mb-2
-            strong.text-dark 剪貼簿快速貼圖：
-            span 使用截圖工具（如 
-            kbd Win + Shift + S
-            span ）複製畫面後，直接在輸入框按下 
-            kbd Ctrl + V
-            span  即可自動載入圖片預覽，確認後送出。
-          li.mb-2
-            strong.text-dark 檔案挑選上傳：
-            span 點選輸入框下方的 
-            b-icon(icon="image" variant="secondary")
-            span  圖片按鈕，可自本機挑選 PNG / JPG 圖檔上傳。
-          li.mb-1
-            strong.text-dark 表情符號：
-            span 點選輸入框下方的 
-            b-icon(icon="emoji-smile" variant="warning")
-            span  笑臉按鈕，可直接選取常用的 Emoji 表情貼圖。
-
-      //- 3. 訊息管理
-      .tab-section
-        .d-flex.align-items-center.mb-2
+      //- 3. 訊息與公告管理
+      .help-section
+        .section-heading
           b-icon.mr-1(icon="tools" variant="primary")
-          h6.font-weight-bold.mb-0 訊息管理與互動狀態
-        .row.s-90
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100
-              .d-flex.align-items-center.mb-1
-                b-icon.mr-1(icon="pencil-fill" variant="primary")
-                strong.text-dark 訊息編輯 (24小時內)
-              .text-muted 發送 24 小時內之個人訊息，點擊右側鉛筆按鈕即可重新編輯對話文字。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100
-              .d-flex.align-items-center.mb-1
-                b-icon.mr-1(icon="x-circle" variant="danger")
-                strong.text-dark 訊息收回 (24小時內)
-              .text-muted 點擊紅色按鈕可將發送未滿 24 小時的訊息收回並自聊天室中撤除。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100
-              .d-flex.align-items-center.mb-1
-                b-icon.mr-1(icon="reply-fill" variant="secondary")
-                strong.text-dark 引用回覆
-              .text-muted 點擊他人訊息旁的回覆箭頭，系統會自動將該則訊息作為引用帶入輸入框。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100
-              .d-flex.align-items-center.mb-1
-                b-icon.mr-1(icon="check-all" variant="primary")
-                strong.text-dark 雙勾勾已讀確認
-              .text-muted 發送之私訊於對方開啟閱讀後，時間旁將自動顯示 
-                b-icon(icon="check-all" variant="secondary")
-                span  已讀標記。
+          span 訊息與公告管理
+        .help-card-list
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-icon.mr-2(icon="arrow-down-circle-fill" variant="success")
+              strong 公告推前（v1.6.3）
+            .card-note 發布人或管理者可一鍵將重點公告移至畫面最前並保留原發布時間；已位於最前時按鈕停用。
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-icon.mr-2(icon="megaphone-fill" variant="primary")
+              strong 快速發布公告與私訊（v1.6.3）
+            .card-note 切換至公告（具權限）或私訊頁籤時，可直接點擊右下角版本號旁的快速按鈕發布。
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-icon.mr-2(icon="pencil-fill" variant="primary")
+              strong 編輯與收回（24 小時內）
+            .card-note 個人訊息於 24 小時內可點擊鉛筆編輯或紅色圖示收回；點他人訊息箭頭可引用回覆。
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-icon.mr-2(icon="check-all" variant="primary")
+              strong 雙勾勾已讀確認
+            .card-note 對方開啟閱讀私訊後，時間旁將自動顯示雙勾勾標記。
 
-    //- ======================= 分頁 3: 頻道與功能導覽 =======================
+    //- ======================= 分頁 3: 頻道功能 =======================
     b-tab
       template(#title)
         b-icon.mr-1(icon="chat-dots")
-        span 頻道與功能導覽
+        span 頻道功能
 
       //- 1. 頻道分類
-      .tab-section.mb-3
-        .d-flex.align-items-center.mb-2
+      .help-section.mb-3
+        .section-heading
           b-icon.mr-1(icon="collection-fill" variant="primary")
-          h6.font-weight-bold.mb-0 頻道分類架構
-        .row.s-90
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100.bg-light
-              .d-flex.align-items-center.mb-1
-                b-badge.mr-1(variant="danger") 📣 公告
-                strong 全所公佈欄
-              .text-muted 具備卡片式醒目瀏覽，支援設定公告標題、優先層級（一般/重要/緊急）與有效截止時間。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100.bg-light
-              .d-flex.align-items-center.mb-1
-                b-badge.mr-1(variant="primary") 💬 全所頻道
-                strong 全所交誼聊天室
-              .text-muted 全所同仁公開交誼與即時討論空間，可發布各類共同事項或休閒交流。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100.bg-light
-              .d-flex.align-items-center.mb-1
-                b-badge.mr-1(variant="info") 🏢 課室頻道
-                strong 各課室專屬聊天室
-              .text-muted 登記、測量、地價、資訊、行政、會計、人事等各課內部專屬業務研討頻道。
-          .col-md-6.mb-2
-            .p-2.border.rounded.h-100.bg-light
-              .d-flex.align-items-center.mb-1
-                b-badge.mr-1(variant="success") 🔒 私訊
-                strong 個人一對一對話
-              .text-muted 點擊在線同仁名單或大頭貼即可開啟一對一私密對話。
+          span 頻道分類導覽
+        .help-card-list
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-badge.mr-2(variant="danger")
+                b-icon.mr-1(icon="megaphone-fill")
+                span 公告
+              strong 全所公佈欄
+            .card-note 卡片式醒目瀏覽，支援設定標題、優先層級、有效時間、附件與推前強調。
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-badge.mr-2(variant="primary")
+                b-icon.mr-1(icon="chat-dots-fill")
+                span 通知
+              strong 全所與課室頻道
+            .card-note 包含全所公開交誼頻道及登記、測量、地價、資訊、行政、會計、人事等課室專屬頻道。
+          .help-card
+            .d-flex.align-items-center.mb-1
+              b-badge.mr-2(variant="success")
+                b-icon.mr-1(icon="envelope-fill")
+                span 私訊
+              strong 個人一對一對話
+            .card-note 點擊在線同仁大頭貼或右下角「發送私訊」按鈕，即可快速發起一對一對話。
 
-      //- 2. 同仁卡片與連線診斷
-      .tab-section
-        .d-flex.align-items-center.mb-2
+      //- 2. 同仁資訊與連線
+      .help-section
+        .section-heading
           b-icon.mr-1(icon="person-badge-fill" variant="primary")
-          h6.font-weight-bold.mb-0 同仁資訊卡片與連線設定
-        ul.s-90.pl-3.mb-0
-          li.mb-2
-            strong 查詢同仁分機與資訊：
-            span 點選對話中的任何大頭貼，或從右側「在線同仁」列表點選同仁姓名，即可跳出同仁資訊卡片（含姓名、分機、所屬課室），並提供快速開啟私訊按鈕。
-          li.mb-1
-            strong 自訂 WebSocket 伺服器：
-            span 若遇即時通伺服器連線中斷或維護，可點擊上方提示橫條的「自訂」按鈕，快速切換或自訂 WebSocket IP 與 Port 連線。
+          span 同仁資訊與連線設定
+        .help-card-list
+          .help-card
+            strong.d-block.mb-1 查詢同仁分機與個人卡片
+            .card-note 點擊訊息大頭貼或「在線同仁」名單，可檢視姓名、分機、課室並直接私訊。
+          .help-card
+            strong.d-block.mb-1 歷史狀態與伺服器切換
+            .card-note 點擊視窗左下角狀態列可查閱近期系統紀錄；斷線時可於登入或設定畫面調整主機連線。
 
-  //- 底部外部連結與提示
-  .mt-3.pt-2.border-top.d-flex.flex-wrap.justify-content-between.align-items-center.text-muted.s-85
-    span.mr-2 💡 提示：輸入文字支援完整 Markdown 格式，系統會自動防護過濾惡意 HTML 標籤。
-    b-link.text-primary.font-weight-bold(href="https://markdown.tw/" target="_blank" rel="noopener noreferrer")
+  //- 底部外部手冊連結
+  .help-footer.mt-2.pt-2.border-top.d-flex.justify-content-between.align-items-center
+    span.card-note 支援 Markdown 與安全 HTML 過濾
+    b-link.text-primary.font-weight-bold.text-nowrap(
+      href="https://markdown.tw/"
+      target="_blank"
+      rel="noopener noreferrer"
+    )
       b-icon.mr-1(icon="box-arrow-up-right")
-      span Markdown 完整語法手冊 (另開分頁)
+      span 語法手冊
 </template>
 
 <script>
@@ -307,60 +271,127 @@ export default {
 <style lang="scss" scoped>
 .lah-messenger-help {
   max-width: 100%;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #212529;
+  overflow-x: hidden;
 }
 
-.tab-section {
-  padding-bottom: 0.5rem;
+::v-deep .help-tabs-nav {
+  border: 1px solid #dee2e6;
+  .nav-link {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &.active {
+      color: #fff;
+    }
+  }
+}
 
-  h6 {
-    letter-spacing: 0.5px;
+.help-section {
+  .section-heading {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1f2937;
+    margin-bottom: 0.4rem;
+  }
+  .section-desc {
+    font-size: 0.8rem;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.help-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.help-card {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  .card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .card-note {
+    font-size: 0.78rem;
+    color: #495057;
+  }
+  .demo-text {
+    font-size: 0.85rem;
   }
 }
 
 code {
   background-color: #f8f9fa;
-  padding: 0.15rem 0.4rem;
+  padding: 0.12rem 0.35rem;
   border-radius: 4px;
-  color: #d63384;
-  font-weight: bold;
+  color: #b02a37;
+  font-weight: 600;
   border: 1px solid #e9ecef;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.code-block {
+  display: block;
+  width: 100%;
 }
 
 kbd {
-  background-color: #343a40;
-  color: #fff;
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
+  background-color: #212529;
+  color: #ffffff;
+  padding: 0.12rem 0.38rem;
+  border-radius: 4px;
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.25);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-family: inherit;
+}
+
+.path-demo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .open-os-explorer {
   cursor: pointer;
   background-color: #e8f4fd;
-  color: #007bff;
-  padding: 0.15rem 0.4rem;
+  color: #0056b3;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  border: 1px dashed #b8daff;
+  border: 1px dashed #90c8f8;
   display: inline-block;
-  transition: all 0.2s ease-in-out;
+  max-width: 100%;
+  word-break: break-all;
+  font-size: 0.78rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
     background-color: #cce5ff;
-    color: #0056b3;
+    color: #003d80;
     text-decoration: underline;
   }
 }
 
-.table {
-  th {
-    background-color: #f1f3f5;
-    font-weight: 600;
-  }
-  td, th {
-    vertical-align: middle;
+.help-footer {
+  font-size: 0.78rem;
+  .card-note {
+    color: #495057;
   }
 }
 </style>

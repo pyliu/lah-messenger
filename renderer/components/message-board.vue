@@ -9,19 +9,6 @@ div(v-else :class="blockCss")
     @drop="drop"
   )
     b-icon.old-message-arrow(v-if="showOldMessageArrow" icon="arrow-up-circle-fill" font-scale="2" variant="muted" :title="`讀取之前${history}筆訊息`" @click="delayLoadHistoryMessage")
-    b-tooltip(
-      ref="postAnnouncementBtnTooltip",
-      :target="() => $refs['postMessageBtn']",
-      :title="`發布訊息@${currentChannelName}`",
-      placement="right"
-    )
-    b-button.post-message-btn(
-      v-if="showPostAnnouncementBtn"
-      ref="postMessageBtn"
-      @click="openMessageInput"
-      size="lg"
-      variant="primary"
-    ): b-icon(icon="chat-right-text" flip-h)
     
     h5.center.my-5(v-if="empty(list)")
       b-icon.mr-1(icon="shield-fill-exclamation" variant="success")
@@ -32,6 +19,7 @@ div(v-else :class="blockCss")
         leave-active-class="animate__slideInDown"
         v-for="(item, idx) in list"
         :raw="item" :prev="list[idx - 1]"
+        :is-latest="isLatestInChannel(item)"
         :key="`msg-${idx}`"
         :ref="`msg-${idx}`"
         @reply="$emit('reply', $event)"
@@ -75,16 +63,19 @@ export default {
     },
     messageCount () { return this.list.length },
     showOldMessageArrow () { return this.displayOldMessageArrow && this.scrollTop < 50 && this.list.length > 0 && !this.fetchingHistory },
-    showPostAnnouncementBtn () { return !this.chatRooms.includes(this.currentChannel) && this.isAuthorized }
+    latestIdByChannel () {
+      const maxMap = {}
+      this.list.forEach((item) => {
+        const ch = item?.channel || this.currentChannel
+        const id = parseInt(item?.id) || 0
+        if (ch && id > 0 && (!maxMap[ch] || id > maxMap[ch])) {
+          maxMap[ch] = id
+        }
+      })
+      return maxMap
+    }
   },
   watch: {
-    showPostAnnouncementBtn (val) {
-      if (val) {
-        this.$refs.postAnnouncementBtnTooltip.$emit('open')
-      } else {
-        this.$refs.postAnnouncementBtnTooltip.$emit('close')
-      }
-    },
     messageCount (n, o) {
       o > n && (this.loading = true)
       // watch list count to scroll viewport to display the first/last message
@@ -101,6 +92,11 @@ export default {
     }
   },
   methods: {
+    isLatestInChannel (item) {
+      const ch = item?.channel || this.currentChannel
+      const id = parseInt(item?.id) || 0
+      return id > 0 && id === this.latestIdByChannel[ch]
+    },
     delayScrollToMessage () {/* placeholder for scrolling */},
     delayAttention () {/* placeholder for attention */},
     delayLoadHistoryMessage () {/* placeholder for loadHistoryMessage */},
@@ -299,18 +295,6 @@ export default {
   &:hover {
     opacity: 1.0;
     color: #007bff !important;
-  }
-}
-
-.post-message-btn {
-  transition: all 0.3s ease-in-out;
-  z-index: 1001;
-  position: fixed;
-  opacity: 0.75;
-  left: 0px;    /* 已修改：原本是 -50px，現在改為 0px 讓按鈕預設維持展開狀態 */
-  top: 120px;
-  &:hover {
-    opacity: 1.0; /* 已修改：滑鼠移入時才變回完全不透明 */
   }
 }
 </style>

@@ -201,7 +201,14 @@ div: client-only
   )
 
     //- 右下角狀態列
-  status(:status-text="connectText")
+  status(
+    :status-text="connectText",
+    :show-post-action="showBottomActionBar",
+    :post-action-label="isPersonal ? '發送私訊' : '發布公告'",
+    :post-action-icon="isPersonal ? 'chat-right-text-fill' : 'megaphone-fill'",
+    :post-action-variant="isPersonal ? 'outline-primary' : 'primary'",
+    @post-action="openBoardMessageInput"
+  )
 </template>
 
 <script>
@@ -328,6 +335,18 @@ export default {
         this.currentChannel !== "chat"
       );
     },
+    showBottomActionBar() {
+      if (!this.connected || !this.showMessageBoard || this.showInputGroup) {
+        return false;
+      }
+      if (this.isPersonal) {
+        return true;
+      }
+      if (this.isAnnouncement || this.currentChannel.startsWith("announcement_")) {
+        return Boolean(this.authority?.isAdmin || this.authority?.isNotifyMgtStaff);
+      }
+      return false;
+    },
     showMessageBoard() {
       return this.currentChannel !== "chat";
     },
@@ -364,6 +383,9 @@ export default {
   // Methods: 方法定義
   // ==========================================================================
   methods: {
+    openBoardMessageInput() {
+      this.$refs.msgBoard?.openMessageInput?.();
+    },
     onSaveManualServer (data) {
       this.handleManualSetServer(data.host, data.port)
     },
@@ -488,8 +510,8 @@ export default {
 <style lang="scss" scoped>
 /* 🟢 [修復] 解決放大字體時，版面高度計算不足導致與底部狀態列重疊、最後一筆被裁切的問題 */
 .main-layout {
-  /* 🟢 將底部留白從 2.85rem 縮減至 1.85rem，消除過大的間隔 */
-  height: calc(100vh - 1.85rem); 
+  /* 預留底部狀態列與版本號旁快速按鈕空間 */
+  height: calc(100vh - 2.25rem);
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 防止整個頁面出現原生滾動條 */

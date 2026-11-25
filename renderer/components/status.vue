@@ -1,5 +1,5 @@
 <template lang="pug">
-.bottom.d-flex.justify-content-between.text-muted.s-85
+.bottom.d-flex.justify-content-between.align-items-center.text-muted.s-85
   //- 加上 status-clickable 類別與 @click 事件，並加上 flex-grow-1 與 min-width: 0 讓內部文字可截斷
   .d-flex.justify-content-start.truncate.status-clickable.flex-grow-1(
     style="min-width: 0;"
@@ -13,9 +13,20 @@
         span {{ displayText }} 
         b-icon.ml-1(icon="three-dots" animation="cylon")
   
-  .text-right.text-nowrap.flex-shrink-0
-    span {{ appVer }}
-    b-icon.ml-1.help(icon="question-circle-fill", variant="success", @click="showHelp", title="簡易說明")
+  .d-flex.align-items-center.text-right.text-nowrap.flex-shrink-0
+    b-button.post-action-btn.mr-2(
+      v-if="showPostAction && postActionLabel"
+      size="sm"
+      pill
+      :variant="postActionVariant"
+      :title="postActionLabel"
+      :aria-label="postActionLabel"
+      @click="$emit('post-action')"
+    )
+      b-icon.mr-1(:icon="postActionIcon" font-scale="0.9")
+      span {{ postActionLabel }}
+    span.version-text {{ appVer }}
+    b-icon.ml-1.help(icon="question-circle-fill", variant="success", @click="showHelp", title="簡易說明", aria-label="開啟簡易說明")
 
   //- 歷史訊息 Modal 視窗
   b-modal(
@@ -72,6 +83,12 @@
 import Help from '~/components/help.vue';
 export default {
   components: { Help },
+  props: {
+    showPostAction: { type: Boolean, default: false },
+    postActionLabel: { type: String, default: '' },
+    postActionIcon: { type: String, default: 'megaphone-fill' },
+    postActionVariant: { type: String, default: 'primary' }
+  },
   data: () => ({
     clearTimer: null,
     displayText: '',
@@ -128,8 +145,12 @@ export default {
   methods: {
     showHelp () {
       this.modal(this.$createElement(Help), {
-        size: 'xl',
-        title: `說明 - ${this.appVer}`
+        size: 'lg',
+        scrollable: true,
+        headerClass: 'py-2 px-3',
+        bodyClass: 'p-2',
+        dialogClass: 'help-modal',
+        title: `使用說明 (${this.appVer})`
       })
     },
     detectTruncation () {
@@ -153,8 +174,33 @@ export default {
   left: .5rem;
   bottom: .35rem;
 }
+.post-action-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.22rem 0.65rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+  }
+}
+.version-text {
+  color: #495057;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
 .help {
   cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+  &:hover {
+    transform: scale(1.12);
+  }
 }
 
 /* 讓狀態列看起來是可以互動的按鈕 */
@@ -184,6 +230,15 @@ export default {
 /* 🟢 [核心修改點] 精確視角佈局：強制 95vh 高度並將 Dialog 置中 */
 ::v-deep .history-modal {
   margin: 2.5vh auto !important; /* 限制上下各有 2.5vh 邊界，達成 100vh 完美切分 */
+}
+
+::v-deep .help-modal {
+  margin: 0.75rem auto !important;
+  max-width: calc(100vw - 1.25rem) !important;
+}
+
+::v-deep .help-modal .modal-content {
+  max-height: calc(100vh - 1.5rem) !important;
 }
 
 ::v-deep .history-modal .modal-content {
