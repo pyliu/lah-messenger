@@ -62,21 +62,20 @@ yarn tauri:build
 ```
 
 - 打包完成後，發布產物會自動提取並清理置放於專案根目錄的 **`dist/`**：
-  1. **標準 NSIS 安裝包**：`dist/桃園地政信差服務即時通_1.6.2_x64-setup.exe`（支援雙擊全自動安裝到底，免手動點擊下一步）
+  1. **標準 NSIS 安裝包**：`dist/桃園地政信差服務即時通_1.6.3_x64-setup.exe`（支援雙擊全自動安裝到底，免手動點擊下一步）
   2. **可攜獨立執行檔**（Rust 目錄備援）：`src-tauri/target/release/lah-messenger.exe`（直接覆蓋更新或綠色執行）
 
 ---
 
-### 5. 既有 Electron 模式（相容性對照）
+### 5. 前端語法檢查（Vue / Nuxt）
 
-若需對照原 Electron 版本的執行行為：
+`package.json` 已全面切換為 Tauri v2 指令（`dev` / `build` 皆對應 `tauri dev` / `tauri build`）；`main/` 目錄僅保留作為舊版 Electron 實作對照參考。修改前端元件後可執行：
 
 ```bash
-# Electron 開發模式 (Nuxtron)
-npm run dev
-
-# Electron Windows 打包
-npm run build:win
+# 檢查已變更的 Vue 元件語法與規範
+npm run check:vue
+# 全量檢查所有 Vue 元件
+npm run check:vue:all
 ```
 
 ---
